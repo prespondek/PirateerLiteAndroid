@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Clear for Action Lite</string>
+    <string name="title_map">Map</string>
+    <string name="title_menu">Menu</string>
+    <string name="title_boats">Boats</string>
+    <string name="plot_button">Plot</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="hold_button">Cargo</string>
+    <string name="tool_tip">Select town where boat will be built</string>
+</resources>

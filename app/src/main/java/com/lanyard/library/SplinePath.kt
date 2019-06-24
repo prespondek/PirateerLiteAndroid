@@ -1,8 +1,12 @@
 package com.lanyard.library
 
-class SplinePath {
-    private var path: ArrayList<CardinalSpline>
-    var lengths: ArrayList<Float>
+import android.graphics.Point
+import android.graphics.PointF
+
+
+open class SplinePath {
+    private var path: MutableList<CardinalSpline>
+    var lengths: MutableList<Float>
         private set
 
     var length: Float = 0.0F
@@ -13,15 +17,15 @@ class SplinePath {
     }
 
     init {
-        path = ArrayList<CardinalSpline>()
-        lengths = ArrayList<Float>()
+        path = mutableListOf<CardinalSpline>()
+        lengths = mutableListOf<Float>()
     }
 
     fun pathLength(index: Int): Float {
         return path[index].length
     }
 
-    fun addPath(path: ArrayList<Point>) {
+    fun addPath(path: List<Point>) {
         val new_path = CardinalSpline(path)
         this.path.add(new_path)
         val dist = new_path.length
@@ -38,12 +42,12 @@ class SplinePath {
 
     fun smooth(segments: Int) {
         for (length in 0..lengths.size - 1) {
-            path[length].getUniform((segments * lengths[length]) as Int)
-            path[length].getUniform((segments * lengths[length]) as Int)
+            path[length].getUniform((segments * lengths[length]).toInt())
+            path[length].getUniform((segments * lengths[length]).toInt())
         }
     }
 
-    fun splinePosition(time: Float): Point {
+    fun splinePosition(time: Float): PointF {
         var offset: Float = 0.0F
         var index: Int = 0
         for (idx in 0..lengths.size - 1) {

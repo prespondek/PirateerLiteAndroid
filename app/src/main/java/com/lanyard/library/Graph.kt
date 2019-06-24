@@ -1,34 +1,10 @@
 package com.lanyard.library
 
-import kotlin.math.sqrt
-
-data class Point( var x: Float, var y: Float) {
-    override operator fun equals (other: Any?) : Boolean {
-        if (other is Point) {
-            return other.x == x && other.y == y
-        }
-        return false
-    }
-    operator fun minus (other: Any?) : Point {
-        if (other is Point) {
-            return Point(this.x - other.x,
-            this.y - other.y)
-        }
-        return Point(0.0F,0.0F)
-    }
-    fun lenght() : Float {
-        return sqrt( x*x + y*y );
-    }
-
-    fun distance(other: Point) : Float {
-        return (this - other).lenght()
-    }
+import android.graphics.Point
+import com.lanyard.helpers.distance
 
 
-
-}
-
-class Vertex<T> ( data: T, position: Point ) {
+class Vertex<T> ( data: T, position: Point) {
     companion object Functor{
         fun <T> compareRange (lhs: Vertex<T>, rhs: Vertex<T>) : Boolean {
             return (lhs.score < rhs.score)
@@ -36,7 +12,7 @@ class Vertex<T> ( data: T, position: Point ) {
     }
 
     var data :      T
-    var position =  Point(0.0F, 0.0F)
+    var position =  Point(0, 0)
     var score =     Float.MAX_VALUE
     var visited =   false
     var outEdges =  mutableSetOf<Edge<T>>()
@@ -44,7 +20,7 @@ class Vertex<T> ( data: T, position: Point ) {
 
     init {
         this.data = data
-        this.position = position
+        this.position = Point(position)
     }
 
     override operator fun equals (other: Any?) : Boolean {
@@ -69,7 +45,7 @@ class Vertex<T> ( data: T, position: Point ) {
     fun linkVertex(other: Vertex<T>)
     {
         val edge = Edge(this,  other)
-        edge.weight = this.position.distance(other.position)
+        edge.weight = this.position.distance(other.position).toFloat()
         this.outEdges.add(edge)
         other.inEdges.add(edge)
     }
@@ -96,16 +72,36 @@ class Edge<T> (source: Vertex<T>, target: Vertex<T>) {
 
 }
 
-class Graph<T> (vertices: ArrayList<Vertex<T>>)
+class Graph<T>
 {
+
+    companion object {
+        fun <T> getRouteDistance(route: List<Edge<T>> ) : Float
+        {
+            var distance : Float = 0.0F
+            route.forEach { distance += it.weight }
+            return distance
+        }
+        fun <T> getRoutePositions ( path: List<Edge<T>> ) : List<Point> {
+            var points = ArrayList<Point>()
+            points.add( path[0].source.position )
+            points.addAll(path.map { segment->
+                segment.next.position
+            })
+            return points
+        }
+    }
 
     var vertices : ArrayList<Vertex<T>>
 
     enum class Algorithm {
         Djikstra
     }
+    constructor() {
+        this.vertices = ArrayList<Vertex<T>>()
+    }
 
-    init {
+    constructor(vertices: ArrayList<Vertex<T>>) {
         this.vertices = vertices
     }
 
@@ -123,13 +119,6 @@ class Graph<T> (vertices: ArrayList<Vertex<T>>)
             }
 
         }
-    }
-
-    fun getRouteDistance(route: Array<Edge<T>> ) : Float
-    {
-        var distance : Float = 0.0F
-        route.forEach { distance += it.weight }
-        return distance
     }
 
     private fun getRouteDjikstra( start: Vertex<T>, end: Vertex<T> ) : ArrayList<Edge<T>>

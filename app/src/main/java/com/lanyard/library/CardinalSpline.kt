@@ -1,23 +1,27 @@
 package com.lanyard.library
+import android.graphics.Point
+import android.graphics.PointF
+import com.lanyard.helpers.distance
+import com.lanyard.helpers.toPoint
 import kotlin.math.min
 
 
-class CardinalSpline ( path : ArrayList<Point>, tension: Float = 0.5F ) {
+class CardinalSpline (path : List<Point>, tension: Float = 0.5F ) {
     data class DistanceTableEntry ( var t: Float, var distance: Float ) {
     }
 
     var length : Float = 0.0F
-    var path : ArrayList<Point>
+    var path : MutableList<Point>
 
     var tension : Float
 
     init {
-        this.path = path
+        this.path = path.toMutableList()
         this.tension = tension
         var dist : Float = 0.0F
         if ( this.path.size != 0 ) {
             for ( segment in 1..this.path.size-1 ) {
-                dist += this.path[segment - 1].distance( this.path[segment] )
+                dist += this.path[segment - 1].distance( this.path[segment] ).toFloat()
             }
         }
         this.length = dist
@@ -28,7 +32,7 @@ class CardinalSpline ( path : ArrayList<Point>, tension: Float = 0.5F ) {
         return a + f * (b - a)
     }
 
-    private fun evaluate(p0: Point, p1: Point, p2: Point, p3: Point, tension: Float, t: Float) : Point
+    private fun evaluate(p0: Point, p1: Point, p2: Point, p3: Point, tension: Float, t: Float) : PointF
     {
         val t2 = t * t
         val t3 = t2 * t
@@ -43,22 +47,22 @@ class CardinalSpline ( path : ArrayList<Point>, tension: Float = 0.5F ) {
         val x = (p0.x*b1 + p1.x*b2 + p2.x*b3 + p3.x*b4)
         val y = (p0.y*b1 + p1.y*b2 + p2.y*b3 + p3.y*b4)
 
-        return Point(x,y)
+        return PointF(x,y)
     }
 
 
     // Evaluates a curve with any number of points using the Catmull-Rom method
-    private fun evaluateCurve( time: Float ) : Point
+    fun evaluateCurve( time: Float ) : PointF
     {
         var p : Int
         var lt : Float
-        val deltaT = 1.0F / path.size - 1
+        val deltaT = 1.0F / (path.size - 1)
 
         if ( time == 1.0F ) {
             p = path.size - 1
             lt = 1.0F
         } else {
-            p = (time / deltaT) as Int
+            p = (time / deltaT).toInt()
             lt = (time - deltaT * p) / deltaT;
         }
         var i0 : Int = p-1
@@ -77,7 +81,7 @@ class CardinalSpline ( path : ArrayList<Point>, tension: Float = 0.5F ) {
 
     }
 
-    private fun createDistanceTable( table: ArrayList<DistanceTableEntry> )
+    private fun createDistanceTable( table: MutableList<DistanceTableEntry> )
     {
         val numPointsMin1 = path.size - 1;
 
@@ -87,44 +91,45 @@ class CardinalSpline ( path : ArrayList<Point>, tension: Float = 0.5F ) {
         table.add(start)
         for ( i in 1..path.size-1 ){
             val dist = path[i-1].distance(path[i])
-            distSoFar += dist
-            val curr = DistanceTableEntry( i as Float / numPointsMin1, distSoFar )
+            distSoFar += dist.toFloat()
+            val curr = DistanceTableEntry( i.toFloat() / numPointsMin1, distSoFar )
             table.add( curr )
         }
     }
 
     fun getNonUniform( segments: Int )
     {
-        var array = ArrayList<Point>()
+        var array = mutableListOf<Point>()
         val numPointsDesiredMin1 = segments-1
         for ( i in 0..segments-1 ) {
             val t = i as Float / numPointsDesiredMin1
-            array.add(evaluateCurve(t))
+            array.add(evaluateCurve(t).toPoint())
         }
         path = array
     }
 
     fun getUniform( segments: Int )
     {
-        var array = ArrayList<Point>()
-        var distTable = ArrayList<DistanceTableEntry>()
+        var array = mutableListOf<Point>()
+        var distTable = mutableListOf<DistanceTableEntry>()
         createDistanceTable( distTable )
         val numPointsDesiredMin1 = segments-1
         val totalLength = distTable[path.size-1].distance;
 
         for ( i in 0..segments-1 ) {
-            val distT = i as Float / numPointsDesiredMin1
+            val distT = i.toFloat() / numPointsDesiredMin1
             val distance = distT * totalLength
 
             val t = timeValueFromDist( distance, distTable )
-            array.add(evaluateCurve( t ))
+            var p = evaluateCurve( t ).toPoint()
+            array.add(p)
         }
         path = array
     }
 
-    private fun timeValueFromDist( dist: Float, table: ArrayList<DistanceTableEntry> ) : Float
+    private fun timeValueFromDist( dist: Float, table: MutableList<DistanceTableEntry> ) : Float
     {
-        for ( i in path.size - 2 downTo -1 step 1 ) {
+        for ( i in path.size - 2 downTo 0 step 1 ) {
         val entry = table[i];
         if ( dist > entry.distance ) {
             if(i == this.path.size-1) {
