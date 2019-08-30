@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.lanyard.pirateerlite.views.JobView xmlns:android="http://schemas.android.com/apk/res/android"
+                                        xmlns:app="http://schemas.android.com/apk/res-auto"
+                                        xmlns:tools="http://schemas.android.com/tools"
+                                        android:layout_width="100dp"
+                                        android:layout_height="130dp" app:cardCornerRadius="10dp"
+                                        app:cardElevation="2dp" android:id="@+id/jobView"
+                                        app:cardUseCompatPadding="true" android:gravity="center"
+                                        android:layoutMode="clipBounds">
+
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" android:id="@+id/bgFrame"
+    >
+
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:id="@+id/jobStack">
+            <TextView
+                    android:text="TextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp" android:id="@+id/townName" android:layout_weight="0.3"
+                    android:background="#7A7A7A" android:gravity="center" android:textColor="#FFFFFF"
+                    app:autoSizeMaxTextSize="200dp" app:autoSizeMinTextSize="2dp" app:autoSizeStepGranularity="2dp"
+                    app:autoSizeTextType="uniform" android:paddingLeft="4dp" android:paddingRight="4dp"
+                    android:paddingTop="8dp" android:paddingBottom="8dp"/>
+            <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp" android:layout_weight="0.5" android:id="@+id/jobFrame"
+                    android:alpha="1.0">
+
+                <ImageView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" app:srcCompat="@drawable/icon_cargo"
+                        android:id="@+id/jobImage"
+                        android:layout_gravity="center"/>
+                <TextView
+                        android:text="25%"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" android:id="@+id/bonusLabel"
+                        app:autoSizeMaxTextSize="200dp"
+                        app:autoSizeMinTextSize="2dp" app:autoSizeTextType="uniform"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Large" android:textColor="#FFE500"
+                        android:padding="8dp"
+                        android:shadowColor="#000000" android:shadowDx="0" android:shadowDy="0"
+                        android:shadowRadius="5" android:gravity="center" android:visibility="invisible"
+                />
+            </FrameLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp" android:layout_weight="0.2">
+                <View
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/view" android:layout_weight="1"
+                />
+                <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" app:srcCompat="@drawable/gold_piece"
+                        android:id="@+id/moneyType" android:layout_weight="1"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent" android:id="@+id/moneyAmount"
+                        android:gravity="center_vertical" app:autoSizeMinTextSize="2dp" app:autoSizeMaxTextSize="200dp"
+                        app:autoSizeStepGranularity="2dp" app:autoSizeTextType="uniform"/>
+                <View
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/view2" android:layout_weight="1"
+                />
+            </LinearLayout>
+        </LinearLayout>
+        <TextView
+                android:text="@string/empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:id="@+id/emptyLabel"
+                android:gravity="center_horizontal|center_vertical"
+                app:autoSizeMaxTextSize="200sp" app:autoSizeMinTextSize="2sp" app:autoSizeTextType="uniform"
+                app:autoSizeStepGranularity="2sp" android:textSize="16sp"
+                android:layout_gravity="center" android:singleLine="true"/>
+    </FrameLayout>
+</com.lanyard.pirateerlite.views.JobView>

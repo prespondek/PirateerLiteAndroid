@@ -2,6 +2,9 @@
         <declare-styleable name="SuperScrollView">
             <attr name="isPagingEnabled" format="boolean"/>
             <attr name="isFillViewport" format="boolean"/>
-
+        </declare-styleable>
+        <declare-styleable name="MenuCellView">
+            <attr name="image" format="reference"/>
+            <attr name="label" format="string" localization="suggested"/>
         </declare-styleable>
     </resources>

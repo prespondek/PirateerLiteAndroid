@@ -2,19 +2,19 @@ package com.lanyard.pirateerlite.views
 
 import android.content.Context;
 import android.graphics.*
+import androidx.core.graphics.ColorUtils
 import android.util.AttributeSet;
 import android.view.MotionEvent
 import android.util.DisplayMetrics
-import android.util.Size
-import android.util.SizeF
+import android.view.WindowManager
 import android.widget.ScrollView
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.lanyard.canvas.*
-import com.lanyard.helpers.plus
-import com.lanyard.helpers.unaryMinus
+import com.lanyard.helpers.*
 import com.lanyard.library.*
+import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.controllers.BoatController
 import com.lanyard.pirateerlite.controllers.TownController
 import com.lanyard.pirateerlite.models.BoatModel
@@ -26,8 +26,7 @@ import kotlin.math.max
 
 
 class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
-    CanvasView(context, attrs, defStyleAttr),
-    MapScrollViewListener {
+    CanvasView(context, attrs, defStyleAttr) {
     var pos = Point(0, 0)
     var root = CanvasNode()
     var padding = Size(0, 0)
@@ -44,11 +43,15 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         this._jobNode = CanvasNode()
         this._messageNode = CanvasNode()
         this._selectionCircle = null
-        density = DisplayMetrics.DENSITY_DEVICE_STABLE.toFloat() / DisplayMetrics.DENSITY_DEFAULT
+
+        var metrics = DisplayMetrics()
+        var wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        wm.defaultDisplay.getMetrics(metrics)
+        density = metrics.densityDpi.toFloat() / DisplayMetrics.DENSITY_DEFAULT
         val gson = Gson()
         val reader = JsonReader(InputStreamReader(context.getAssets().open("map_view.json")))
         val json = gson.fromJson<HashMap<String, Any>>(reader, object : TypeToken<HashMap<String, Any>>() {}.type)
-        setup(json)
+        setup(context,json)
     }
 
     fun clearPlot() {
@@ -59,7 +62,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         _jobNode.removeAllChildren()
     }
 
-    fun makeBackground(data: ArrayList<String>, files: ArrayList<String>) {
+    fun makeBackground(context: Context, data: ArrayList<String>, files: ArrayList<String>) {
         //var tile_index = json.getJSONArray("TileIndex")
         //var tile_file = json.getJSONArray("TileFile")
         for (y in 1..data.size) {
@@ -67,7 +70,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             for (x in 1..str.length) {
                 var index = str[x - 1].toInt() - 48
                 var file = files[index] as String
-                val tile = BitmapCache.instance.addBitmap(file, Bitmap.Config.RGB_565)!!
+                val tile = BitmapCache.instance.addBitmap(context, file, Bitmap.Config.RGB_565)!!
                 var sprite = CanvasSprite(tile)
                 sprite.anchor.set(0.0f, 1.0f)
                 sprite.position.set(tile.width * (x - 1), tile.height * (y - 1))
@@ -76,17 +79,19 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         }
     }
 
-    private fun setup(data: HashMap<String, Any>) {
+    private fun setup(context: Context, data: HashMap<String, Any>) {
         setPadding(data["Padding"] as ArrayList<Int>)
         setDimensions(data["Dimensions"] as ArrayList<Int>)
-        makeBackground(
+        makeBackground(context,
             data["TileIndex"] as ArrayList<String>,
             data["TileFile"] as ArrayList<String>
         )
-        makeAnimations(data)
-        makeFlags(data)
+        BitmapCache.instance.addBitmap(context,"job_marker.png", Bitmap.Config.ARGB_4444)
+        makeAnimations(context, data)
+        makeFlags(context, data)
         root.addChild(_plotNode)
         root.addChild(_jobNode)
+        _jobNode.zOrder = 3
     }
 
     fun setPadding(data: ArrayList<Int>) {
@@ -95,14 +100,13 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     }
 
     fun setDimensions(data: ArrayList<Int>) {
-        scene?.size = Size(
+        scene?.magnitude = Size(
             ((data[0] + padding.width * 2) * density).toInt(),
             ((data[1] + padding.height * 2) * density).toInt()
         )
     }
 
-
-    fun makeAnimations(data: HashMap<String, Any>) {
+    fun makeAnimations(context: Context, data: HashMap<String, Any>) {
 
         var anim = data["Animations"] as ArrayList<ArrayList<Any>>
         for (atom in anim) {
@@ -110,12 +114,11 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             val framenames = data[name] as ArrayList<String>
             var bimpl = ArrayList<BitmapStream>()
             for (frame in framenames) {
-                bimpl.add(BitmapCache.instance.addBitmap(frame + ".png", Bitmap.Config.ARGB_4444)!!)
+                bimpl.add(BitmapCache.instance.addBitmap(context, frame + ".png", Bitmap.Config.ARGB_4444)!!)
             }
             val sprite = CanvasSprite(bimpl[0])
             val action = CanvasActionAnimate(bimpl, (1000 * atom[2] as Double).toInt())
 
-            // only negative size seems to work, negative scale arent even visible
             sprite.scale = SizeF((atom[5] as Double).toFloat(), (atom[6] as Double).toFloat())
             sprite.position = Point(
                 (atom[3] as Double * density).toInt(),
@@ -126,7 +129,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         }
     }
 
-    fun makeFlags(data: HashMap<String, Any>) {
+    fun makeFlags(context: Context, data: HashMap<String, Any>) {
         val flags = data["Flags"] as ArrayList<ArrayList<Double>>
         var framenames = data["flags"] as ArrayList<String>
 
@@ -135,13 +138,13 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
                 continue
             }
             for (file in framenames.map { faction.toString() + it }) {
-                BitmapCache.instance.addBitmap(file + ".png", Bitmap.Config.ARGB_4444)
+                BitmapCache.instance.addBitmap(context,file + ".png", Bitmap.Config.ARGB_4444)
             }
         }
-        BitmapCache.instance.addBitmap("flag_pole.png", Bitmap.Config.ARGB_4444)
+        BitmapCache.instance.addBitmap(context,"flag_pole.png", Bitmap.Config.ARGB_4444)
 
         var idx = 0
-        for (vert in (Map.sharedInstance.graph.vertices)) {
+        for (vert in (Map.instance.graph.vertices)) {
             val town = vert.data as? TownModel
             if (town == null || town!!.allegiance == TownModel.Allegiance.none) {
                 continue
@@ -164,16 +167,14 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         }
     }
 
-    override fun onScrollChanged(offset: Point) {
-        root.position = -offset + padding
-    }
+
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         return super.onTouchEvent(event)
     }
 
     fun plotRouteToTown(start: TownController, end: TownController, image: String) {
-        val path = Map.sharedInstance.getRoute(start.model, end.model)
+        val path = Map.instance.getRoute(start.model, end.model)
         showCourseTrail(path, image)
     }
 
@@ -186,16 +187,17 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             }
         }
         for (town in towns) {
-            val pos = Map.sharedInstance.townPosition(town)
+            val pos = Map.instance.townPosition(town)
             val marker = CanvasSprite(BitmapCache.instance.getBitmap("job_marker.png")!!)
-            marker.position.set(pos.x,pos.y)
+            marker.position.set(pos.x,pos.y - 32)
             marker.zOrder = 2
             marker.anchor = PointF(0.5f, 0.0f)
+            marker.scale = SizeF(1.25f,1.25f)
             marker.run(
                 CanvasActionRepeat(
                     CanvasActionSequence(
-                        CanvasActionMoveBy(500, Point(0, 8)),
-                        CanvasActionMoveBy(500, Point(0, -8))
+                        CanvasActionMoveBy(500, Point(0, 32)),
+                        CanvasActionMoveBy(500, Point(0, -32))
                     )
                 )
             )
@@ -205,23 +207,30 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
     fun plotRoutesForTown(town: TownModel, paths: MutableList<List<Edge<WorldNode>>>, distance: Float) {
         _selectionCircle?.parent = null
-        val scene_pos = Map.sharedInstance.townPosition(town)
-        val shape = CanvasCustom({ canvas, node, pos ->
+        val scene_pos = Map.instance.townPosition(town)
+        var stroke = context.resources.getDimensionPixelSize(R.dimen.boat_range_stroke_size).toFloat()
+        val shape = CanvasCustom({ canvas, node, transform ->
             val paint = Paint()
             paint.style = Paint.Style.STROKE
-            paint.strokeWidth = 3.0f
+            paint.strokeWidth = stroke
             paint.color = Color.parseColor("#ffffffff")
-            canvas.drawCircle(pos.x.toFloat(), pos.y.toFloat(), distance * node.scale.width, paint)
+            canvas.drawCircle(
+                transform.position.x.toFloat(),
+                transform.position.y.toFloat(),
+                distance * 2 * node.scale.width, paint)
             paint.style = Paint.Style.FILL
             paint.color = Color.parseColor("#33ffffff")
-            canvas.drawCircle(pos.x.toFloat(), pos.y.toFloat(), distance * node.scale.width, paint)
+            canvas.drawCircle(
+                transform.position.x.toFloat(),
+                transform.position.y.toFloat(),
+                distance * 2 * node.scale.width, paint)
         }
         , Size((distance * 2).toInt(),(distance * 2).toInt()))
         shape.position = Point(scene_pos)
         shape.scale = SizeF(0.0f,0.0f)
         shape.run(CanvasActionScaleTo(1000,1.0f))
         if (paths.size > 0) {
-            val parts = Map.sharedInstance.mergeRoutes(paths[0].first().source, paths)
+            val parts = Map.instance.mergeRoutes(paths[0].first().source, paths)
             for (part in parts) {
                 showCourseTrail(part, "nav_plot.png")
             }
@@ -237,7 +246,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         var spline = CardinalSpline(Graph.getRoutePositions(path))
         spline.getUniform(max(spline.length / density * 0.06, 4.0).toInt())
         spline.getUniform(max(spline.length / density * 0.06, 4.0).toInt())
-        for (point in 0..spline.path.size - 1) {
+        for (point in 0 until spline.path.size) {
             val plotSprite = CanvasSprite(BitmapCache.instance.getBitmap(image)!!)
             plotSprite.position = Point(spline.path[point])
             _plotNode.addChild(plotSprite)
@@ -249,19 +258,74 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         val percent = boat.model.percentCourseComplete
         val time = boat.model.remainingTime
         val size = _plotNode.children.size
-        for (i in 0..size - 1) {
-            val rtime = size * percent
-            if (i <= rtime.toInt()) {
-                _plotNode.children[i].run(CanvasActionRemoveFromParent())
-            } else {
-                val action = CanvasActionSequence(
-                    CanvasActionWait(((time / (size - rtime)) * (i - rtime)).toLong()),
-                    CanvasActionScaleTo(500, 0.0f),
-                    CanvasActionRemoveFromParent()
-                )
-                _plotNode.children[i].run(action)
+        synchronized(_plotNode.children) {
+            for (i in 0 until size) {
+                val rtime = size * percent
+                if (i <= rtime.toInt()) {
+                    _plotNode.children[i].run(CanvasActionRemoveFromParent())
+                } else {
+                    val action = CanvasActionSequence(
+                        CanvasActionWait(((time / (size - rtime)) * (i - rtime)).toLong()),
+                        CanvasActionScaleTo(1000, 0.0f),
+                        CanvasActionRemoveFromParent()
+                    )
+                    _plotNode.children[i].run(action)
+                }
             }
         }
+    }
+
+    fun showMoney(town: TownModel, gold: Int, silver: Int) {
+        val pos = Map.instance.townPosition(town)
+        var arr = ArrayList<Any>()
+
+        if (gold > 0) {
+            arr.addAll(arrayOf(R.drawable.gold_piece, gold.toString(), Color.parseColor("#ffffdd00"))) // 1.0f, 0.9f, 0.0f,1.0f
+        }
+        if (silver > 0) {
+            arr.addAll(arrayOf(R.drawable.silver_piece, silver.toString(), Color.parseColor("#ffeeeeee"))) //  0.9f, 0.9f, 0.9f, 1.0f
+        }
+        var sarr = ArrayList<CanvasNode>()
+        for (i in 0 until arr.size step 3) {
+            val bmp = BitmapCache.instance.getBitmap(arr[i].toString())
+            var image = CanvasSprite(bmp!!)
+            val label = CanvasLabel("0",null)
+            label.fontSize = context.resources.getDimensionPixelSize(R.dimen.money_label_size).toFloat()
+            label.fontStyle = Paint.Style.FILL_AND_STROKE
+            label.strokeWidth = context.resources.getDimensionPixelSize(R.dimen.money_label_stroke).toFloat()
+            label.text = "+" + arr[i+1].toString()
+            val scale = label.size.height.toFloat() / image.size.height * 1.75f
+            image.scale = SizeF(scale)
+            var pad = 0.0f
+            if (i > 0) {
+                pad += (sarr[i-3] as CanvasSprite).size.width * 1.5f
+                pad += (sarr[i-2] as CanvasLabel).size.width
+            }
+            label.fontColor = arr[i+2] as Int
+            image.position = Point(pad.toInt(), 0)
+            label.position = Point(image.position.x + (image.size.width.toInt() *0.5f).toInt()+ (label.size.width * 0.5f).toInt(), image.position.y)
+            sarr.addAll(arrayOf(image,label))
+        }
+        var messageWidth = 0
+        var messageHeight = 0
+        sarr.forEach({
+            messageWidth += it.size.width;
+            messageHeight = max(messageHeight, it.size.height)
+        })
+        var messageSize = Size(messageWidth,messageHeight)
+        val message = CanvasNode()
+
+        sarr.forEach({
+            message.addChild(it)
+        })
+        message.position = pos - messageSize * 0.5f
+        message.position.y -= 64
+        message.run(CanvasActionMoveBy(1000,Point(0,-128)))
+        message.run(CanvasActionSequence(
+            CanvasActionWait(500),
+            CanvasActionFadeTo(1000,0.0f),
+            CanvasActionRemoveFromParent()))
+        root.addChild(message)
     }
 
 }

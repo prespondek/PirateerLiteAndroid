@@ -1,38 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                             xmlns:app="http://schemas.android.com/apk/res-auto"
-                                             xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-                                             android:layout_height="match_parent">
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                   xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                   xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+                                                   android:layout_height="match_parent">
 
     <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent" tools:layout_editor_absoluteY="16dp"
             tools:layout_editor_absoluteX="16dp">
-        <android.support.v4.widget.NestedScrollView
+        <androidx.core.widget.NestedScrollView
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" android:fillViewport="true" android:layout_weight="0.3">
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                          android:orientation="vertical" android:layout_margin="8dp">
-                <TextView
-                        android:text="TextView"
+                android:layout_height="0dp" android:fillViewport="true" android:layout_weight="1">
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+                    android:id="@+id/jobRefresh"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" android:paddingLeft="8dp"
+                    android:paddingRight="8dp">
+                <androidx.recyclerview.widget.RecyclerView
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" android:id="@+id/textView"/>
-                <TableLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent">
-
-                    <TableRow android:layout_width="match_parent" android:layout_height="match_parent"/>
-                    <TableRow android:layout_width="match_parent" android:layout_height="match_parent"/>
-                    <TableRow android:layout_width="match_parent" android:layout_height="match_parent"/>
-                    <TableRow android:layout_width="match_parent" android:layout_height="match_parent"/>
-                </TableLayout>
-            </LinearLayout>
-        </android.support.v4.widget.NestedScrollView>
+                        android:layout_height="wrap_content" android:id="@+id/jobTable"
+                />
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+        </androidx.core.widget.NestedScrollView>
         <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" android:layout_weight="0.7">
+                android:layout_height="wrap_content" android:layout_weight="0" android:id="@+id/cargoPanel"
+                android:background="@drawable/drop_shadow">
 
+            <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:layout_margin="8dp">
+                <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+                    <TextView
+                            android:text="@string/jobs_cargo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" android:id="@+id/textView2" android:textSize="36sp"
+                            android:textStyle="bold" android:typeface="normal"
+                            android:textAppearance="@style/TextAppearance.AppCompat.Large" android:layout_weight="1"/>
+                    <LinearLayout
+                            android:orientation="vertical"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" android:layout_weight="1">
+                        <FrameLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" android:layout_weight="0.2">
+
+                        </FrameLayout>
+                        <LinearLayout
+                                android:orientation="horizontal"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" android:layout_weight="0.1">
+                            <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" app:srcCompat="@drawable/gold_piece"
+                                    android:id="@+id/imageView2" android:layout_weight="1"/>
+                            <TextView
+                                    android:text="0"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" android:id="@+id/goldLabel"
+                                    android:layout_weight="1"
+                                    android:layout_gravity="center"/>
+                            <ImageView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent" app:srcCompat="@drawable/silver_piece"
+                                    android:id="@+id/imageView3" android:layout_weight="1"/>
+                            <TextView
+                                    android:text="0"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" android:id="@+id/silverLabel"
+                                    android:layout_weight="1"
+                                    android:layout_gravity="center"/>
+                        </LinearLayout>
+                        <FrameLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" android:layout_weight="0.2">
+
+                        </FrameLayout>
+                    </LinearLayout>
+                </LinearLayout>
+                <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" android:background="@drawable/tool_tip_bg">
+                    <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" android:gravity="center"
+                            android:layout_gravity="center">
+                        <TextView
+                                android:text="@string/swipe"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" android:id="@+id/textView4"
+                                android:layout_gravity="center" android:layout_weight="0.7"
+                                android:gravity="right|center_vertical" android:alpha="0.5"/>
+                        <ImageView
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" app:srcCompat="?attr/actionModeCloseDrawable"
+                                android:id="@+id/imageView4" android:layout_weight="0.8" android:alpha="0.5"/>
+                        <FrameLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent" android:layout_weight="0.3">
+
+                        </FrameLayout>
+                    </LinearLayout>
+                    <com.lanyard.pirateerlite.views.CargoView
+                            android:layout_width="wrap_content"
+                            android:layout_height="130dp" android:layout_gravity="center" android:id="@+id/cargoView"
+                    />
+                </FrameLayout>
+            </LinearLayout>
         </FrameLayout>
     </LinearLayout>
-</android.support.constraint.ConstraintLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

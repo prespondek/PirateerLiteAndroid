@@ -6,18 +6,18 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.os.Parcel
 import android.os.Parcelable
-import android.support.v4.view.AccessibilityDelegateCompat
-import android.support.v4.view.InputDeviceCompat
-import android.support.v4.view.MotionEventCompat
-import android.support.v4.view.NestedScrollingChild
-import android.support.v4.view.NestedScrollingChildHelper
-import android.support.v4.view.NestedScrollingParent
-import android.support.v4.view.NestedScrollingParentHelper
-import android.support.v4.view.ScrollingView
-import android.support.v4.view.ViewCompat
-import android.support.v4.view.accessibility.AccessibilityEventCompat
-import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat
-import android.support.v4.widget.EdgeEffectCompat
+import androidx.core.view.AccessibilityDelegateCompat
+import androidx.core.view.InputDeviceCompat
+import androidx.core.view.MotionEventCompat
+import androidx.core.view.NestedScrollingChild
+import androidx.core.view.NestedScrollingChildHelper
+import androidx.core.view.NestedScrollingParent
+import androidx.core.view.NestedScrollingParentHelper
+import androidx.core.view.ScrollingView
+import androidx.core.view.ViewCompat
+import androidx.core.view.accessibility.AccessibilityEventCompat
+import androidx.core.view.accessibility.AccessibilityNodeInfoCompat
+import androidx.core.widget.EdgeEffectCompat
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
@@ -31,7 +31,7 @@ import android.view.ViewGroup
 import android.view.accessibility.AccessibilityEvent
 import android.view.animation.AnimationUtils
 import android.widget.*
-import com.lanyard.pirateeronline.R
+import com.lanyard.pirateerlite.R
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -244,7 +244,7 @@ open class SuperScrollView @JvmOverloads constructor(context: Context, attrs: At
         mParentHelper = NestedScrollingParentHelper(this)
         mChildHelper = NestedScrollingChildHelper(this)
 
-        // ...because why else would you be using this widget?
+        //  until .because why else would you be using this widget?
         isNestedScrollingEnabled = true
 
         ViewCompat.setAccessibilityDelegate(this, ACCESSIBILITY_DELEGATE)
@@ -486,8 +486,6 @@ open class SuperScrollView @JvmOverloads constructor(context: Context, attrs: At
         }
         val heightMode = MeasureSpec.getMode(heightMeasureSpec)
         val size = MeasureSpec.getSize(widthMeasureSpec)
-        Log.v("[View name] onMeasure w", MeasureSpec.toString(widthMeasureSpec));
-        Log.v("[View name] onMeasure h", MeasureSpec.toString(heightMeasureSpec));
         if (heightMode == MeasureSpec.UNSPECIFIED) {
             return
         }
@@ -1712,13 +1710,13 @@ open class SuperScrollView @JvmOverloads constructor(context: Context, attrs: At
                     val currVelocity = mScroller.currVelocity.toInt()
                     if (x <= 0 && oldX > 0) {
                         mEdgeGlowLeft!!.onAbsorb(currVelocity)
-                    } else if (rangeX in (oldX + 1)..x) {
+                    } else if (rangeX in (oldX + 1) until x) {
                         mEdgeGlowRight!!.onAbsorb(currVelocity)
                     }
 
                     if (y <= 0 && oldY > 0) {
                         mEdgeGlowTop!!.onAbsorb(currVelocity)
-                    } else if (rangeY in (oldY + 1)..y) {
+                    } else if (rangeY in (oldY + 1) until y) {
                         mEdgeGlowBottom!!.onAbsorb(currVelocity)
                     }
                 }

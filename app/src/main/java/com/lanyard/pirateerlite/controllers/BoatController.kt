@@ -8,8 +8,11 @@ import com.lanyard.pirateerlite.fragments.MapFragment
 import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.models.WorldNode
+import com.lanyard.pirateerlite.singletons.Game
 import com.lanyard.pirateerlite.singletons.Map
+import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.views.BoatView
+import kotlinx.coroutines.runBlocking
 import java.util.*
 
 
@@ -33,24 +36,23 @@ class BoatController (model: BoatModel, view: BoatView) {
         this.view = view
         if (model.town != null) {
             var source : Vertex<WorldNode>? = null
-            Map.sharedInstance.graph.vertices.forEach { if (it.data === model.town) { source = it }}
+            Map.instance.graph.vertices.forEach { if (it.data === model.town) { source = it }}
             if (source != null) {
                 view.sprite.position = Point(source!!.position)
             }
         }
     }
 
-
     fun sail() {
-
+        view.removePaths()
             for (job in model.cargo) {
                 if (job != null) {
                     model.town?.removeJob(job)
                 }
             }
 
-        for (i in 1..this.model.course.size - 1) {
-            val path = Map.sharedInstance.getRoute(this.model.course[i-1], this.model.course[i])
+        for (i in 1 until this.model.course.size) {
+            val path = Map.instance.getRoute(this.model.course[i-1], this.model.course[i])
             view.addPath(Graph.getRoutePositions(path))
             var time = this.model.getSailingTime( view.length )
             if (model.departureTime != 0L &&
@@ -70,7 +72,7 @@ class BoatController (model: BoatModel, view: BoatView) {
             if (this.model.town != null) {
                 this.model.sail( view.length )
             } else {
-                this.model.setDistance( view.length )
+                this.model.setCourseTime( view.length )
             }
             view.sail( Date(this.model.departureTime ), this.model.courseTime )
         }
@@ -79,8 +81,9 @@ class BoatController (model: BoatModel, view: BoatView) {
     private fun arrived (town: TownModel, quiet : Boolean = false) {
         this.model.arrive(town, quiet)
         if (this.model.isMoored) {
-            //BoatController._mapController?.boatArrived(this)
-            //view.removePaths()
+            view.sprite.hidden = true
+            view.sprite.removeAction("sail")
+            BoatController._mapController?.boatArrived(this)
         }
     }
 }

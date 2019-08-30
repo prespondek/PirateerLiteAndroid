@@ -1,23 +1,21 @@
 package com.lanyard.pirateerlite.fragments
 
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Point
-import android.graphics.Typeface
-import android.media.MediaPlayer
+import android.content.Intent
+import android.graphics.*
 import android.os.Bundle
-import android.support.constraint.ConstraintLayout
-import android.support.constraint.ConstraintSet
-import android.support.v4.app.Fragment
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import android.util.DisplayMetrics
-import android.util.SizeF
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.*
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.lanyard.canvas.*
 import com.lanyard.helpers.*
 import com.lanyard.library.Edge
+import com.lanyard.library.SuperScrollView
 import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.controllers.BoatController
 import com.lanyard.pirateerlite.controllers.TownController
@@ -27,145 +25,47 @@ import com.lanyard.pirateerlite.models.WorldNode
 import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.singletons.Map
 import com.lanyard.pirateerlite.views.*
-import com.lanyard.pirateeronline.R
+import com.lanyard.pirateerlite.R
+import com.lanyard.pirateerlite.singletons.Audio
+import com.lanyard.pirateerlite.singletons.Game
+import kotlinx.android.synthetic.main.activity_map.*
 import kotlinx.android.synthetic.main.fragment_map.*
+import kotlinx.coroutines.runBlocking
 
-class MapFragment : Fragment() {
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        // Inflate the layout for this fragment
-        var view = inflater.inflate(R.layout.fragment_map, container, false)
-        _scrollView = view.findViewById<MapScrollView>(R.id.vscrollview)
-        _scene = view.findViewById<MapView>(R.id.mapView)
-
-        _sailButton = view.findViewById(R.id.plotButton) as ImageButton
-        _sailButton?.setOnClickListener { this.sailButtonPressed() }
-        _cancelButton = view.findViewById(R.id.cancelButton)
-        _cancelButton?.setOnClickListener{ this.cancelButtonPressed() }
-        _cargoButton = view.findViewById(R.id.holdButton)
-        _cargoButton?.setOnClickListener(View.OnClickListener { (activity as MapActivity).swapFragment(R.id.holdButton) })
-        _toolTip = view.findViewById(R.id.toolTip) as TextView
-        var mapframe = view.findViewById(R.id.mapframe) as FrameLayout
-        var buttonlayout = view.findViewById(R.id.buttonlayout) as ConstraintLayout
-
-        var metrics = DisplayMetrics()
-        activity?.windowManager?.defaultDisplay?.getMetrics(metrics)
-        val logicalDensity = metrics.density
-
-        mapframe.layoutParams.width = _scene.scene!!.size.width
-        mapframe.layoutParams.height = _scene.scene!!.size.height
-
-        mapframe.minimumWidth = _scene.scene!!.size.width
-        mapframe.minimumHeight = _scene.scene!!.size.height
-
-        _scrollView.getViewTreeObserver().addOnScrollChangedListener(_scrollView)
-        _scrollView.scrollListener = _scene
-
-        var mp = MediaPlayer.create(activity,R.raw.bg_map)
-        mp.isLooping = true
-        mp.start()
-
-        TownView.setup()
-        TownController.setController(this)
-        for (vert in Map.sharedInstance.graph.vertices) {
-            val town = vert.data as? TownModel
-            if (town == null) { continue }
-
-            val button = Button(activity)
-            button.id = View.generateViewId()
-            buttonlayout.addView(button)
-
-            button.layoutParams.width = (64 * logicalDensity).toInt()
-            button.layoutParams.height = (64 * logicalDensity).toInt()
-            button.background = null
-
-            var params = ConstraintSet()
-            params.clone(buttonlayout)
-            val button_width = (32 * logicalDensity).toInt()
-            params.connect(button.getId(), ConstraintSet.TOP, ConstraintSet.PARENT_ID,
-                ConstraintSet.TOP, (vert.position.y + _scene.padding.height - button_width).toInt());
-            params.connect(button.getId(), ConstraintSet.LEFT, ConstraintSet.PARENT_ID,
-                ConstraintSet.LEFT, (vert.position.x + _scene.padding.width - button_width).toInt());
-            params.constrainWidth(button.getId(), button_width * 2)
-            params.constrainHeight(button.getId(), button_width * 2)
-            params.applyTo(buttonlayout)
-
-            val sprite = TownView()
-            sprite.scale = SizeF(0.5f,0.5f)
-            sprite.position = Point(vert.position.x , vert.position.y)
-            sprite.zOrder = 2
-            _scene.root.addChild(sprite)
-
-            val label = CanvasLabel(town.name, null)
-            label.position = Point(vert.position.x, vert.position.y - 48)
-            label.fontSize = 48.0f
-            label.fontStyle = Paint.Style.FILL_AND_STROKE
-            label.strokeWidth = 6.0f
-            label.zOrder = 2
-            label.typeface = Typeface.DEFAULT_BOLD
-            _scene.root.addChild(label)
-
-            val townCtrl = TownController(town!!, button, sprite)
-            _townControllers.add(townCtrl)
-            townCtrl.state = TownController.State.unselected
-        }
-
-        /*this._selectedTint = tabBarController!.tabBar.tintColor
-        tabBarController!.tabBar.unselectedItemTintColor = UIColor.lightGray*/
-
-        BoatController.setController(this)
-        for (boatModel in User.sharedInstance.boats) {
-            addBoat( boatModel )
-        }
-
-        return view
-    }
-
+class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.UserObserver {
 
     enum class Mode {
         plot, map, track, nontrack, build, buy
     }
 
-companion object {
-    private var _map : MapFragment? = null
-
-    val instance : MapFragment
-        get() {
-            return _map!!
-        }
-
-}
     //private var mapModel :          MapModel?
-    private var _boatControllers =      ArrayList<BoatController>()
-    private var _townControllers =      ArrayList<TownController>()
-    private var _trackBoat =            false
-    private var _selectedBoat :         BoatController? = null
-    private var _boatCourse =           ArrayList<TownController>()
-    private var _buildType :            String? = null
-    private var _buildParts =           ArrayList<User.BoatPart>()
-    private var _selectedTint =         Color.BLACK
-    private lateinit var _cargoButton:  ImageButton
-    private lateinit var _sailButton:   ImageButton
+    private var _boatControllers = ArrayList<BoatController>()
+    private var _townControllers = ArrayList<TownController>()
+    private var _trackBoat = false
+    private var _selectedBoat: BoatController? = null
+    private var _boatCourse = ArrayList<TownController>()
+    private var _buildType: String? = null
+    private var _buildParts = ArrayList<User.BoatPart>()
+    private var _selectedTint = Color.BLACK
+    private lateinit var _cargoButton: ImageButton
+    private lateinit var _sailButton: ImageButton
     private lateinit var _cancelButton: ImageButton
-    private lateinit var _scene:        MapView
-    private lateinit var _scrollView:   MapScrollView
-    lateinit var wallet:                WalletFragment
-    private lateinit var _toolTip:      TextView
+    private lateinit var _scene: MapView
+    private lateinit var _scrollView: SuperScrollView
+    lateinit var wallet: WalletFragment
+    private lateinit var _toolTip: TextView
 
-    val mode : Mode
-        get (){
+    val mode: Mode
+        get () {
             if (_selectedBoat != null) {
                 if (_selectedBoat!!.model.town != null) {
-                return Mode.plot
-            } else if (_trackBoat == false) {
-                return Mode.nontrack
-            } else {
-                return Mode.track
-            }
-            } else if (_toolTip?.isShown == true) {
+                    return Mode.plot
+                } else if (_trackBoat == false) {
+                    return Mode.nontrack
+                } else {
+                    return Mode.track
+                }
+            } else if (_toolTip.isShown == true) {
                 if (_buildParts.size > 1) {
                     return Mode.build
                 } else {
@@ -176,13 +76,169 @@ companion object {
             }
         }
 
-    fun addBoat ( boat: BoatModel ) : BoatController
-    {
-        val view = BoatView( boat.type )
-        val boatController = BoatController( boat, view )
-        _boatControllers.add( boatController )
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        if (savedInstanceState == null) {
+            BitmapCache.instance.addBitmap(this.context!!, "gold_piece", R.drawable.gold_piece, Bitmap.Config.ARGB_4444)
+            BitmapCache.instance.addBitmap(
+                this.context!!,
+                "silver_piece",
+                R.drawable.silver_piece,
+                Bitmap.Config.ARGB_4444
+            )
+        }
+        // Inflate the layout for this fragment
+        Game.instance.addGameListener(this)
+        User.instance.addObserver(this)
+        val view = inflater.inflate(R.layout.fragment_map, container, false)
+        _scrollView = view.findViewById<SuperScrollView>(R.id.vscrollview)
+        _scene = view.findViewById<MapView>(R.id.mapView)
+
+        _sailButton = view.findViewById(R.id.plotButton) as ImageButton
+        _sailButton.setOnClickListener { this.sailButtonPressed() }
+        _cancelButton = view.findViewById(R.id.cancelButton)
+        _cancelButton.setOnClickListener { this.cancelButtonPressed() }
+        _cargoButton = view.findViewById(R.id.holdButton)
+        _cargoButton.setOnClickListener(View.OnClickListener {
+            val frag = (activity as MapActivity).swapFragment(R.id.holdButton) as JobFragment
+            frag.boatController = _selectedBoat!!
+        })
+        _toolTip = view.findViewById(R.id.toolTip) as TextView
+        val mapframe = view.findViewById(R.id.mapframe) as FrameLayout
+        val buttonlayout = view.findViewById(R.id.buttonlayout) as ConstraintLayout
+
+        val metrics = DisplayMetrics()
+        activity?.windowManager?.defaultDisplay?.getMetrics(metrics)
+        val logicalDensity = metrics.density
+
+        mapframe.layoutParams.width = _scene.scene!!.size.width
+        mapframe.layoutParams.height = _scene.scene!!.size.height
+
+        mapframe.minimumWidth = _scene.scene!!.size.width
+        mapframe.minimumHeight = _scene.scene!!.size.height
+
+        _scrollView.setOnScrollChangeListener(object : SuperScrollView.OnScrollChangeListener {
+            override fun onScrollChange(
+                v: SuperScrollView,
+                scrollX: Int,
+                scrollY: Int,
+                oldScrollX: Int,
+                oldScrollY: Int
+            ) {
+                _scene.root.position = -Point(scrollX, scrollY) + _scene.padding
+            }
+        })
+        _scrollView.setOnTouchListener { v, event ->
+            stopTracking()
+            false
+        }
+
+        //_scrollView.scrollListener = this
+
+        Audio.instance.queueSound(R.raw.bg_map, true)
+        TownView.setup(this.context!!)
+        TownController.setController(this)
+        for (vert in Map.instance.graph.vertices) {
+            val town = vert.data as? TownModel
+            if (town == null) {
+                continue
+            }
+
+            val button = Button(activity)
+            button.id = View.generateViewId()
+            button.tag = town
+            buttonlayout.addView(button)
+
+            button.layoutParams.width = (64 * logicalDensity).toInt()
+            button.layoutParams.height = (64 * logicalDensity).toInt()
+            button.background = null
+
+            val params = ConstraintSet()
+            params.clone(buttonlayout)
+
+            val button_width = (32 * logicalDensity).toInt()
+            params.connect(
+                button.getId(), ConstraintSet.TOP, ConstraintSet.PARENT_ID,
+                ConstraintSet.TOP, (vert.position.y + _scene.padding.height - button_width).toInt()
+            )
+            params.connect(
+                button.getId(), ConstraintSet.LEFT, ConstraintSet.PARENT_ID,
+                ConstraintSet.LEFT, (vert.position.x + _scene.padding.width - button_width).toInt()
+            )
+            params.constrainWidth(button.getId(), button_width * 2)
+            params.constrainHeight(button.getId(), button_width * 2)
+            params.applyTo(buttonlayout)
+
+            val sprite = TownView()
+            sprite.position = Point(vert.position.x, vert.position.y)
+            sprite.zOrder = 2
+            _scene.root.addChild(sprite)
+
+            val label = CanvasLabel(town.name, null)
+            label.position = Point(
+                vert.position.x,
+                vert.position.y - context!!.resources.getDimensionPixelSize(R.dimen.town_label_offset)
+            )
+            label.fontSize = context!!.resources.getDimensionPixelSize(R.dimen.town_label_size).toFloat()
+            label.fontStyle = Paint.Style.FILL_AND_STROKE
+            label.strokeWidth = context!!.resources.getDimensionPixelSize(R.dimen.town_label_stroke).toFloat()
+            label.zOrder = 2
+            label.typeface = Typeface.DEFAULT_BOLD
+            _scene.root.addChild(label)
+
+            val townCtrl = TownController(town, button, sprite)
+            _townControllers.add(townCtrl)
+            townCtrl.state = TownController.State.unselected
+        }
+
+        if (savedInstanceState == null) {
+            _scrollView.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
+                override fun onPreDraw(): Boolean {
+                    var factor = context!!.getResources().displayMetrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT
+                    var offset = Point((1600 * factor).toInt(), (200 * factor).toInt())
+                    _scrollView.scrollTo(offset.x, offset.y)
+                    _scene.root.position = -Point(offset.x, offset.y) + _scene.padding
+                    _scrollView.viewTreeObserver.removeOnPreDrawListener(this)
+                    return true
+                }
+            })
+        }
+
+        BoatController.setController(this)
+        for (boatModel in User.instance.boats) {
+            addBoat(boatModel)
+        }
+        return view
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        _scene.canvasThread?.setRunning(false)
+        _scene.canvasThread?.join()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        when (mode) {
+            Mode.track -> startTracking(_selectedBoat!!)
+            Mode.nontrack -> {
+                startTracking(_selectedBoat!!)
+                _scene.clearPlot()
+                plotCourseForBoat(_selectedBoat!!)
+            }
+            else -> return
+        }
+    }
+
+    fun addBoat(boat: BoatModel): BoatController {
+        val view = BoatView(boat.type)
+        val boatController = BoatController(boat, view)
+        _boatControllers.add(boatController)
         view.sprite.zOrder = 4
-        this._scene.root.addChild( view.sprite )
+        this._scene.root.addChild(view.sprite)
         if (boatController.model.isMoored != true) {
             boatController.sail()
         } else {
@@ -193,38 +249,41 @@ companion object {
         return boatController
     }
 
-    fun townControllerForModel (model: TownModel) : TownController
-    {
+    fun townControllerForModel(model: TownModel): TownController {
         val townController = _townControllers.first { it.model === model }
-        return townController!!
+        return townController
     }
 
-    fun plotCourseForBoat ( boat: BoatController ) {
+    fun plotCourseForBoat(boat: BoatController) {
         val course = boat.model.course
-                for (i in 1..course.size-1) {
-                    _scene.plotRouteToTown( townControllerForModel(course[i-1]),
-                    townControllerForModel(course[i]),"nav_plot")
-                }
+        for (i in 1 until course.size) {
+            _scene.plotRouteToTown(
+                townControllerForModel(course[i - 1]),
+                townControllerForModel(course[i]), "nav_plot.png"
+            )
+        }
         _scene.plotCourseForBoat(boat)
     }
 
-    fun plotRoutesForTown ( townCtrl: TownController, distance: Float )
-    {
+    fun plotRoutesForTown(townCtrl: TownController, distance: Float) {
         townCtrl.state = TownController.State.selected
-        val startPos = Map.sharedInstance.townPosition( townCtrl.model )
-        var paths = mutableListOf<List<Edge<WorldNode>>>()
+        val startPos = Map.instance.townPosition(townCtrl.model)
+        val paths = mutableListOf<List<Edge<WorldNode>>>()
         for (controller in _townControllers) {
-            if (_boatCourse.contains(controller)) { continue }
-            val endPos = Map.sharedInstance.townPosition( controller.model )
-            val dist = startPos.distance( endPos )
+            if (_boatCourse.contains(controller)) {
+                continue
+            }
+            val endPos = Map.instance.townPosition(controller.model)
+            val dist = startPos.distance(endPos)
             if (dist > distance) {
                 controller.state = TownController.State.blocked
-            }
-            else if (controller.model.level > 0) {
+            } else if (controller.model.level > 0) {
                 controller.state = TownController.State.unselected
             }
-            if (controller.state != TownController.State.unselected) { continue }
-            paths.add(Map.sharedInstance.getRoute(townCtrl.model, controller.model))
+            if (controller.state != TownController.State.unselected) {
+                continue
+            }
+            paths.add(Map.instance.getRoute(townCtrl.model, controller.model))
         }
         _scene.plotRoutesForTown(townCtrl.model, paths, distance)
     }
@@ -241,135 +300,110 @@ companion object {
         }
     }*/
 
-    /*fun jobDelivered(notification: Notification) {
-        val town = notification.userInfo!["Town"] as! TownModel
-        val gold = notification.userInfo!["Gold"] as! Int
-        val silver = notification.userInfo!["Silver"] as! Int
-        val quiet = notification.userInfo!["Quiet"] as! Bool
+    override fun jobDelivered(boat: BoatModel, town: TownModel, gold: Int, silver: Int, quiet: Boolean) {
         if (quiet == false) {
             _scene.showMoney(town, gold, silver)
         }
-    }*/
+    }
 
-    fun boatAdded      (boat: BoatModel) {
+    override fun boatAdded(boat: BoatModel) {
         addBoat(boat)
     }
 
-    fun boatRemoved    (boat: BoatModel) {
+    override fun boatRemoved(boat: BoatModel) {
         val boatController = boatControllerForModel(boat)
-        _boatControllers.removeAll {it === boatController}
+        _boatControllers.removeAll { it === boatController }
         boatController.view.sprite.parent = null
         if (boat.town != null) {
             val townController = townControllerForModel(boat.town!!)
             townController.updateView()
         }
-        if (_selectedBoat!! === boatController) {
+        if (_selectedBoat === boatController) {
             reset()
         }
     }
 
-    internal fun goldUpdated(oldValue: Int, newValue: Int) {
-        wallet.goldUpdated(oldValue,newValue)
-    }
-
-    internal fun silverUpdated(oldValue: Int, newValue: Int) {
-        wallet.silverUpdated(oldValue,newValue)
-    }
-
-    /*override fun viewWillAppear(animated: Boolean)
-    {
-        if let boat = _selectedBoat {
-            scene.plotJobMarkers(boat.model)
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (hidden) {
+        } else {
+            if (_selectedBoat != null) {
+                _scene.plotJobMarkers(_selectedBoat!!.model)
+            }
         }
-        super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: animated)
-        if mode == .build {
-            tabBar(enabled: false)
-        }
-
     }
 
-    override fun viewWillDisappear(animated: Boolean)
-    {
-        super.viewWillDisappear(animated)
-        navigationController?.setNavigationBarHidden(false, animated: animated)
-    }*/
-
-    fun boatControllerForModel (model: BoatModel) : BoatController
-    {
-        val boatController = _boatControllers.first {it.model === model}
-        return boatController!!
+    fun boatControllerForModel(model: BoatModel): BoatController {
+        val boatController = _boatControllers.first { it.model === model }
+        return boatController
     }
 
-    fun boatSelected ( boat: BoatController)
-    {
+    fun boatSelected(boat: BoatController) {
         stopTracking()
         reset()
         _selectedBoat = boat
         val town = _selectedBoat!!.model.town
-                if (town != null) {
-                    val scene_pos = Map.sharedInstance.townPosition( town!! )
-                    val screen_pos = screenPosition( scene_pos )
-                    //_scrollView.scrollY = screen_pos.y
-                    //_scrollView.scrollX = screen_pos.x
-                    _scrollView.scrollTo(screen_pos.x, screen_pos.y)
-                    townSelected( townControllerForModel( town!! ) )
-                } else {
-                    startTracking( this._selectedBoat!! )
-                    plotCourseForBoat ( this._selectedBoat!! )
-                    _cargoButton.visibility = View.VISIBLE
-                }
+        if (town != null) {
+            val scene_pos = Map.instance.townPosition(town)
+            val screen_pos = screenPosition(scene_pos)
+            _scrollView.scrollTo(screen_pos.x, screen_pos.y)
+            _scene.root.position = -Point(screen_pos.x, screen_pos.y) + _scene.padding
+            townSelected(townControllerForModel(town))
+        } else {
+            startTracking(this._selectedBoat!!)
+            plotCourseForBoat(this._selectedBoat!!)
+            _cargoButton.visibility = View.VISIBLE
+        }
     }
 
-    fun boatSelected ( index: Int )
-    {
+    fun boatSelected(index: Int) {
         val boat = _boatControllers[index]
         boatSelected(boat)
     }
 
-    fun startTracking ( boat: BoatController )
-    {
+    fun startTracking(boat: BoatController) {
         stopTracking()
         _trackBoat = true
-        val action = CanvasActionRepeat(CanvasActionCutom(1000, { node,dt->
+        val action = CanvasActionRepeat(CanvasActionCutom(1000, { node, dt ->
             val pos = node.position
             val screen_pos = this.screenPosition(pos)
-            this._scrollView.scrollTo(screen_pos.x,screen_pos.y)
+            this._scrollView.scrollTo(screen_pos.x, screen_pos.y)
         }))
         _selectedBoat!!.view.sprite.run(action, "track")
     }
 
-    fun townSelected ( town: TownController ) {
-        if ( mode == Mode.plot && town.state == TownController.State.unselected ) {
+    fun townSelected(town: TownController) {
+        if (mode == Mode.plot && town.state == TownController.State.unselected) {
             _scene.clearPlot()
-            var townCtrl : TownController?
+            val townCtrl: TownController?
             _boatCourse.add(town)
             if (_boatCourse.size == 1) {
-                townCtrl = townControllerForModel( _selectedBoat?.model?.town!! )
-                _cargoButton?.visibility = View.VISIBLE
-                _sailButton?.visibility = View.INVISIBLE
+                townCtrl = townControllerForModel(_selectedBoat?.model?.town!!)
+                _cargoButton.visibility = View.VISIBLE
+                _sailButton.visibility = View.INVISIBLE
                 cancelButton.visibility = View.VISIBLE
             } else {
-                _cargoButton?.visibility = View.INVISIBLE
-                _sailButton?.visibility = View.VISIBLE
+                _cargoButton.visibility = View.INVISIBLE
+                _sailButton.visibility = View.VISIBLE
                 townCtrl = town
-                for (i in 1.._boatCourse.size - 1) {
-                    _scene.plotRouteToTown( _boatCourse[i-1], _boatCourse[i], "nav_plotted.png" )
+                for (i in 1 until _boatCourse.size) {
+                    _scene.plotRouteToTown(_boatCourse[i - 1], _boatCourse[i], "nav_plotted.png")
                 }
             }
-            plotRoutesForTown( townCtrl!! ,(this._selectedBoat!!.model.endurance).toFloat())
+            plotRoutesForTown(townCtrl, (this._selectedBoat!!.model.endurance).toFloat() * 0.5f)
             town.state = TownController.State.selected
         } else if (mode == Mode.build || mode == Mode.buy) {
             val boat = BoatModel(_buildType!!, BoatModel.makeName(), town.model)
             if (mode == Mode.build) {
-                User.sharedInstance.purchaseBoatWithParts(boat, _buildParts)
+                User.instance.purchaseBoatWithParts(boat, _buildParts)
             } else {
-                User.sharedInstance.purchaseBoatWithMoney(boat, _buildParts)
+                User.instance.purchaseBoatWithMoney(boat, _buildParts)
             }
-            User.sharedInstance.save()
+            //User.instance.save()
             //tabBar(enabled: true)
             reset()
         } else {
+            (activity as MapActivity).swapFragment(null, town)
             //performSegue( withIdentifier: "TownSegue", sender: town )
         }
     }
@@ -386,18 +420,16 @@ companion object {
         }
     }*/
 
-    fun stopTracking ( )
-    {
+    fun stopTracking() {
         if (_trackBoat == true && this._selectedBoat != null) {
             this._selectedBoat!!.view.sprite.removeAction("track")
-            _cargoButton?.visibility = View.INVISIBLE
+            _cargoButton.visibility = View.INVISIBLE
         }
         _trackBoat = false
     }
 
-    fun screenPosition ( position: Point ) : Point
-    {
-        var new_position = Point(position)
+    fun screenPosition(position: Point): Point {
+        val new_position = Point(position)
         val pad = this._scene.padding
         //new_position.y = -new_position.y
         new_position.x += pad.width
@@ -413,12 +445,9 @@ companion object {
     }*/
 
 
-    fun boatArrived( boat: BoatController )
-    {
-        boat.view.sprite.hidden = true
+    fun boatArrived(boat: BoatController) {
         val town = townControllerForModel(boat.model.town!!)
         town.updateView()
-
     }
 
     /*override func prepare(for segue: UIStoryboardSegue, sender: Any?)
@@ -433,41 +462,41 @@ companion object {
     }*/
 
 
+    /*extension MapViewController : UIScrollViewDelegate
+    {
 
+        func scrollViewDidScroll(_ scrollView: UIScrollView) {
+            scene.scrollViewDidScroll(scrollView)
+        }
 
-/*extension MapViewController : UIScrollViewDelegate
-{
-
-    func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        scene.scrollViewDidScroll(scrollView)
+        func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+            stopTracking()
+        }
     }
-
-    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
-        stopTracking()
-    }
-}
-    fun unwindBoatSold(segue:UIStoryboardSegue) {
-        reset()
-    }
-
-    fun unwindToMap(fragment: Fragment) {
+        fun unwindBoatSold(segue:UIStoryboardSegue) {
+            reset()
+        }
+    */
+    fun buildBoat(fragment: androidx.fragment.app.Fragment) {
         reset()
         toolTip.visibility = View.VISIBLE
-        cancelButton.visibility = View.VISIBLE
-        if (fragment is BoatListFragment) {
-            _buildType = source.boatType
-            _buildParts = source.parts
-        } else if let source = segue.source as? MarketViewController {
-            _buildType = source.selectedPart?.boat
-            _buildParts = [source.selectedPart!]
+        activity?.navigation?.visibility = View.GONE
+        //cancelButton.visibility = View.VISIBLE
+        if (fragment is BoatInfoFragment) {
+            _buildType = fragment.boatType
+            _buildParts = fragment.parts
+        } else if (fragment is MarketFragment) {
+            _buildType = fragment.selectedPart?.boat
+            _buildParts = arrayListOf(fragment.selectedPart!!)
         }
-        val harborType = TownModel.HarbourSize(BoatModel.boatData(_buildType!, BoatModel.BoatIndex.harbourType) as! String)
+        val harborType =
+            TownModel.HarbourSize.valueOf(BoatModel.boatConfig(_buildType!!, BoatModel.BoatIndex.harbourType) as String)
         for (town in _townControllers) {
-            if (harborType! > town.model.harbour) {
-            town.state = .blocked
+            if (harborType < town.model.harbour) {
+                town.state = TownController.State.blocked
+            }
         }
-        }
-    }*/
+    }
 
 
     fun sailButtonPressed() {
@@ -477,8 +506,7 @@ companion object {
             val controller = townControllerForModel(_selectedBoat!!.model.town!!)
             _selectedBoat!!.sail()
             controller.updateView()
-            var mp = MediaPlayer.create(activity,R.raw.ship_bell)
-            mp.start()
+            Audio.instance.queueSound(R.raw.ship_bell)
 
             /*UNUserNotificationCenter.current().getPendingNotificationRequests { (notifications:[UNNotificationRequest]) in
                 var pendingnotify = false
@@ -502,7 +530,6 @@ companion object {
                     UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "BoatArrival", content: content, trigger: trigger), withCompletionHandler: nil)
                 }
             }*/
-            User.sharedInstance.save()
             reset()
         }
     }
@@ -512,27 +539,28 @@ companion object {
         if (mode == Mode.plot) {
             if (_boatCourse.size > 1) {
                 var town = _boatCourse.popLast()
-                town?.state = TownController.State.unselected
-                        town = _boatCourse.popLast()
-                town?.state = TownController.State.unselected
-                        townSelected( town!! )
-            }  else {
+                town.state = TownController.State.unselected
+                town = _boatCourse.popLast()
+                town.state = TownController.State.unselected
+                townSelected(town)
+            } else {
                 val town = _boatCourse.first()
-                town?.state = TownController.State.unselected
+                town.state = TownController.State.unselected
                 reset()
             }
-        } else if (mode == Mode.build ||  mode == Mode.buy) {
+        } else if (mode == Mode.build || mode == Mode.buy) {
             toolTip.visibility = View.INVISIBLE
             _cancelButton.visibility = View.INVISIBLE
             //tabBarController?.selectedIndex = 2
             //tabBar(enabled: true)
         }
     }
-    fun applicationWillEnterBackground () {
+
+    fun applicationWillEnterBackground() {
 
     }
 
-    fun applicationWillEnterForeground () {
+    fun applicationWillEnterForeground() {
         if (mode == Mode.track) {
             startTracking(_selectedBoat!!)
         }
@@ -544,16 +572,18 @@ companion object {
 
     fun reset() {
         toolTip.visibility = View.INVISIBLE
+        activity?.navigation?.visibility = View.VISIBLE
         for (town in _townControllers) {
             town.reset()
         }
-        _cargoButton?.visibility = View.INVISIBLE
-        _cancelButton?.visibility = View.INVISIBLE
-        _sailButton?.visibility = View.INVISIBLE
+        _cargoButton.visibility = View.INVISIBLE
+        _cancelButton.visibility = View.INVISIBLE
+        _sailButton.visibility = View.INVISIBLE
         _selectedBoat = null
         _boatCourse.clear()
         _buildParts.clear()
         _scene.clearPlot()
         _scene.clearJobMarkers()
     }
+
 }

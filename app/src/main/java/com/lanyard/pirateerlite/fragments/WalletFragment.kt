@@ -1,16 +1,16 @@
 package com.lanyard.pirateerlite.fragments
 
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import com.lanyard.pirateeronline.R
+import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.singletons.User
+import com.lanyard.pirateerlite.singletons.User.UserObserver
 
-class WalletFragment : Fragment()
+class WalletFragment : androidx.fragment.app.Fragment(), UserObserver
 {
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -24,23 +24,29 @@ class WalletFragment : Fragment()
         _silverLabel = view.findViewById<TextView>(R.id.silverText)
         _xpLabel = view.findViewById<TextView>(R.id.xpText)
         _xpImage = view.findViewById<ImageView>(R.id.xpIcon)
+        User.instance.addObserver(this)
+        goldUpdated( 0,  0)
+        silverUpdated( 0,  0)
+        xpUpdated( 0,  0)
         return view
     }
 
-    fun goldUpdated(oldValue: Int, newValue: Int) {
-        _goldLabel.text = User.sharedInstance.gold.toString()
+    override fun goldUpdated(oldValue: Int, newValue: Int) {
+        _goldLabel.text = User.instance.gold.toString()
     }
 
-    fun silverUpdated(oldValue: Int, newValue: Int) {
-        _silverLabel.text = User.sharedInstance.silver.toString()
+    override fun silverUpdated(oldValue: Int, newValue: Int) {
+        _silverLabel.text = User.instance.silver.toString()
     }
 
-    fun xpUpdated(oldValue: Int, newValue: Int) {
-        val user = User.sharedInstance
-        _xpLabel.text = (user.xpForLevel(user.level) - user.xp).toString()
+    override fun xpUpdated(oldValue: Int, newValue: Int) {
+        val user = User.instance
+        var levelXp = user.xpForLevel(user.level)
+        var xp = user.xp
+        _xpLabel.text = ( levelXp - xp ).toString()
         val level_image = (User.rankValues[User.rankKeys[user.level]]!![0]).toString()
-        val id = activity!!.resources.getIdentifier(level_image,"drawable","R" )
-        _xpImage.setImageDrawable(activity!!.resources.getDrawable(id,null))
+        val id = activity?.resources?.getIdentifier(level_image,"drawable",context?.getPackageName())
+        _xpImage.setImageDrawable(activity!!.resources.getDrawable(id!!,null))
     }
 
 

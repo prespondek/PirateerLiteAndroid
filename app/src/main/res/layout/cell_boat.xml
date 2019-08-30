@@ -1,32 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto" android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content">
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                   xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                   xmlns:tools="http://schemas.android.com/tools"
+                                                   android:orientation="vertical"
+                                                   android:layout_width="match_parent"
+                                                   android:layout_height="wrap_content"
+                                                   android:background="?android:attr/selectableItemBackground"
+                                                   android:animateLayoutChanges="true">
 
     <LinearLayout
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        <ImageView
-                android:layout_width="0dp"
-                android:layout_height="match_parent" app:srcCompat="@drawable/gold_piece"
-                android:id="@+id/boatImg"
-                android:layout_weight="0.2"/>
-        <LinearLayout
-                android:orientation="vertical"
+            android:layout_height="0dp" app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" android:id="@+id/linearLayout2"
+            app:layout_constraintHorizontal_bias="0.0" app:layout_constraintVertical_bias="0.0">
+        <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent" android:layout_weight="0.8">
+
+        </FrameLayout>
+        <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent" android:layout_weight="2">
+
             <TextView
-                    android:text="TextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp" android:id="@+id/boatName" android:layout_weight="0.5"
-                    android:gravity="bottom|center_horizontal" android:textSize="18sp"/>
-            <TextView
-                    android:text="TextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp" android:id="@+id/boatStatus" android:layout_weight="0.5"
-                    android:gravity="center_horizontal|top"/>
-        </LinearLayout>
+                    android:text="@string/emptyslot"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" android:id="@+id/emptyLabel"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginBottom="8dp" android:layout_marginEnd="8dp" android:textSize="16sp"
+                    android:visibility="invisible" android:layout_gravity="center_vertical"/>
+        </FrameLayout>
     </LinearLayout>
-</LinearLayout>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            android:id="@+id/boatFrame" app:layout_constraintBottom_toTopOf="@+id/linearLayout2">
+        <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" android:layout_weight="0.8">
+
+            <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" app:srcCompat="@drawable/gold_piece"
+                    android:id="@+id/boatImg"
+            />
+        </FrameLayout>
+        <FrameLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent" android:layout_weight="2">
+
+            <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent" android:id="@+id/linearLayout"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginStart="8dp" android:layout_marginBottom="14dp"
+                    android:layout_marginTop="14dp"
+            >
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp" android:id="@+id/boatName" android:layout_weight="0.5"
+                        android:gravity="bottom|center_horizontal" android:textSize="16sp"
+                        android:textAlignment="viewStart" android:textColor="@android:color/black"
+                        app:autoSizeMaxTextSize="200dp" app:autoSizeMinTextSize="2dp"
+                        app:autoSizeStepGranularity="2dp" app:autoSizeTextType="none"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp" android:id="@+id/boatStatus" android:layout_weight="0.5"
+                        android:gravity="center_horizontal|top" android:textAlignment="viewStart"
+                        app:autoSizeMaxTextSize="200dp" app:autoSizeMinTextSize="2dp"
+                        app:autoSizeStepGranularity="2dp" app:autoSizeTextType="none"/>
+            </LinearLayout>
+        </FrameLayout>
+    </LinearLayout>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginEnd="8dp" app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginStart="8dp" android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent" android:layout_marginTop="8dp"
+            app:layout_constraintTop_toTopOf="parent" android:visibility="invisible" android:id="@+id/moorFrame">
+        <TextView
+                android:text="@string/moor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/textView"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="@+id/linearLayout"
+                app:layout_constraintStart_toStartOf="@+id/linearLayout"
+                android:textSize="18sp"/>
+        <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent" app:srcCompat="@drawable/silver_piece" android:id="@+id/imageView5"
+                android:layout_weight="1" android:adjustViewBounds="true"/>
+        <TextView
+                android:text="TextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" android:id="@+id/mooringCost" android:gravity="center"
+                android:layout_gravity="center_vertical"/>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

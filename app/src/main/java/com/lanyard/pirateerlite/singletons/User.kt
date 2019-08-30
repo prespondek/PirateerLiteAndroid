@@ -1,5 +1,7 @@
 package com.lanyard.pirateerlite.singletons
 
+import android.app.Activity
+import android.content.Context
 import com.lanyard.pirateerlite.models.BoatModel
 import java.util.*
 import kotlin.collections.HashMap
@@ -7,408 +9,460 @@ import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
 import com.google.gson.stream.JsonReader
 import com.google.gson.reflect.TypeToken
-import com.lanyard.pirateerlite.MapActivity
-import com.lanyard.pirateerlite.models.BoatStats
+import com.lanyard.pirateerlite.data.BoatData
+import com.lanyard.pirateerlite.data.StatsData
 import java.io.InputStreamReader
-import java.lang.Math.pow
 import java.lang.Math.random
+import java.lang.ref.WeakReference
+import kotlin.collections.ArrayList
 import kotlin.math.log2
 import kotlin.math.max
+import kotlin.math.pow
 import kotlin.math.roundToInt
+import com.lanyard.pirateerlite.data.UserData
+import kotlinx.coroutines.runBlocking
+import java.lang.NullPointerException
 
-interface UserObserver {
-    fun goldUpdated(oldValue: Int, newValue: Int) {}
-    fun silverUpdated(oldValue: Int, newValue: Int) {}
-    fun xpUpdated(oldValue: Int, newValue: Int) {}
-    fun boatAdded(boat: BoatModel) {}
-    fun boatRemoved(boat: BoatModel) {}
-    fun statsUpdated() {}
-}
 
-class User private constructor() {
+class User private constructor(userData: UserData, statData: Array<StatsData>, boatData: Array<BoatData>) {
     companion object {
         private var _user: User? = null
 
-        val sharedInstance: User
+        private lateinit var userConfig: HashMap<String, Any>
+
+        val boatStatInfo : Array<BoatStatInfo<*>> = arrayOf(
+            BoatStatInfo("maxDistance", {boat-> boat.totalDistance}, {boat-> String.format("%.0fkm", boat.totalDistance / 10)}),
+            BoatStatInfo("SPM", {boat-> boat.SPM}, {boat-> String.format("%.1f", boat.SPM * 10)}),
+            BoatStatInfo("maxProfit",  {boat-> boat.totalSilver}),
+            BoatStatInfo("maxVoyages", {boat-> boat.totalVoyages}))
+
+        fun initialize(context: Context, userData: UserData, statData: Array<StatsData>, boatData: Array<BoatData>) {
+            val gson = Gson()
+            val reader = JsonReader(InputStreamReader(context.assets.open("user_model.json")))
+            userConfig = gson.fromJson<HashMap<String, Any>>(reader, object : TypeToken<HashMap<String, Any>>() {}.type)
+            _user = User(userData, statData, boatData)
+            //_user?._data = data
+        }
+
+        val instance: User
             get() {
-                if (_user != null) {
-                    return _user!!
-                } else {
-
-
-                }
-                _user = User()
+                check(_user != null) { "initialize User first" }
                 return _user!!
             }
 
-        private val userData: HashMap<String, Any>
-
-        init {
-            val gson = Gson()
-            val reader = JsonReader(InputStreamReader(MapActivity.instance.assets.open("user_model.json")))
-            userData = gson.fromJson<HashMap<String, Any>>(reader, object : TypeToken<HashMap<String, Any>>() {}.type)
-        }
-
         val boatKeys: ArrayList<String>
             get() {
-                return userData["Boats"] as ArrayList<String>
+                return userConfig["Boats"] as ArrayList<String>
             }
         val rankKeys: ArrayList<String>
             get() {
-                return userData["RankKeys"] as ArrayList<String>
+                return userConfig["RankKeys"] as ArrayList<String>
             }
         val rankValues: LinkedTreeMap<String, ArrayList<Any>>
             get() {
-                return userData["RankValues"] as LinkedTreeMap<String, ArrayList<Any>>
+                return userConfig["RankValues"] as LinkedTreeMap<String, ArrayList<Any>>
             }
         val exchangeRate: Int
             get() {
-                return userData["ExchangeRate"] as Int
+                return (userConfig["ExchangeRate"] as Double).toInt()
             }
         val jobInterval: Long
             get() {
-                return userData["JobTime"] as Long
+                return (userConfig["JobTime"] as Double * 1000).toLong()
             }
         val marketInterval: Long
             get() {
-                return userData["MarketTime"] as Long
+                return (userConfig["MarketTime"] as Double * 1000).toLong()
             }
     }
-        enum class MarketItem(val index: Int) {
-            hull(0),
-            rigging(1),
-            sails(2),
-            cannon(3),
-            boat(4);
 
-            companion object {
-                fun withIndex(idx: Int): MarketItem {
-                    val arr = arrayOf(hull, rigging, sails, cannon, boat)
-                    return arr[idx]
-                }
+    // Dumb shit because kotlin requires secondary constructors be called inline with the primary
+    class  BoatStatInfo <out T : Number> {
+        val statName : String
+        val statData : (BoatModel) -> T
+        val statString: (BoatModel) -> String get() = _statString
+        val statComp: (BoatModel,BoatModel) -> Boolean get() = _statComp
+
+        private lateinit var _statString: (BoatModel) -> String
+        private lateinit var _statComp: (BoatModel,BoatModel) -> Boolean
+
+        constructor(statName : String,
+                    statData : (BoatModel) -> T,
+                    statString: (BoatModel) -> String,
+                    statComp: (BoatModel,BoatModel) -> Boolean) {
+            this.statName = statName
+            this.statData = statData
+            this._statComp = statComp
+            this._statString = statString
+        }
+        constructor(statName : String,
+                    statData : (BoatModel) -> T) {
+            this.statName = statName
+            this.statData = statData
+            delegateConstructor()
+        }
+
+        constructor(statName : String,
+                    statData : (BoatModel) -> T,
+                    statString: (BoatModel) -> String) {
+            this.statName = statName
+            this.statData = statData
+            this._statString = statString
+            delegateConstructor()
+        }
+
+        fun delegateConstructor () {
+            if (!this::_statComp.isInitialized) {
+                this._statComp = {boat1,boat2-> this.statData(boat1).toDouble() > this.statData(boat2).toDouble()}
+            }
+            if (!this::_statString.isInitialized) {
+                this._statString = {boat-> statData(boat).toString()}
             }
         }
 
-        class Stats {
-            var distance: Double = 0.0
-            var voyages: Int = 0
-            var silver: Int = 0
-            var gold: Int = 0
-            var time: Long = 0
-            var boatsSold: Int = 0
-            var boatStats = HashMap<String, BoatArchive>()
+    }
 
-            init {
-                boatStats["maxDistance"] = BoatArchive()
-                boatStats["maxProfit"] = BoatArchive()
-                boatStats["SPM"] = BoatArchive()
-                boatStats["maxVoyages"] = BoatArchive()
+    interface UserObserver {
+        fun goldUpdated     (oldValue: Int, newValue: Int) {}
+        fun silverUpdated   (oldValue: Int, newValue: Int) {}
+        fun xpUpdated       (oldValue: Int, newValue: Int) {}
+        fun boatAdded       (boat: BoatModel) {}
+        fun boatRemoved     (boat: BoatModel) {}
+        fun statsUpdated    () {}
+    }
+
+    enum class MarketItem(val index: Int) {
+        hull    (0),
+        rigging (1),
+        sails   (2),
+        cannon  (3),
+        boat    (4);
+
+        companion object {
+            fun withIndex(idx: Int): MarketItem {
+                val arr = arrayOf(hull, rigging, sails, cannon, boat)
+                return arr[idx]
             }
         }
+    }
 
-        class BoatArchive {
-            var name: String
-            var type: String
-            var stats: BoatStats
-
-            constructor() {
-                name = "---"
-                type = ""
-                stats = BoatStats()
-            }
-
-            constructor (boat: BoatModel) {
-                name = boat.name
-                type = boat.type
-                stats = boat.stats
-            }
-        }
-
-        class BoatPart(boat: String, item: MarketItem) {
-            var boat: String
-            var item: MarketItem
-
-            init {
-                this.boat = boat
-                this.item = item
-            }
-
-            override fun equals(other: Any?): Boolean {
-                var rhs = other as? BoatPart
-                if (rhs == null) return false
-                return boat == rhs.boat && item == rhs.item
-            }
-        }
-
-        var parts: ArrayList<BoatPart>
-        private var _market: ArrayList<BoatPart>
-        var boatSlots: Int
-        private var _stats: Stats
-        private var _boatModels: ArrayList<BoatModel>
-        private var _observers = ArrayList<UserObserver>()
-        private var _marketDate: Date
-        private var _jobDate: Date
-        private var _startDate: Date
-
-        var gold: Int = 0
-            set (value) {
-                var oldvalue = field
-                field = value
-                if (oldvalue != field) {
-                    for (container in _observers) {
-                        container.goldUpdated(oldvalue, field)
-                    }
-                }
-            }
-
-        var silver: Int = 0
-            set (value) {
-                var oldvalue = field
-                field = value
-                if (oldvalue != field) {
-                    for (container in _observers) {
-                        container.silverUpdated(oldvalue, field)
-                    }
-                }
-            }
-        var xp: Int = 0
-            set (value) {
-                var oldvalue = field
-                field = value
-                for (container in _observers) {
-                    container.xpUpdated(oldvalue, silver)
-                }
-                if (levelForXp(oldvalue) != levelForXp(field)) {
-                    /*val alert = UIAlertController("Level Up", "Newer boats are available for you to build. Shipyard and market have been updated." , UIAlertController.Style.alert)
-                    alert.addAction(UIAlertAction("Continue", .default, null))
-                    AlertQueue.shared.pushAlert(alert, onPresent: {
-                        AudioManager.sharedInstance.playSound(sound: "level_up")
-                    })*/
-                }
-            }
+    class BoatPart(boat: String, item: MarketItem) {
+        var boat: String
+        var item: MarketItem
 
         init {
-            this._stats = Stats()
-            this.gold = 8
-            this.silver = 4000
-            this.xp = 0
-            this.boatSlots = 4
-            this.parts = ArrayList<BoatPart>()
-            this._market = ArrayList<BoatPart>()
-            this._marketDate = Date()
-            this._jobDate = Date()
-            this._startDate = Date()
-            val map = Map.sharedInstance
-            _boatModels = ArrayList<BoatModel>()
-            this.updateMarket()
-            var boat = BoatModel("raft", BoatModel.makeName(), map.towns[1])
-            _boatModels.add(boat)
-            boat = BoatModel("raft", BoatModel.makeName(), map.towns[4])
-            _boatModels.add(boat)
-            boat = BoatModel("skiff", BoatModel.makeName(), map.towns[1])
-            _boatModels.add(boat)
-            map.towns[1].level = 1
-            map.towns[4].level = 1
-            map.towns[5].level = 1
-            //map.towns[9].level = 1
-            map.towns[43].level = 1
+            this.boat = boat
+            this.item = item
         }
 
-        fun save() {
+        override fun equals(other: Any?): Boolean {
+            var rhs = other as? BoatPart
+            if (rhs == null) return false
+            return boat == rhs.boat && item == rhs.item
         }
+    }
 
-        val levelXp: Int
-            get() {
-                return xpForLevel(this.level)
+    private var _market: ArrayList<BoatPart>
+    private var _stats: MutableList<StatsData>
+    private var _data : UserData
+    private var _boatModels: ArrayList<BoatModel>
+    private var _observers = ArrayList<WeakReference<UserObserver>>()
+
+    init {
+        this._data = userData
+        this._stats = statData.toMutableList()
+        this._market = ArrayList<BoatPart>()
+        val map = Map.instance
+        _boatModels = ArrayList<BoatModel>()
+        this.updateMarket()
+        for (boat in boatData) {
+            _boatModels.add(BoatModel(boat))
+        }
+    }
+
+    var gold: Int
+        get() = _data.gold
+        set (value) {
+            var oldvalue = _data.gold
+            _data.gold = value
+            if (oldvalue != _data.gold) {
+                cleanObservers()
+                for (container in _observers) {
+                    container.get()?.goldUpdated(oldvalue, _data.gold)
+                }
             }
-
-        val startDate: Date
-            get() {
-                return _startDate
-            }
-
-        fun xpForLevel(level: Int): Int {
-            return (pow(2.0, ((level + 1) * 1500.0))).toInt()
         }
 
-        val level: Int
-            get() {
-                return levelForXp(this.xp)
+    var silver: Int
+        get() = _data.silver
+        set (value) {
+            var oldvalue = _data.silver
+            _data.silver = value
+            if (oldvalue != _data.silver) {
+                cleanObservers()
+                for (container in _observers) {
+                    container.get()?.silverUpdated(oldvalue, _data.silver)
+                }
             }
-
-        fun levelForXp(xp: Int): Int {
-            return (max(0.0f, log2(xp.toFloat() / 1500))).toInt()
         }
-
-
-        fun statsUpdated() {
+    var xp: Int
+        get() = _data.xp
+        set (value) {
+            var oldvalue = _data.xp
+            _data.xp = value
+            cleanObservers()
             for (container in _observers) {
-                container.statsUpdated()
+                container.get()?.xpUpdated(oldvalue, silver)
+            }
+            if (levelForXp(oldvalue) != levelForXp(_data.xp)) {
+                /*val alert = UIAlertController("Level Up", "Newer boats are available for you to build. Shipyard and market have been updated." , UIAlertController.Style.alert)
+                alert.addAction(UIAlertAction("Continue", .default, null))
+                AlertQueue.shared.pushAlert(alert, onPresent: {
+                    AudioManager.sharedInstance.playSound(sound: "level_up")
+                })*/
             }
         }
 
-        fun addMoney(gold: Int, silver: Int) {
-            this.gold += gold
-            this.silver += silver
-            if (gold != 0 || silver != 0) {
-                //AudioManager.sharedInstance.playSound(sound:"silver_large")
-            }
-            stats.silver += silver
-            stats.gold += gold
-            statsUpdated()
+    val boatsSold get() = _data.boatsSold
+    val distance  get() = _data.distance
+    val voyages   get() = _data.voyages
+    val stats     get() = _stats
+    val parts     get() = _data.parts
+
+    var boatSlots: Int
+        get() = _data.boatSlots
+        set (value) { _data.boatSlots = value }
+
+    fun save() = runBlocking {
+        Game.instance.db.userDao().update(_data)
+    }
+
+    val levelXp: Int
+        get() {
+            return xpForLevel(this.level)
         }
 
+    val startDate: Date
+        get() {
+            return _data.startDate
+        }
 
-        val boatSlotCost: Int
-            get() {
-                var va = 1024
-                for (x in 0..boatSlots - 1) {
-                    va += va / 2
+    fun xpForLevel(level: Int): Int {
+        return (level + 1).toDouble().pow(2).toInt() * 1500
+    }
+
+    val level: Int
+        get() {
+            return levelForXp(this.xp)
+        }
+
+    fun levelForXp(xp: Int): Int {
+        if (xp == 0) {
+            return 0
+        }
+        return max(1, log2(xp.toFloat() / 1500).toInt())
+    }
+
+
+    fun statsUpdated() {
+        cleanObservers()
+        for (container in _observers) {
+            container.get()?.statsUpdated()
+        }
+    }
+
+    fun addMoney(gold: Int, silver: Int) {
+        this.gold += gold
+        this.silver += silver
+        statsUpdated()
+    }
+
+
+    val boatSlotCost: Int
+        get() {
+            var va = 1024
+            for (x in 0 until _data.boatSlots) {
+                va += va / 2
+            }
+            return va
+        }
+
+    fun boatArrived(boat: BoatModel) {
+        _data.distance += boat.courseDistance
+        _data.time += boat.courseTime
+        _data.voyages += 1
+
+        for (stat in boatStatInfo) {
+            var statData = getStat(stat.statName, boat)
+            if (statData != null && stat.statComp(boat,statData.second)) {
+                statData.first.boatData = boat.data
+                runBlocking {
+                    Game.instance.db.statsDao().update(statData.first)
                 }
-                return va
-            }
-
-        val stats: Stats
-            get() {
-                return _stats
-            }
-
-        fun boatArrived(boat: BoatModel) {
-            stats.distance += boat.courseDistance
-            stats.time += boat.courseTime
-            stats.voyages += 1
-            if (boat.stats.totalDistance > stats.boatStats["maxDistance"]!!.stats.totalDistance) {
-                stats.boatStats["maxDistance"] = BoatArchive(boat)
-            }
-            if (boat.stats.SPM > stats.boatStats["SPM"]!!.stats.SPM) {
-                stats.boatStats["SPM"] = BoatArchive(boat)
-            }
-            if (boat.stats.totalSilver > stats.boatStats["maxProfit"]!!.stats.totalSilver) {
-                stats.boatStats["maxProfit"] = BoatArchive(boat)
-            }
-            if (boat.stats.totalVoyages > stats.boatStats["maxVoyages"]!!.stats.totalVoyages) {
-                stats.boatStats["maxVoyages"] = BoatArchive(boat)
-            }
-            statsUpdated()
-        }
-
-        fun addBoat(boat: BoatModel) {
-            _boatModels.add(boat)
-            for (observer in _observers) {
-                observer.boatAdded(boat)
             }
         }
+        statsUpdated()
+    }
 
-        fun canBuildBoat(type: String): Boolean {
-            var parts = BoatModel.boatData(type, BoatModel.BoatIndex.part_amount) as Array<Int>
-            for (i in 0..parts.size - 1) {
-                val currPart = BoatPart(type, i as MarketItem)
-                val tparts = User.sharedInstance.parts.filter { it == currPart }
-                val numParts = tparts.size
-                val targetParts = parts[i]
-                if (numParts < targetParts) {
-                    return false
+    fun getStat(stat: String, default: BoatModel? = null) : Pair<StatsData,BoatModel>? {
+        var statData = _stats.find { it.stat == stat }
+        if ( statData == null ) {
+            if ( default != null ) {
+                statData = StatsData(stat, default.data)
+                _stats.add(statData)
+                runBlocking {
+                    Game.instance.db.statsDao().insert(statData)
                 }
+            } else {
+                return null
             }
-            return true
+        }
+        var statBoat = boats.find { it.id == statData.boatData.id } ?: throw NullPointerException()
+        return Pair<StatsData,BoatModel>(statData, statBoat)
+    }
+
+    fun addBoat(boat: BoatModel) {
+        _boatModels.add(boat)
+        runBlocking {
+            boat.data.id = Game.instance.db.boatDao().insert(boat.data)
+        }
+        cleanObservers()
+        for (observer in _observers) {
+            observer.get()?.boatAdded(boat)
+        }
+    }
+
+    fun canBuildBoat(type: String): Boolean {
+        var parts = BoatModel.boatConfig(type, BoatModel.BoatIndex.part_amount) as List<Int>
+        for (i in 0 until parts.size) {
+            val currPart = BoatPart(type, MarketItem.withIndex(i))
+            val tparts = User.instance.parts.filter { it == currPart }
+            val numParts = tparts.size
+            val targetParts = parts[i]
+            if (numParts < targetParts) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private fun cleanObservers() {
+        _observers.removeAll { it.get() == null }
+    }
+
+    fun boatAtIndex(idx: Int): BoatModel? {
+        if (_boatModels.size > idx) {
+            return _boatModels[idx]
+        }
+        return null
+    }
+
+    val numBoats: Int
+        get() {
+            return _boatModels.size
         }
 
-        fun boatAtIndex(idx: Int): BoatModel? {
-            if (_boatModels.size > idx) {
-                return _boatModels[idx]
-            }
-            return null
+    val marketDate: Date
+        get() {
+            var diff = Date().time - _data.marketDate.time
+            diff /= marketInterval
+            _data.marketDate = Date(_data.marketDate.time + diff * User.marketInterval)
+            return _data.marketDate
         }
 
-        val numBoats: Int
-            get() {
-                return _boatModels.size
-            }
+    val jobDate: Date
+        get() {
+            var diff = Date().time - _data.jobDate.time
+            diff /= jobInterval
+            _data.jobDate = Date(_data.jobDate.time + diff * User.jobInterval)
+            return _data.jobDate
+        }
 
-        val marketDate: Date
-            get() {
-                var diff = Date().time - _marketDate.time
-                diff /= User.marketInterval
-                return Date(_marketDate.time + diff * User.marketInterval)
-            }
-
-        val jobDate: Date
-            get() {
-                var diff = Date().time - _jobDate.time
-                diff /= User.jobInterval
-                _jobDate = Date(_jobDate.time + diff * User.jobInterval)
-                return _jobDate
-            }
-
-        val market: ArrayList<BoatPart>
-        get(){
+    val market: ArrayList<BoatPart>
+        get() {
             val date = marketDate
-            if (_marketDate != date) {
+            if (_data.marketDate != date) {
                 updateMarket()
-                _marketDate = date
+                _data.marketDate = date
             }
             return _market
         }
 
-        fun removeBoat(boat: BoatModel) {
-            if (boat.town != null) {
-                boat.town!!.removeBoat(boat)
-            }
-            _boatModels.removeAll { it === boat }
-            for (observer in _observers) {
-                observer.boatRemoved(boat)
-            }
-            stats.boatsSold += 1
-            statsUpdated()
+    fun removeBoat(boat: BoatModel) {
+        if (boat.town != null) {
+            boat.town!!.removeBoat(boat)
         }
+        _boatModels.removeAll { it === boat }
+        runBlocking {
+            Game.instance.db.boatDao().delete(boat.data)
+        }
+        /*for (idx in 0 until _boatModels.size) {
+            _boatModels[idx].id = idx
+        }*/
+        cleanObservers()
+        for (observer in _observers) {
+            observer.get()?.boatRemoved(boat)
+        }
+        _data.boatsSold += 1
+        statsUpdated()
+    }
 
-        val boats: ArrayList<BoatModel>
-        get(){
+    val boats: ArrayList<BoatModel>
+        get() {
             return _boatModels
         }
 
-        fun purchaseBoatWithParts(boat: BoatModel, parts: List<BoatPart>) {
-            for (part in parts) {
-                this.parts.removeAll { it === part }
-            }
-            addBoat(boat)
+    fun purchaseBoatWithParts(boat: BoatModel, parts: List<BoatPart>) {
+        for (part in parts) {
+            this.parts.removeAll { it === part }
         }
+        addBoat(boat)
+    }
 
-        fun purchaseBoatWithMoney(boat: BoatModel, parts: List<BoatPart>) {
-            addMoney(gold - (BoatModel.boatData(boat.type, BoatModel.BoatIndex.boat_cost) as Int), 0)
-            for (part in parts) {
-                this._market.removeAll { it === part }
-            }
-            addBoat(boat)
+    fun purchaseBoatWithMoney(boat: BoatModel, parts: List<BoatPart>) {
+        addMoney(gold - (BoatModel.boatConfig(boat.type, BoatModel.BoatIndex.boat_cost) as Int), 0)
+        for (part in parts) {
+            this._market.removeAll { it === part }
         }
+        addBoat(boat)
+    }
 
-        fun removePart(part: BoatPart) {
-            val idx = _market.indexOfFirst { it === part }
-            if (idx != null) {
-                _market.removeAt(idx)
-            }
+    fun removePart(part: BoatPart) {
+        val idx = _market.indexOfFirst { it === part }
+        if (idx != null) {
+            _market.removeAt(idx)
         }
+    }
 
+    fun addObserver(observer: UserObserver) {
+        _observers.add(WeakReference(observer))
+    }
 
-        private fun updateMarket() {
-            _market.clear()
-            for (key in BoatModel.boatKeys) {
-                val level = BoatModel.boatData(key, BoatModel.BoatIndex.level) as String
-                if (this.level < User.rankKeys.indexOfFirst{ level == it}) { continue }
-                for (i in 0..4) {
-                    val parts = BoatModel.boatData(key, BoatModel.BoatIndex.part_amount) as ArrayList<Int>
+    fun removeObserver(observer: UserObserver) {
+        _observers.removeAll { it.get() === observer }
+    }
 
-                    if (random().roundToInt()  == 0) {
-                        if (i < 4) {
-                            val num_parts = parts[i]
-                            if (num_parts == 0) {
-                                continue
-                            }
+    private fun updateMarket() {
+        _market.clear()
+        for (key in BoatModel.boatKeys) {
+            val level = BoatModel.boatConfig(key, BoatModel.BoatIndex.level) as String
+            if (this.level < User.rankKeys.indexOfFirst { level == it }) {
+                continue
+            }
+            for (i in 0 until 4) {
+                val parts = BoatModel.boatConfig(key, BoatModel.BoatIndex.part_amount) as ArrayList<Int>
+
+                if (random().roundToInt() == 0) {
+                    if (i < 4) {
+                        val num_parts = parts[i]
+                        if (num_parts == 0) {
+                            continue
                         }
-                        val part = BoatPart(key, MarketItem.withIndex(i))
-                        _market.add(part)
                     }
+                    val part = BoatPart(key, MarketItem.withIndex(i))
+                    _market.add(part)
                 }
             }
         }
     }
+}

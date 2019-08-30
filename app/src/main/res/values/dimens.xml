@@ -2,4 +2,11 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="town_label_size">20dp</dimen>
+    <dimen name="town_label_offset">32dp</dimen>
+    <dimen name="town_label_stroke">2dp</dimen>
+    <dimen name="boat_counter_label_size">18dp</dimen>
+    <dimen name="boat_range_stroke_size">1dp</dimen>
+    <dimen name="money_label_size">18dp</dimen>
+    <dimen name="money_label_stroke">1dp</dimen>
 </resources>

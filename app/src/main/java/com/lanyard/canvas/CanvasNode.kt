@@ -1,41 +1,89 @@
+
+
 package com.lanyard.canvas
-
-import android.graphics.Canvas
-import android.graphics.Point
-import android.graphics.PointF
-import android.graphics.Rect
+import android.graphics.*
 import android.util.DisplayMetrics
-import android.util.Size
-import android.util.SizeF
 import com.lanyard.helpers.plus
+import com.lanyard.canvas.Size
+import java.util.Collections.synchronizedList
+import java.util.concurrent.CopyOnWriteArrayList
 
 
-open class CanvasNode()
+interface CanvasNodeTransform
+{
+    var position : Point
+    var scale : SizeF
+    var opacity : Float
+
+    fun set(other: CanvasNodeTransform) {
+        position = other.position
+        scale = other.scale
+        opacity = other.opacity
+    }
+
+    fun transform (other: CanvasNodeTransform) {
+        position += other.position
+        scale *= other.scale
+        opacity *= other.opacity
+    }
+
+}
+
+data class CanvasNodeTransformData(override var position : Point,
+                          override var scale : SizeF,
+                          override var opacity: Float) : CanvasNodeTransform
+{
+    constructor(other: CanvasNodeTransform) : this(other.position, other.scale, other.opacity)
+    constructor() : this(Point(0,0), SizeF(1.0f,1.0f), 1.0f)
+    init {
+
+    }
+
+    fun  transformed (other: CanvasNodeTransform) : CanvasNodeTransformData {
+        return CanvasNodeTransformData(
+            position + other.position,
+            scale * other.scale,
+            opacity * other.opacity)
+    }
+}
+
+open class CanvasNode() : CanvasNodeTransform
 {
     companion object {
-        val density : Float
-        get() {
-            return DisplayMetrics.DENSITY_DEVICE_STABLE.toFloat() / DisplayMetrics.DENSITY_DEFAULT.toFloat()
-        }
+        var debugBounds = false
     }
-    protected val _children : MutableList<CanvasNode>
-    protected val _actions : MutableList<CanvasAction>
-    var position = Point(0,0)
-    open var size = Size(0,0)
+
+    protected val _children = synchronizedList<CanvasNode>(ArrayList())
+    protected val _actions = synchronizedList<CanvasAction>(ArrayList())
+    override var position = Point(0,0)
+    open var magnitude = Size(0,0)
+    override var opacity = 1.0f
+    private var _sortChildren = false
+
+    val size : Size
+    get() {
+        return magnitude * scale
+    }
+
+    var view : CanvasView? = null
+
     var parent : CanvasNode? = null
-    set(value) {
+        set(value) {
         if ( field == value ) { return }
         if ( field != null ) {
             field!!._children.removeAll { it == this }
+            this.view = null
         }
         if ( value != null) {
             value!!._children.add(this)
+            this.view = value.view
         }
         field = value
     }
 
-    var anchor = PointF(0.5f,0.5f)
-    var scale = SizeF(1.0f,1.0f)
+    open var anchor = PointF(0.5f,0.5f)
+    override var scale = SizeF(1.0f,1.0f)
+
     var zOrder = 0
     var tag = ""
     var hidden : Boolean = false
@@ -43,10 +91,9 @@ open class CanvasNode()
         field = value
     }
 
-
     init {
-        _children = mutableListOf()
-        _actions = mutableListOf()
+        //_children = mutableListOf()
+        //_actions = mutableListOf()
         hidden = false
     }
 
@@ -55,11 +102,17 @@ open class CanvasNode()
     }
 
     fun addChild( node: CanvasNode ) {
+        _sortChildren = true
         node.parent = this
     }
 
     fun removeAllChildren( ) {
         _children.clear()
+    }
+
+    fun removeChild( node: CanvasNode ) {
+        _sortChildren = true
+        _children.remove(node)
     }
 
     fun removeAction ( tag: String ) {
@@ -71,34 +124,74 @@ open class CanvasNode()
 
 
 
-    open protected fun bounds(pos: Point) : Rect
+    open protected fun bounds(transform: CanvasNodeTransform) : Rect
     {
-        var left = (pos.x + position.x - size.width * scale.width * anchor.x).toInt()
-        var top = (pos.y + position.y - size.height * scale.height * (1-anchor.y)).toInt()
-        var right = (left + size.width * scale.width).toInt()
-        var bottom = (top + size.height * scale.height).toInt()
+        var left =      (transform.position.x + position.x - magnitude.width * scale.width * transform.scale.width * anchor.x).toInt()
+        var top =       (transform.position.y + position.y - magnitude.height * scale.height * transform.scale.height * (1-anchor.y)).toInt()
+        var right =     (left + magnitude.width * scale.width * transform.scale.width).toInt()
+        var bottom =    (top + magnitude.height * scale.height * transform.scale.height).toInt()
         return Rect(left,top,right,bottom)
     }
 
     fun update(dt: Long) {
-        for ( node in _children ) {
-            node.update(dt)
+        synchronized(_actions) {
+            var itr = _actions.iterator()
+            while (itr.hasNext()) {
+                //for (a in _actions) {
+                var a = itr.next()
+                if (a.isValid()) {
+                    if (a.running == false) {
+                        a.start(this)
+                    }
+                    a.update(this, dt)
+                } else {
+                    itr.remove()
+                }
+            }
         }
-        for (a in _actions) {
-            if (a.isValid()) {
-                a.update(this, dt)
+        synchronized(_children) {
+            if (_sortChildren) {
+                _children.sortBy { chlid-> chlid.zOrder }
+                _sortChildren = false
+            }
+            var children = _children.toTypedArray()
+            var itr = children.iterator()
+            while (itr.hasNext()) {
+                var node = itr.next()
+                if (node.parent == this) {
+                    node.update(dt)
+                }
             }
         }
     }
 
-    open fun draw(canvas: Canvas, pos: Point) {
-        for ( node in _children ) {
-            if (node.hidden == true) { continue }
-            node.draw(canvas, position + pos)
+    open fun draw ( canvas: Canvas, transform: CanvasNodeTransformData, view: Rect, timestamp: Long ) {
+        transform.transform(this)
+        synchronized(_children) {
+            var itr = _children.iterator()
+            while (itr.hasNext()) {
+                var node = itr.next()
+                if (node.hidden == true) {
+                    continue
+                }
+                node.draw(canvas, transform.copy(), view, timestamp)
+                if (debugBounds) {
+                    val paint = Paint()
+                    var bounds = node.bounds(transform.copy())
+                    paint.style = Paint.Style.STROKE
+                    paint.strokeWidth = 4.0f
+                    paint.color = Color.parseColor("#ffffffff")
+                    canvas.drawRect(bounds, paint)
+                }
+            }
         }
     }
 
-    fun run ( action: CanvasAction, tag: String? = null ) {
+    fun run ( action: CanvasAction) {
+        run(action,action.tag)
+    }
+
+    fun run ( action: CanvasAction, tag: String? ) {
         _actions.add(action)
         action.tag = tag
     }

@@ -1,5 +1,7 @@
 package com.lanyard.pirateerlite.singletons
 
+import android.app.Activity
+import android.content.Context
 import android.graphics.Point
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -9,6 +11,7 @@ import com.lanyard.library.Graph
 import com.lanyard.library.Vertex
 import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.controllers.JobController
+import com.lanyard.pirateerlite.data.TownData
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.models.WorldNode
 import java.io.InputStreamReader
@@ -16,15 +19,21 @@ import java.io.InputStreamReader
 
 class Map {
     val graph = Graph<WorldNode>()
-    var towns: ArrayList<TownModel>
-
+    var _towns: ArrayList<TownModel>
+    val towns: List<TownModel>
+    get() {return _towns}
     companion object {
         private var _map: Map? = null
-        fun init(scale: Float) {
+        fun initialize(context: Context, config: HashMap<String,Any>, data: Array<TownData>, scale: Float) {
             _map = Map()
-            _map!!.setup(scale)
+            _map!!.setup(context, config, data, scale)
         }
-        val sharedInstance: Map
+        fun loadConfig (context: Context): HashMap<String, Any> {
+            val gson = Gson()
+            val reader = JsonReader(InputStreamReader (context.assets.open("map_model.json")))
+            return gson.fromJson<HashMap<String, Any>>(reader, object : TypeToken<HashMap<String, Any>>() {}.type)
+        }
+        val instance: Map
             get() {
                 if (_map != null) {
                     return _map!!
@@ -91,10 +100,10 @@ throw ExceptionInInitializerError()
             extra: Edge<WorldNode>? = null
         ): MutableList<List<Edge<WorldNode>>> {
             var start = vert
-            var parts = mutableListOf<List<Edge<WorldNode>>>()
-            var stem = mutableListOf<Edge<WorldNode>>()
+            val parts = mutableListOf<List<Edge<WorldNode>>>()
+            val stem = mutableListOf<Edge<WorldNode>>()
             if (extra != null) {
-                stem.add(extra!!)
+                stem.add(extra)
             }
             while (!path.isEmpty()) {
                 val joining = start.outEdges.intersect(path)
@@ -132,15 +141,11 @@ throw ExceptionInInitializerError()
     }
 
     init {
-        this.towns = ArrayList<TownModel>()
+        _towns = ArrayList<TownModel>()
     }
 
 
-    fun setup(scale : Float) {
-        val gson = Gson()
-        val reader = JsonReader(InputStreamReader (MapActivity.instance.assets.open("map_model.json")))
-        val config = gson.fromJson<HashMap<String, Any>>(reader, object : TypeToken<HashMap<String, Any>>() {}.type)
-
+    fun setup(context: Context, config: HashMap<String,Any>, data: Array<TownData>, scale : Float) {
         val vertexConfig =  config["Vertices"]      as ArrayList<ArrayList<Int>>
         val edgeConfig =    config["Edges"]         as ArrayList<ArrayList<Double>>
         val townInfo =      config["TownInfo"]      as ArrayList<ArrayList<Any>>
@@ -150,23 +155,23 @@ throw ExceptionInInitializerError()
         val jobData =       config["Jobs"]          as ArrayList<ArrayList<String>>
 
 
-        for (i in 0..vertexConfig.size - 1) {
+        for (i in 0 until vertexConfig.size) {
             var vert_data = vertexConfig[i]
             graph.vertices.add(Vertex(WorldNode(), Point((vert_data[0] * scale).toInt(), (-vert_data[1] * scale).toInt())))
         }
         TownModel.setGlobals(townCost, townUpgrade)
-        if (towns.size == 0) {
-            for (i in 0..townInfo.size - 1) {
-                val town = TownModel(townInfo[i])
-                this.towns.add(town)
+        if (_towns.size == 0) {
+            for (i in 0 until data.size) {
+                val town = TownModel(data[i])
+                this._towns.add(town)
             }
         }
-        for (i in 0..towns.size - 1) {
-            towns[i].setup(townInfo[i])
-            graph.vertices[townIndices[i]].data = towns[i]
+        for (i in 0 until _towns.size) {
+            _towns[i].setup(townInfo[i])
+            graph.vertices[townIndices[i]].data = _towns[i]
         }
 
-        for (i in 0..edgeConfig.size - 1) {
+        for (i in 0 until edgeConfig.size) {
             for (j in edgeConfig[i]) {
                 graph.vertices[i].linkVertex(graph.vertices[j.toInt()])
             }

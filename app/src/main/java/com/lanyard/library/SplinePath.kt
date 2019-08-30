@@ -2,6 +2,7 @@ package com.lanyard.library
 
 import android.graphics.Point
 import android.graphics.PointF
+import androidx.core.math.MathUtils.clamp
 
 
 open class SplinePath {
@@ -41,23 +42,26 @@ open class SplinePath {
     }
 
     fun smooth(segments: Int) {
-        for (length in 0..lengths.size - 1) {
+        for (length in 0 until lengths.size) {
             path[length].getUniform((segments * lengths[length]).toInt())
             path[length].getUniform((segments * lengths[length]).toInt())
         }
     }
 
     fun splinePosition(time: Float): PointF {
+        clamp(time,0.0f,1.0f)
         var offset: Float = 0.0F
         var index: Int = 0
-        for (idx in 0..lengths.size - 1) {
-            if (lengths[idx] + offset > time) {
+        for (idx in 0 until lengths.size) {
+            if (lengths[idx] + offset >= time) {
                 index = idx
                 break
             }
             offset += lengths[idx]
         }
-        val realtime = (time - offset) * (1 / lengths[index])
+
+        val realtime = (time - offset) * (1.0f / lengths[index])
         return path[index].evaluateCurve(realtime)
+
     }
 }

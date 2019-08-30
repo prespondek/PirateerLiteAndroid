@@ -1,5 +1,6 @@
 package com.lanyard.pirateerlite.views
 
+import android.graphics.Point
 import android.graphics.PointF
 import com.lanyard.canvas.CanvasActionCutom
 import com.lanyard.canvas.CanvasSprite
@@ -11,6 +12,7 @@ import com.lanyard.helpers.minus
 import com.lanyard.helpers.set
 import java.util.*
 import kotlin.math.PI
+import kotlin.math.min
 import kotlin.math.round
 
 
@@ -39,7 +41,6 @@ class BoatView(boatType: String) : SplinePath() {
 
     fun rotate (p0: PointF, p1: PointF) {
         val angle = ((p0 - p1).angle + PI) / (2.0 * PI / 16)
-        println(p0.toString() + " " + p1.toString() + " " + (p1 - p0).angle.toString())
         var frame = round(angle)
         frame += 1
         if (frame > 16) {
@@ -58,7 +59,7 @@ class BoatView(boatType: String) : SplinePath() {
 
 
     fun sail (startTime: Date, duration: Long) {
-        this.duration = duration * 1000
+        this.duration = duration
         this.timer = Date().time - startTime.time
         rotate(
             splinePosition(0.0f),
@@ -68,23 +69,19 @@ class BoatView(boatType: String) : SplinePath() {
 
         smooth((length / 20.0).toInt())
         val action1 = CanvasActionCutom(this.duration, { node, dt ->
-            val currTime = dt.toFloat() / this.duration
-            val pos2 = this.splinePosition(currTime)
-            this.sprite.position.set(pos2)
-        })
-        val action2 = CanvasActionCutom(this.duration, 500, { node, dt ->
-            val currTime = dt.toFloat() / this.duration
-            val nextTime =( dt.toFloat() + 500) / this.duration
-            val pos1 = this.splinePosition(currTime)
+            val currTime = (Date().time - startTime.time).toFloat() / duration
+            val nextTime = min(1.0f, (currTime * this.duration + 500) / this.duration)
+            val pos = this.splinePosition(currTime)
+            this.sprite.position.set(pos)
+            var pos1 = PointF(pos.x,pos.y)
             pos1.y = -pos1.y
             val pos2 = this.splinePosition(nextTime)
             pos2.y = -pos2.y
             rotate(pos2,pos1)
         })
-        action2.action(this.sprite,0)
+        action1.tag = "sail"
+        action1.action(this.sprite,0.0f)
         this.sprite.run(action1)
-        this.sprite.run(action2)
-
     }
 
 }

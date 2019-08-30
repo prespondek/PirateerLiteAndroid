@@ -1,19 +1,25 @@
 package com.lanyard.pirateerlite.models
 
+import android.content.Context
 import android.graphics.Bitmap
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
+import com.google.gson.internal.bind.ArrayTypeAdapter
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.lanyard.canvas.BitmapCache
-import com.lanyard.pirateerlite.MapActivity
+import com.lanyard.pirateerlite.data.BoatData
+import com.lanyard.pirateerlite.data.BoatJobData
+import com.lanyard.pirateerlite.singletons.Game
+import com.lanyard.pirateerlite.singletons.Map
 import com.lanyard.pirateerlite.singletons.User
+import kotlinx.coroutines.runBlocking
 import java.io.InputStreamReader
-import java.lang.Math.max
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-class BoatModel(type: String, name: String) {
+class BoatModel {
     enum class BoatIndex(val index: Int) {
         harbourType(0), distance(1), speed(2), frames(3), min_parts(4), max_parts(5),
         min_crew(6), max_crew(7), hold_width(8), hold_height(9), hold_size(10), parts(11),
@@ -23,53 +29,61 @@ class BoatModel(type: String, name: String) {
 
     companion object {
 
-        private val boatData: HashMap<String, Any>
-        private val boatNames: ArrayList<ArrayList<Any>>
-        var scale : Float = 1.0f
-        set(value) {
-            for (i in boatValues) {
-                var distance = i.value[BoatIndex.distance.index] as Double
-                distance = distance / field * value
-                i.value[BoatIndex.distance.index] = distance
-                var speed = i.value[BoatIndex.speed.index] as Double
-                speed = speed / field * value
-                i.value[BoatIndex.speed.index] = speed
+        private lateinit var boatConfig: HashMap<String, Any>
+        private lateinit var boatNames: ArrayList<ArrayList<Any>>
+        var scale: Float = 1.0f
+            set(value) {
+                for (i in boatValues) {
+                    var distance = i.value[BoatIndex.distance.index] as Double
+                    distance = distance / field * value
+                    i.value[BoatIndex.distance.index] = distance
+                    var speed = i.value[BoatIndex.speed.index] as Double
+                    speed = speed / field * value
+                    i.value[BoatIndex.speed.index] = speed
+                }
+                field = value
             }
-            field = value
-        }
 
-        init {
+        fun initialize(context: Context) {
             val gson = Gson()
             var reader = JsonReader(
-                InputStreamReader (MapActivity.instance.assets.open("boat_model.json")))
-            boatData = gson.fromJson<HashMap<String, Any>>(reader, object : TypeToken<HashMap<String, Any>>() {}.type)
-            reader = JsonReader(InputStreamReader (MapActivity.instance.assets.open("boat_names.json")))
-            boatNames = gson.fromJson<ArrayList<ArrayList<Any>>>(reader, object : TypeToken<ArrayList<ArrayList<Any>>>() {}.type)
+                InputStreamReader(context.assets.open("boat_model.json"))
+            )
+            boatConfig = gson.fromJson<HashMap<String, Any>>(reader, object : TypeToken<HashMap<String, Any>>() {}.type)
+            reader = JsonReader(InputStreamReader(context.assets.open("boat_names.json")))
+            boatNames = gson.fromJson<ArrayList<ArrayList<Any>>>(
+                reader,
+                object : TypeToken<ArrayList<ArrayList<Any>>>() {}.type
+            )
 
             for (boat in boatKeys) {
-                for(i in 1..9) {
-                    BitmapCache.instance.addBitmap( boat + "_0" + i.toString() + ".png",Bitmap.Config.ARGB_4444)
+                for (i in 1..9) {
+                    BitmapCache.instance.addBitmap(
+                        context,
+                        boat + "_0" + i.toString() + ".png",
+                        Bitmap.Config.ARGB_4444
+                    )
                 }
-                for(i in 10..16) {
-                    BitmapCache.instance.addBitmap(boat + "_" + i.toString() + ".png",Bitmap.Config.ARGB_4444)
+                for (i in 10..16) {
+                    BitmapCache.instance.addBitmap(context, boat + "_" + i.toString() + ".png", Bitmap.Config.ARGB_4444)
                 }
             }
         }
 
         val boatKeys: ArrayList<String>
             get() {
-                return boatData["BoatTypes"] as ArrayList<String>
+                return boatConfig["BoatTypes"] as ArrayList<String>
             }
         val boatValues: LinkedTreeMap<String, ArrayList<Any>>
             get() {
-                return boatData["BoatData"] as LinkedTreeMap<String, ArrayList<Any>>
+                return boatConfig["BoatData"] as LinkedTreeMap<String, ArrayList<Any>>
             }
         val boatParts: ArrayList<ArrayList<String>>
             get() {
-                return boatData["BoatParts"] as ArrayList<ArrayList<String>>
+                return boatConfig["BoatParts"] as ArrayList<ArrayList<String>>
             }
 
-        fun boatData(type: String, index: BoatIndex): Any {
+        fun boatConfig(type: String, index: BoatIndex): Any {
             return boatValues[type]!![index.index]
         }
 
@@ -102,62 +116,44 @@ class BoatModel(type: String, name: String) {
         }
     }
 
-    val type: String
-    private var _departureTime: Long
-    private var _courseTime: Long
-    private var _cargo: MutableList<JobModel?>
-    private var _name: String = ""
-    private var _speed: Float = 0.0f
-    private var _town: TownModel? = null
+    private var _data: BoatData
     private var _course: MutableList<TownModel>
-    private var _cargoSize: Int = 0
-    private var _stats: BoatStats
+    private var _cargo: Array<JobModel?>
+    private var _town: TownModel?
 
-    val stats: BoatStats
+    val id get() =      _data.id
+    val cargo get() =   _cargo
+    val data get() =    _data
+    val town get() =    _town
+    val name get() =            _data.name
+    val type get() =            _data.type
+    val totalDistance get() = _data.totalDistance
+    val totalSilver get() = _data.totalSilver
+    val totalVoyages get() = _data.totalVoyages
+    val courseTime get() = _data.courseTime
+    val departureTime get() = _data.departureTime
+    val cargoSize get() = _data.cargoSize
+    val SPM: Double
         get() {
-            return _stats
-        }
-    val name: String
-        get() {
-            return _name
+            return totalSilver.toDouble() / totalDistance
         }
 
-    val cargo: List<JobModel?>
-        get() {
-            return _cargo
-        }
-
-    val cargoSize: Int
-        get() {
-            return _cargoSize
-        }
     val arrivalTime: Long
         get() {
-            return _departureTime + _courseTime
+            return _data.departureTime + _data.courseTime
         }
     val remainingTime: Long
         get() {
             return arrivalTime - Date().time
         }
-    val departureTime: Long
-        get() {
-            return _departureTime
-        }
-    val courseTime: Long
-        get() {
-            return _courseTime
-        }
+
     val courseDistance: Double
         get() {
-            return _courseTime.toDouble() * _speed.toDouble()
+            return _data.courseTime.toDouble() * speed / 1000
         }
     val sailTime: Long
         get() {
-            return Date().time - _departureTime
-        }
-    val town: TownModel?
-        get() {
-            return _town
+            return Date().time - _data.departureTime
         }
     val course: List<TownModel>
         get() {
@@ -165,19 +161,23 @@ class BoatModel(type: String, name: String) {
         }
     val endurance: Double
         get() {
-            return boatValues[this.type]!![1] as Double
+            return boatValues[_data.type]!![BoatIndex.distance.index] as Double
+        }
+    val speed: Double
+        get() {
+            return boatValues[_data.type]!![BoatIndex.speed.index] as Double
         }
     val percentCourseComplete: Float
         get() {
-            return sailTime.toFloat() / _courseTime
+            return sailTime.toFloat() / _data.courseTime
         }
     val value: Int
         get() {
-            return boatValues[this.type]!![BoatModel.BoatIndex.boat_cost.index] as Int
+            return (boatValues[_data.type]!![BoatModel.BoatIndex.boat_cost.index] as Double).toInt()
         }
     val title: String
         get() {
-            return boatValues[this.type]!![BoatModel.BoatIndex.title.index] as String
+            return boatValues[_data.type]!![BoatModel.BoatIndex.title.index] as String
         }
 
     fun plotCourse(town: TownModel) {
@@ -189,39 +189,55 @@ class BoatModel(type: String, name: String) {
         _course.addAll(towns)
     }
 
+    fun save() = runBlocking {
+        Game.instance.db.boatDao().update(_data)
+        Game.instance.db.boatJobDao().deleteByBoatId(id)
+        Game.instance.db.boatJobDao().insert(_cargo.mapNotNull { if (it != null) { BoatJobData(0, id, it.data)} else null} )
+    }
+
     fun setCargo(jobs: List<JobModel?>) {
-        if (jobs.size <= _cargoSize) {
-            _cargo.clear()
-            _cargo.addAll(jobs)
+        if (jobs.size <= _data.cargoSize) {
+            _cargo = Array(_data.cargoSize, { jobs.elementAtOrNull(it) })
         } else {
             assert(false)
         }
+        save()
     }
 
-    constructor(type: String, name: String, town: TownModel) : this(type, name) {
-        this._town = town
-        this._town?.addBoat(this)
-    }
+    constructor (type: String, name: String, town: TownModel) : this(
+        BoatData(
+            0,
+            type,
+            name,
+            town.id,
+            (boatConfig(type, BoatModel.BoatIndex.hold_size) as Double).toInt()
+        )
+    )
 
-    init {
-        this._departureTime = 0
-        this._courseTime = 0
-        this._name = name
-        this.type = type
-        this._cargo = ArrayList<JobModel?>()
+    constructor (data: BoatData) {
+        this._data = data
         this._course = ArrayList<TownModel>()
-        var data = boatValues[this.type]!!
-        this._speed = (data[2] as Double).toFloat() * scale
-        this._cargoSize = (data[10] as Double).toInt()
-        this._stats = BoatStats()
+        if (data.townid < 0) {
+            this._town = null
+            for (idx in _data.course) {
+                _course.add(Map.instance._towns[idx])
+            }
+        } else {
+            this._town = Map.instance._towns[data.townid]
+            this._town?.addBoat(this)
+        }
+        this._cargo = Array<JobModel?>(_data.cargoSize, { null })
     }
 
     fun sail(distance: Float) {
-        this._departureTime = Date().time
-        setDistance(distance)
-        this._stats.totalDistance += distance.toDouble()
-        this._town?.boatDeparted(this)
-        this._town = null
+        _data.departureTime = Date().time
+        setCourseTime(distance)
+        _data.totalDistance += distance.toDouble()
+        town?.boatDeparted(this)
+        _town = null
+        _data.townid = -1
+        _data.course = _course.map { it.id }.toTypedArray()
+        save()
     }
 
     fun arrive(town: TownModel, quiet: Boolean = false) {
@@ -229,7 +245,7 @@ class BoatModel(type: String, name: String) {
         var silver = 0.0
         var counter = 0
 
-        fun rem (it: JobModel?) : Boolean {
+        fun rem(it: JobModel?): Boolean {
             if (it != null && town === it.destination) {
                 counter += 1
                 if (it.isGold) {
@@ -242,37 +258,49 @@ class BoatModel(type: String, name: String) {
             }
             return false
         }
-        _cargo.removeAll { rem(it) }
+        for (i in 0 until _cargo.size) {
+            if (rem(_cargo[i])) _cargo[i] = null
+        }
 
         var multipler = 1.0
-        if (counter == cargoSize) {
+        if (counter == _data.cargoSize) {
             multipler = 1.25
         }
         if (quiet) {
-            var user = User.sharedInstance
-            User.sharedInstance.gold += (gold * multipler).toInt()
-            User.sharedInstance.silver += (silver * multipler).toInt()
+            var user = User.instance
+            User.instance.gold += (gold * multipler).toInt()
+            User.instance.silver += (silver * multipler).toInt()
         } else {
-            User.sharedInstance.addMoney((gold * multipler).toInt(), (silver * multipler).toInt())
+            User.instance.addMoney((gold * multipler).toInt(), (silver * multipler).toInt())
         }
-        this._stats.totalGold += gold.toInt()
-        this._stats.totalSilver += silver.toInt()
-        User.sharedInstance.xp += (silver * multipler).toInt()
-        //NotificationCenter.default.post(name: NSNotification.Name.jobDelivered, object: self, userInfo: ["Town" : town, "Silver": Int(silver), "Gold": Int(gold), "Boat": self, "Quiet": quiet])
+        _data.totalGold += gold.toInt()
+        _data.totalSilver += silver.toInt()
+        User.instance.xp += (silver * multipler).toInt()
+        Game.instance.jobDelivered(this, town, gold.toInt(), silver.toInt(), quiet)
+        /*val info = Intent("jobDelivered")
+        info.putExtra("Town",town.name)
+        info.putExtra("Silver",silver)
+        info.putExtra("Gold",gold)
+        info.putExtra("Boat", this.id)
+        info.putExtra("Quiet", quiet)*/
 
         if (town === _course.last()) {
-            this._stats.totalDistance = courseDistance
-            this._stats.totalVoyages += 1
-            this._town = _course.last()
-            this._town?.boatArrived(this)
-            User.sharedInstance.boatArrived(this)
-            this._departureTime = 0
-            this._courseTime = 0
+            _data.totalDistance = courseDistance
+            _data.totalVoyages += 1
+            _town = _course.last()
+            _data.townid = town.id
+            _town?.boatArrived(this)
+            User.instance.boatArrived(this)
+            _data.departureTime = 0
+            _data.courseTime = 0
             _course.clear()
             //AudioManager.sharedInstance.playSound(sound: "boat_arrive")
             //NotificationCenter.default.post(name: NSNotification.Name.boatArrived, object: self, userInfo: ["Boat": self, "Town" : town])
+            Game.instance.boatArrived(this, town)
             if (quiet == false) {
-                User.sharedInstance.save()
+                User.instance.save()
+                this.save()
+                town.save()
             }
         }
     }
@@ -284,38 +312,17 @@ class BoatModel(type: String, name: String) {
 
     val isMoored: Boolean
         get() {
-            return this._town != null
+            return this.town != null
         }
 
 
-    fun setDistance(distance: Float) {
-        this._courseTime = getSailingTime(distance)
+    fun setCourseTime(distance: Float) {
+        _data.courseTime = getSailingTime(distance)
     }
 
     fun getSailingTime(distance: Float): Long {
-        return (distance / this._speed).toLong()
+        return (distance / speed * 1000).toLong()
     }
 
     // generates a random boat name using various methods
-}
-
-class BoatStats {
-    var totalDistance: Double
-    var totalVoyages: Int
-    var totalSilver: Int
-    var totalGold: Int
-    var datePurchased: Date
-
-    val SPM: Double
-        get() {
-            return max(0.0, (totalSilver / totalDistance).toDouble())
-        }
-
-    init {
-        this.totalSilver = 0
-        this.totalGold = 0
-        this.totalDistance = 0.0
-        this.datePurchased = Date()
-        this.totalVoyages = 0
-    }
 }

@@ -2,6 +2,7 @@ package com.lanyard.canvas
 
 import android.graphics.Canvas
 import android.view.SurfaceHolder
+import kotlin.math.max
 
 /**
  * Created by arjun on 26/12/17.
@@ -11,6 +12,7 @@ class CanvasThread(private val surfaceHolder: SurfaceHolder, private val gameVie
     private var running: Boolean = false
 
     private val targetFPS = 60 // frames per second, the rate at which you would like to refresh the Canvas
+    private var canvas: Canvas? = null
 
     fun setRunning(isRunning: Boolean) {
         this.running = isRunning
@@ -34,6 +36,7 @@ class CanvasThread(private val surfaceHolder: SurfaceHolder, private val gameVie
                         this.gameView.postInvalidate()
                         this.gameView.update(timeMillis)
                         this.gameView.draw(canvas!!)
+                        BitmapCache.instance.flushExpired(System.currentTimeMillis() - 1000)
                     }
 
             } catch (e: Exception) {
@@ -49,18 +52,14 @@ class CanvasThread(private val surfaceHolder: SurfaceHolder, private val gameVie
             }
 
             timeMillis = (System.nanoTime() - startTime) / 1000000
-            waitTime = maxOf(0,targetTime - timeMillis)
-            //println(waitTime)
+            waitTime = targetTime - timeMillis
             try {
-                sleep(waitTime)
+                sleep(max(0,waitTime))
             } catch (e: Exception) {
                 e.printStackTrace()
             }
+            timeMillis = (System.nanoTime() - startTime) / 1000000
         }
-    }
-
-    companion object {
-        private var canvas: Canvas? = null
     }
 
 }

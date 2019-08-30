@@ -1,13 +1,14 @@
 package com.lanyard.helpers
 
-import android.graphics.Color
 import android.graphics.Point
 import android.graphics.PointF
-import android.util.JsonReader
-import android.util.Size
+import android.graphics.Rect
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.lanyard.canvas.Size
 import kotlin.math.atan2
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sqrt
 
 operator fun Point.plus(other: Point): Point {
@@ -20,6 +21,27 @@ operator fun Point.plus(other: Size): Point {
 
 operator fun Point.minus(other: Point): Point {
     return Point(x - other.x, y - other.y)
+}
+
+class ColorHelper {
+    companion object {
+        fun ARGBInt(alpha: Float, red: Float, green: Float, blue: Float): Int {
+            return (alpha * 255.0f + 0.5f).toInt() shl 24 or
+                    ((red * 255.0f + 0.5f).toInt() shl 16) or
+                    ((green * 255.0f + 0.5f).toInt() shl 8) or
+                    (blue * 255.0f + 0.5f).toInt()
+        }
+    }
+}
+fun Boolean.toInt() : Int {
+    if (and(true)) return 1
+    return 0
+}
+
+
+
+operator fun Point.minus(other: Size): Point {
+    return Point(x - other.width, y - other.height)
 }
 
 operator fun Point.times(other: Float): Point {
@@ -52,10 +74,6 @@ operator fun Point.minusAssign(other: Size) {
 operator fun Point.minusAssign(other: Float) {
     x -= other.toInt()
     y -= other.toInt()
-}
-
-operator  fun Size.times(other: Float) : Size {
-    return Size((width * other).toInt(), (height * other).toInt())
 }
 
 operator fun PointF.minus (other: PointF) : PointF {
@@ -102,6 +120,18 @@ fun PointF.toPoint() : Point {
 
 fun Point.distance(other: Point) : Double {
     return (this - other).lenght()
+}
+
+fun Rect.intersects(rect: Rect) : Boolean {
+    return intersects(min(rect.left,rect.right),min(rect.top,rect.bottom),max(rect.right,rect.left) ,max(rect.bottom,rect.top))
+}
+
+
+
+
+fun Point.set(other: Point) {
+    x = other.x
+    y = other.y
 }
 
 inline fun <reified T> Gson.fromJson(json: String) = this.fromJson<T>(json, object: TypeToken<T>() {}.type)

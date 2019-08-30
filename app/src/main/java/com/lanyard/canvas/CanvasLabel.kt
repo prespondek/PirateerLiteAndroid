@@ -1,18 +1,25 @@
 package com.lanyard.canvas
 
 import android.graphics.*
-import android.util.Size
+import com.lanyard.helpers.ColorHelper
+import com.lanyard.helpers.intersects
 import com.lanyard.helpers.plus
 import com.lanyard.pirateerlite.MapActivity
 
 class CanvasLabel : CanvasNode {
 
-
+    override var magnitude : Size
+    get() {
+        if (_dirty) {
+            updateSize()
+        }
+        return field
+    }
     var fontAsset : String?
     set (value) {
         field =     value
         if (value != null) {
-            typeface = Typeface.createFromAsset(MapActivity.instance.assets, field);
+            typeface = Typeface.createFromAsset(view!!.context.assets, field);
         }
     }
     var text :          String
@@ -32,6 +39,10 @@ class CanvasLabel : CanvasNode {
             _dirty = true
         }
     var strokeWidth :   Float
+        set(value) {
+            field = value
+            _dirty = true
+        }
     var strokeColor :   Int
     var typeface :      Typeface
         set(value) {
@@ -47,18 +58,19 @@ class CanvasLabel : CanvasNode {
         fontStyle =     Paint.Style.FILL
         typeface =      Typeface.DEFAULT
         text =          ""
+        magnitude =          Size(0,0)
     }
     constructor(text: String, font: String?) : super() {
         this.text = text
         this.fontAsset = font
     }
 
-    override fun bounds(pos: Point) : Rect
+    override fun bounds(transform: CanvasNodeTransform) : Rect
     {
-        var left = (pos.x + position.x - size.width * scale.width * anchor.x).toInt()
-        var top = (pos.y + position.y + size.height * scale.height * anchor.y).toInt()
-        var right = (left + size.width * scale.width).toInt()
-        var bottom = (top + size.height * scale.height).toInt()
+        var left = (transform.position.x + position.x - magnitude.width * anchor.x).toInt()
+        var top = (transform.position.y + position.y - magnitude.height * (1-anchor.y)).toInt()
+        var right = (left + magnitude.width).toInt()
+        var bottom = (top + magnitude.height).toInt()
         return Rect(left,top,right,bottom)
     }
 
@@ -67,29 +79,41 @@ class CanvasLabel : CanvasNode {
         paint.typeface = typeface
         paint.textSize = fontSize
         paint.style = fontStyle
+        paint.strokeWidth = strokeWidth
         var bounds = Rect(0,0,0,0)
         paint.getTextBounds(text, 0, text.length, bounds);
-        size = Size(bounds.right - bounds.left, bounds.bottom - bounds.top)
+        magnitude = Size(
+            bounds.right - bounds.left,
+            bounds.bottom - bounds.top)
         _dirty = false
     }
 
-    override fun draw(canvas: Canvas, pos: Point) {
-        if ( _dirty == true ) { updateSize() }
-        val paint = Paint()
-        paint.setTypeface(typeface)
-        paint.setTextSize(fontSize)
-        var bounds = bounds(pos)
-        if ( fontStyle == Paint.Style.FILL_AND_STROKE ) {
-            paint.strokeWidth = strokeWidth
-            paint.style = Paint.Style.STROKE
-            paint.color = strokeColor
-            canvas.drawText(text, bounds.left.toFloat(), bounds.top.toFloat(), paint)
-            paint.style = Paint.Style.FILL
-        } else {
-            paint.style = fontStyle
+    override fun draw(canvas: Canvas, transform: CanvasNodeTransformData, view: Rect, timestamp: Long) {
+        if (text.length > 0) {
+            if (_dirty == true) {
+                updateSize()
+            }
+            var bounds = bounds(transform)
+            if (view.intersects(bounds)) {
+                val paint = Paint()
+                paint.setTypeface(typeface)
+                paint.setTextSize(fontSize)
+                paint.isAntiAlias = true
+                if (fontStyle == Paint.Style.FILL_AND_STROKE) {
+                    paint.strokeWidth = strokeWidth
+                    paint.style = Paint.Style.STROKE
+                    paint.color = strokeColor
+                    paint.alpha = (transform.opacity * opacity * 255).toInt()
+                    canvas.drawText(text, bounds.left.toFloat(), bounds.bottom.toFloat(), paint)
+                    paint.style = Paint.Style.FILL
+                } else {
+                    paint.style = fontStyle
+                }
+                paint.color = fontColor
+                paint.alpha = (transform.opacity * opacity * 255).toInt()
+                canvas.drawText(text, bounds.left.toFloat(), bounds.bottom.toFloat(), paint)
+            }
         }
-        paint.color = fontColor
-        canvas.drawText(text, bounds.left.toFloat(), bounds.top.toFloat(), paint)
-        super.draw(canvas, pos + position)
+        super.draw(canvas, transform,view, timestamp)
     }
 }

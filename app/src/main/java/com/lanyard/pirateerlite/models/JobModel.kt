@@ -1,64 +1,68 @@
 package com.lanyard.pirateerlite.models
 
 import com.lanyard.library.Graph
+import com.lanyard.pirateerlite.controllers.JobController
+import com.lanyard.pirateerlite.data.JobData
 import com.lanyard.pirateerlite.singletons.Map
 
-class JobModel (source: TownModel, destination: TownModel) {
+class JobModel {
     var source: TownModel
 
-        get() { return Map.sharedInstance.towns[_sourceIndex] }
+        get() { return Map.instance.towns[_data.sourceTownId] }
         set(town) {
-            _destinationIndex = Map.sharedInstance.towns.indexOfFirst { it === town }
+            _data.destinationTownId = Map.instance.towns.indexOfFirst { it === town }
             calcValue()
         }
 
     var destination: TownModel
 
-        get() { return Map.sharedInstance.towns[_destinationIndex] }
+        get() { return Map.instance.towns[_data.destinationTownId] }
         set(town) {
-            _destinationIndex = Map.sharedInstance.towns.indexOfFirst { it === town }
+            _data.destinationTownId = Map.instance.towns.indexOfFirst { it === town }
             calcValue()
         }
 
 
-    var type: String
-    private var _value: Float
-    private var _gold = false
-    private var _sourceIndex: Int
-    private var _destinationIndex: Int
-    var multiplier: Double
+    private var _data : JobData
 
     val value: Int
         get() {
-            return _value.toInt()
+            return _data.value.toInt()
         }
 
     val isGold: Boolean
         get() {
-            return _gold
+            return _data.gold
         }
 
+    val data: JobData get() = _data
 
     private fun calcValue ()
     {
-        val route = Map.sharedInstance.getRoute(source, destination)
-        _value = Graph.getRouteDistance(route)
+        val route = Map.instance.getRoute(source, destination)
+        _data.value = Graph.getRouteDistance(route) / BoatModel.scale
     }
 
-    init
+
+    constructor(data:JobData)
     {
-        _destinationIndex = Map.sharedInstance.towns.indexOfFirst { it === destination }
-        _sourceIndex = Map.sharedInstance.towns.indexOfFirst { it === source }
-        this.multiplier = 1.0
-        //this.type = JobController.jobData.randomElement()[0]
-        this.type = ""
-        if (Math.random() * 9 + 1 == 1.0) {
-        _gold = true
+        _data = data
     }
-        this._value = 0.0f
+
+    constructor(source: TownModel, destination: TownModel) {
+        _data = JobData(
+            JobController.jobData.random()[0],
+            0.0f,
+            Math.random() * 10.0 <= 1.0,
+            Map.instance.towns.indexOfFirst { it === source },
+            Map.instance.towns.indexOfFirst { it === destination },
+            1.0
+        )
         calcValue()
-        if (_gold) {
-            _value *= 0.01f
+        if (_data.gold) {
+            _data.value *= 0.01f
         }
     }
+
+    val type get() = _data.type
 }

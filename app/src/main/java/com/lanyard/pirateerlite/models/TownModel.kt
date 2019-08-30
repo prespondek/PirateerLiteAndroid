@@ -1,24 +1,26 @@
 package com.lanyard.pirateerlite.models
 
 import android.graphics.Color
-import com.lanyard.pirateerlite.singletons.UserObserver
+import com.lanyard.pirateerlite.data.StorageJobData
+import com.lanyard.pirateerlite.data.TownData
+import com.lanyard.pirateerlite.data.TownJobData
+import com.lanyard.pirateerlite.singletons.Game
 import com.lanyard.pirateerlite.singletons.User
 import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
 import com.lanyard.pirateerlite.singletons.Map
+import kotlinx.coroutines.*
 
 open class WorldNode {
 
 }
 
-interface TownDelegate {
-    fun jobsUpdated ()
-}
+class TownModel (data: TownData): WorldNode(), User.UserObserver {
 
-
-
-class TownModel (data: ArrayList<Any>): WorldNode(), UserObserver, Serializable {
+    interface TownDelegate {
+        fun jobsUpdated ()
+    }
 
     companion object {
         private lateinit var townCost : ArrayList<Int>
@@ -32,22 +34,13 @@ class TownModel (data: ArrayList<Any>): WorldNode(), UserObserver, Serializable 
     }
 
     enum class TownType {
-        island, castle, pub, village, lighthouse, prison, fishermen, mansion, homestead
+        island, castle, pub, village, lighthouse, prison, fishermen, mansion, homestead;
     }
 
 
     enum class HarbourSize {
         marina, docks, pier
     }
-        /*static func <(left: TownModel.HarbourSize, right: TownModel.HarbourSize) -> Bool {
-            return (left == .small && (right == .medium || right == .large)) ||
-                    (left == .medium && right == .large)
-        }
-        static func >(left: TownModel.HarbourSize, right: TownModel.HarbourSize) -> Bool {
-            return (left == .large && (right == .small || right == .medium)) ||
-                    (left == .medium && right == .small)
-        }
-    }*/
 
     enum class Allegiance {
         none, british, american, spanish, french;
@@ -57,58 +50,65 @@ class TownModel (data: ArrayList<Any>): WorldNode(), UserObserver, Serializable 
         }
     }
 
-    var type = TownType.island
-    var allegiance = Allegiance.none
-    var description = ""
-    var name = ""
     var color = Color.BLACK
-    var harbour = HarbourSize.pier
     var delegate : TownDelegate? = null
     private var _boats = ArrayList<BoatModel>()
     private var _jobs : ArrayList<JobModel>
     private var _storage : ArrayList<JobModel?>
-    private var _jobsTimeStamp : Date
-    private var _stats : TownStats
+    private var _data : TownData
 
-    var level : Int = 0
+    var level : Int
+        get() = _data.level
         set (value){
             if (value > TownModel.maxLevel) {
-                field = TownModel.maxLevel
+                _data.level = TownModel.maxLevel
             } else {
-                field = value
+                _data.level = value
             }
-            while (_storage.size < TownModel.townUpgrade[field][1]) {
+            while (_storage.size < TownModel.townUpgrade[_data.level][1]) {
                 _storage.add(null)
             }
         }
 
     init {
-        _jobs =         ArrayList<JobModel>()
-        _storage =      ArrayList<JobModel?>()
-        _jobsTimeStamp = Date()
-        _stats = TownStats()
-        level =         0
+        _jobs =         ArrayList()
+        _storage = ArrayList()
+        _data = data
+        level = _data.level
     }
+
+    val id              get() = _data.id
+    val allegiance      get() = _data.allegiance
+    val harbour         get() = _data.harbour
+    val description     get() = _data.description
+    val name            get() = _data.name
+    val type            get() = _data.type
+    val totalVisits     get() = _data.totalVisits
+    val endSilver       get() = _data.endSilver
+    val endGold         get() = _data.endGold
+    val startGold       get() = _data.startGold
+    val startSilver     get() = _data.startSilver
+    val jobsTimeStamp   get() = _data.jobsTimeStamp
+
+
+
 
     val storage : ArrayList<JobModel?>
         get() { return _storage }
 
-    val stats : TownStats
-        get() { return _stats }
-
-    val jobs : ArrayList<JobModel>?
+    val jobs : List<JobModel>?
         get () {
             if (level == 0) {
                 return null
             }
-            if (_jobsTimeStamp != User.sharedInstance.jobDate) {
+            if (_data.jobsTimeStamp != User.instance.jobDate) {
                 refreshJobs()
             }
             return _jobs
         }
 
     val jobsDirty : Boolean
-        get() { return _jobsTimeStamp != User.sharedInstance.jobDate }
+        get() { return _data.jobsTimeStamp != User.instance.jobDate }
 
     val jobsSize : Int get () { return TownModel.townUpgrade[level][0] }
     val storageSize : Int get() { return TownModel.townUpgrade[level][1] }
@@ -117,7 +117,7 @@ class TownModel (data: ArrayList<Any>): WorldNode(), UserObserver, Serializable 
     val purchaseCost : Int
         get() {
             var idx = 0
-            when ( harbour ) {
+            when ( _data.harbour ) {
                 HarbourSize.pier -> idx = 0
                 HarbourSize.docks -> idx = 1
                 HarbourSize.marina -> idx = 2
@@ -131,6 +131,7 @@ class TownModel (data: ArrayList<Any>): WorldNode(), UserObserver, Serializable 
     fun setStorage (jobs: ArrayList<JobModel?>) {
         if (jobs.size <= _storage.size) {
             _storage = jobs
+            saveStorage()
         } else {
             assert(false)
         }
@@ -148,56 +149,90 @@ class TownModel (data: ArrayList<Any>): WorldNode(), UserObserver, Serializable 
             return va
         }
 
+    fun setStorage (jobs: List<JobModel>) {
+        var idx = 0
+        for (i in 0 until _storage.size) {
+            if (idx >= jobs.size) { return }
+            if (_storage[i] == null) {
+                _storage[i] = jobs[idx]
+                idx+=1
+            }
+        }
+    }
+
+    fun setJobs (jobs: List<JobModel>) {
+        _jobs.addAll(jobs)
+    }
 
     fun removeJob(job: JobModel) {
         _jobs.removeAll { it === job }
         if (job.isGold) {
-            stats.startGold += job.value
+            _data.startGold += job.value
         } else {
-            stats.startSilver += job.value
+            _data.startSilver += job.value
         }
+        save()
+        saveJobs()
+    }
+
+    fun save() = runBlocking {
+        Game.instance.db.townDao().update(_data)
+    }
+
+    fun saveJobs() = runBlocking {
+        Game.instance.db.townJobDao().deleteByTownId(id)
+        Game.instance.db.townJobDao().insert(_jobs.map { TownJobData(0, id, _data.jobsTimeStamp, it.data) })
+    }
+
+    fun saveStorage() = runBlocking {
+        Game.instance.db.storageJobDao().deleteByTownId(id)
+        Game.instance.db.storageJobDao().insert(_storage.mapNotNull{ if (it!=null) StorageJobData(0, id, it.data) else null })
     }
 
     private fun refreshJobs () {
-        _jobs.clear()
+        clearJobs()
         var unlockedTowns = ArrayList<TownModel>()
-        Map.sharedInstance.towns.filterTo(unlockedTowns,{ it.level > 0 })
+        Map.instance.towns.filterTo(unlockedTowns,{ it.level > 0 })
         unlockedTowns.removeAll { it === this }
         var numJobs = TownModel.townUpgrade[level][0]
+        var jobTowns = ArrayList<TownModel>(unlockedTowns)
         unlockedTowns.forEach {
-            for (x in 0..it.level - 1) {
-                unlockedTowns.add(it)
+            for (x in 0 until it.level) {
+                jobTowns.add(it)
             }
-            if (numJobs > unlockedTowns.size) {
-                numJobs = unlockedTowns.size
-            }
-            for (x in 0..numJobs - 1) {
-                val roll = unlockedTowns.random()
+        }
+        unlockedTowns.forEach {
+            for (x in 0 until numJobs) {
+                if (jobTowns.isEmpty()) { break }
+                val roll = jobTowns.random()
                 val job = JobModel(this,roll)
+                jobTowns.remove(roll)
                 _jobs.add(job)
             }
-            _jobsTimeStamp = User.sharedInstance.jobDate
+            _data.jobsTimeStamp = User.instance.jobDate
+            saveJobs()
             delegate?.jobsUpdated()
         }
     }
 
+    private fun clearJobs() {
+        runBlocking {
+            Game.instance.db.townJobDao().deleteByTownId(id)
+        }
+        _jobs.clear()
+    }
 
     fun boatArrived (boat: BoatModel) {
-        this._boats.add(boat)
-        this._stats.totalVisits += 1
+        _boats.add(boat)
+        _data.totalVisits += 1
+        save()
     }
 
     fun boatDeparted (boat: BoatModel) {
         this._boats.removeAll { it === boat }
     }
 
-
     fun setup ( data: ArrayList<Any> ) {
-        name =          data[0] as String
-        allegiance =    Allegiance.valueOf(data[1] as String)
-        type =          TownType.valueOf(data[2] as String)
-        description =   data[3] as String
-        harbour =       HarbourSize.valueOf(data[4] as String)
         color =         Color.parseColor("#FF" + data[5] as String)
         _boats =        ArrayList<BoatModel>()
     }
@@ -211,26 +246,10 @@ class TownModel (data: ArrayList<Any>): WorldNode(), UserObserver, Serializable 
 
     fun jobDelivered(job: JobModel) {
         if (job.isGold) {
-            stats.endGold += job.value
+            _data.endGold += job.value
         } else {
-            stats.endSilver += job.value
+            _data.endSilver += job.value
         }
-    }
-}
-
-class TownStats : Serializable
-{
-    var totalVisits : Int
-    var startSilver : Int
-    var endSilver : Int
-    var startGold : Int
-    var endGold : Int
-
-    init {
-        this.totalVisits = 0
-        this.startSilver = 0
-        this.endSilver = 0
-        this.startGold = 0
-        this.endGold = 0
+        save()
     }
 }

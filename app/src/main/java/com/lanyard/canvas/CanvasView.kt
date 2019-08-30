@@ -2,6 +2,8 @@ package com.lanyard.canvas
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Rect
+import androidx.cardview.widget.CardView
 import android.util.AttributeSet
 import android.view.SurfaceHolder
 import android.view.SurfaceView
@@ -10,13 +12,20 @@ import android.view.View
 
 open class CanvasView(context: Context, attributes: AttributeSet? = null, defStyleAttr: Int = 0) : SurfaceView(context, attributes, defStyleAttr), SurfaceHolder.Callback {
     var scene : CanvasScene? = null
-    private var canvasThread: CanvasThread? = null
+    set(value) {
+        field = value
+        value?.view = this
+    }
+    var canvasThread: CanvasThread? = null
+    private set
+
     private var view : View? = null
 
     init {
         holder.addCallback(this);
         canvasThread = CanvasThread(holder, this)
     }
+
 
     override fun surfaceDestroyed(p0: SurfaceHolder?) {
         var retry = true
@@ -52,9 +61,9 @@ open class CanvasView(context: Context, attributes: AttributeSet? = null, defSty
     /**
      * Everything that has to be drawn on Canvas
      */
-    override fun draw(canvas: Canvas) {
-        super.draw(canvas)
-        scene?.draw(canvas)
-    }
 
+    override fun draw(canvas: Canvas?) {
+        super.draw(canvas)
+        scene?.draw(canvas!!, Rect(0,0,width,height),System.currentTimeMillis())
+    }
 }

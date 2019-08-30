@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                   xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                   xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+                                                   android:layout_height="match_parent">
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <LinearLayout android:layout_width="match_parent"
+                      android:layout_height="wrap_content"
+                      android:orientation="vertical" android:padding="8dp">
+
+            <TextView
+                    android:text="TextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:id="@+id/statistics" android:textSize="36sp"
+                    android:textStyle="bold" android:textColor="@android:color/black"/>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/statlevel"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:layout_weight="0.6"
+                        android:gravity="center_vertical"/>
+                <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" app:srcCompat="@drawable/rank_small_1"
+                        android:id="@+id/levelImage"
+                        android:layout_weight="0.2" android:adjustViewBounds="true"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/levelLabel" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/stattotalexp"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:layout_weight="0.8"
+                        android:gravity="center_vertical"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/totalXpLabel" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/statexptonl"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView13" android:layout_weight="0.8"
+                        android:gravity="center_vertical"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/nextXpLabel" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/statgold"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView15" android:layout_weight="0.6"
+                        android:gravity="center_vertical"/>
+                <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" app:srcCompat="@drawable/gold_piece"
+                        android:id="@+id/imageView8"
+                        android:layout_weight="0.2" android:adjustViewBounds="true"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/goldLabel" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/statsilver"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView17" android:layout_weight="0.6"
+                        android:gravity="center_vertical"/>
+                <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" app:srcCompat="@drawable/silver_piece"
+                        android:id="@+id/imageView9"
+                        android:layout_weight="0.2" android:adjustViewBounds="true"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/silverLabel" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/statfleetsize"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView19" android:layout_weight="0.8"
+                        android:gravity="center_vertical"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/fleetSize" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/statfleetretired"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView21" android:layout_weight="0.8"
+                        android:gravity="center_vertical"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/boatsSold" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/statnetworth"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView23" android:layout_weight="0.6"
+                        android:gravity="center_vertical"/>
+                <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" app:srcCompat="@drawable/silver_piece"
+                        android:id="@+id/imageView11"
+                        android:layout_weight="0.2" android:adjustViewBounds="true"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/netWorth" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/statspm"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView25" android:layout_weight="0.6"
+                        android:gravity="center_vertical"/>
+                <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" app:srcCompat="@drawable/silver_piece"
+                        android:id="@+id/imageView10"
+                        android:layout_weight="0.2" android:adjustViewBounds="true"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/totalSPM" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/stattotalvoyages"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView27" android:layout_weight="0.8"
+                        android:gravity="center_vertical"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/totalVoyages" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/statdistancesailed"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView29" android:layout_weight="0.8"
+                        android:gravity="center_vertical"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/distanceSailed" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="40dp">
+                <TextView
+                        android:text="@string/statboatte"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView31" android:layout_weight="0.4"
+                        android:gravity="center_vertical"/>
+            <TextView
+                    android:text="TextView"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent" android:id="@+id/topEarningName" android:layout_weight="0.2"
+                    android:gravity="center_vertical" android:textAlignment="textEnd"/>
+            <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent" app:srcCompat="@drawable/raft_01"
+                    android:id="@+id/topEarningImage"
+                    android:layout_weight="0.2" android:adjustViewBounds="true"/>
+            <TextView
+                    android:text="TextView"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent" android:id="@+id/topEarningValue" android:layout_weight="0.2"
+                    android:textAlignment="textEnd" android:gravity="center_vertical"/>
+        </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/statboatspm"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView34" android:layout_weight="0.4"
+                        android:gravity="center_vertical"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/spmName" android:layout_weight="0.2"
+                        android:gravity="center_vertical" android:textAlignment="textEnd"/>
+                <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" app:srcCompat="@drawable/raft_01"
+                        android:id="@+id/spmImage"
+                        android:layout_weight="0.2" android:adjustViewBounds="true"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/spmValue" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/statboatmv"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView41" android:layout_weight="0.4"
+                        android:gravity="center_vertical"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/mostVoyagesName" android:layout_weight="0.2"
+                        android:gravity="center_vertical" android:textAlignment="textEnd"/>
+                <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" app:srcCompat="@drawable/raft_01"
+                        android:id="@+id/mostVoyagesImage"
+                        android:layout_weight="0.2" android:adjustViewBounds="true"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/mostVoyagesValue" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/statboatmm"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView37" android:layout_weight="0.4"
+                        android:gravity="center_vertical"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/mostMileageName" android:layout_weight="0.2"
+                        android:gravity="center_vertical" android:textAlignment="textEnd"/>
+                <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" app:srcCompat="@drawable/raft_01"
+                        android:id="@+id/mostMileageImage"
+                        android:layout_weight="0.2" android:adjustViewBounds="true"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/mostMileageValue" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/stattownmf"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView44" android:layout_weight="0.6"
+                        android:gravity="center_vertical"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/mostFrequentedName" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/mostFrequentedValue" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/stattownmgs"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView48" android:layout_weight="0.4"
+                        android:gravity="center_vertical"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/mostGoodsSoldLabel" android:layout_weight="0.2"
+                        android:gravity="center_vertical" android:textAlignment="textEnd"/>
+                <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" app:srcCompat="@drawable/silver_piece"
+                        android:id="@+id/imageView16"
+                        android:layout_weight="0.2" android:adjustViewBounds="true"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/mostGoodsSoldSilver" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp">
+                <TextView
+                        android:text="@string/stattownmgb"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/textView51" android:layout_weight="0.4"
+                        android:gravity="center_vertical"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/mostGoodsBoughtLabel" android:layout_weight="0.2"
+                        android:gravity="center_vertical" android:textAlignment="textEnd"/>
+                <ImageView
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" app:srcCompat="@drawable/silver_piece"
+                        android:id="@+id/imageView18"
+                        android:layout_weight="0.2" android:adjustViewBounds="true"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent" android:id="@+id/mostGoodsBoughtSilver" android:layout_weight="0.2"
+                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+</androidx.constraintlayout.widget.ConstraintLayout>

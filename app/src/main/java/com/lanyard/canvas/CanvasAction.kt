@@ -1,7 +1,12 @@
 package com.lanyard.canvas
 
 import android.graphics.Point
-import android.util.SizeF
+import com.lanyard.helpers.minus
+import com.lanyard.helpers.plus
+import com.lanyard.helpers.set
+import com.lanyard.helpers.times
+import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.floor
 import kotlin.math.min
 
@@ -14,23 +19,27 @@ abstract open class CanvasAction {
     open fun isValid() : Boolean {
         return true
     }
-    fun start( ) {
+    abstract open fun update( node: CanvasNode, dt: Long )
+    open fun start( node: CanvasNode ) {
         _running = true
     }
-    abstract open fun update( node: CanvasNode, dt: Long )
-
 }
 
 abstract open class CanvasActionInterval (duration: Long, interval: Long) : CanvasAction() {
     var duration: Long
     var interval: Long
-    private var _timer: Long
+    protected var _timer: Long
     private var _interval_timer: Long
+    private var test = Date()
 
     override fun isValid() : Boolean {
-        return _timer <= duration
+        if (_timer < duration) {
+            return true
+        } else {
+            return false
+        }
     }
-    fun reset() {
+    open fun reset() {
         _timer = 0
         _interval_timer = 0
     }
@@ -42,15 +51,20 @@ abstract open class CanvasActionInterval (duration: Long, interval: Long) : Canv
         this.interval = interval
     }
 
+    override fun start(node: CanvasNode) {
+        super.start(node)
+        test = Date()
+    }
+
     override fun update( node: CanvasNode, dt: Long ) {
         _timer = min(_timer + dt, duration )
-        if (_timer - _interval_timer > interval) {
-            step(node, _timer)
+        if ( _timer - _interval_timer >= interval ) {
+            step(node, _timer.toFloat() / duration)
             _interval_timer = _timer
         }
     }
 
-    abstract open protected fun step ( node: CanvasNode, dt: Long )
+    abstract open internal fun step ( node: CanvasNode, dt: Float )
 }
 
 class CanvasActionRepeat (action: CanvasActionInterval) : CanvasAction()
@@ -63,12 +77,12 @@ class CanvasActionRepeat (action: CanvasActionInterval) : CanvasAction()
     }
 
     override fun update( node: CanvasNode, dt: Long ) {
-        _timer += dt
-        if (_timer > action.duration) {
-            _timer = ((_timer.toFloat() / action.duration - floor(_timer.toFloat())) * action.duration).toLong()
+        _timer = _timer + dt
+        if (_timer >= action.duration) {
+            _timer = 0
             action.reset()
         }
-        action.update(node,_timer)
+        action.update(node, dt)
     }
 }
 
@@ -87,7 +101,39 @@ class CanvasActionSequence (vararg actions: CanvasAction) : CanvasActionInterval
         }
     }
 
-    override fun step(node: CanvasNode, dt: Long) {
+    override fun reset() {
+    super.reset()
+        for (itr in _actions) {
+            if (itr is CanvasActionInterval) {
+                itr.reset()
+            }
+        }
+}
+
+
+    override fun isValid(): Boolean {
+        return !_actions.isEmpty()
+    }
+
+    override fun update(node: CanvasNode, dt: Long) {
+        _timer = min(_timer + dt, duration )
+        var itr = _actions.iterator()
+        while (itr.hasNext()) {
+            var a = itr.next()
+            if (a.isValid()) {
+                if (a.running == false) {
+                    a.start(node)
+                }
+                a.update(node, dt)
+                if (a is CanvasActionInterval) {
+                    break
+                }
+            }
+        }
+    }
+
+    override fun step(node: CanvasNode, dt: Float) {
+
     }
 }
 
@@ -128,30 +174,49 @@ class CanvasActionAnimate (frames: List<BitmapStream>, interval: Int): CanvasAct
     }
 }
 
-class CanvasActionCutom (duration: Long, interval: Long, action: (node: CanvasNode, dt: Long) -> Unit): CanvasActionInterval(duration,interval) {
-    var action: (node: CanvasNode, dt: Long) -> Unit
-    constructor(duration: Long, action: (node: CanvasNode, dt: Long) -> Unit) : this(duration, 0, action) {
-
-    }
+class CanvasActionCutom (duration: Long, interval: Long, action: (node: CanvasNode, dt: Float) -> Unit): CanvasActionInterval(duration,interval) {
+    var action: (node: CanvasNode, dt: Float) -> Unit
+    constructor(duration: Long, action: (node: CanvasNode, dt: Float) -> Unit) : this(duration, 0, action) {}
     init {
         this.action = action
     }
-    override fun step(node: CanvasNode, dt: Long) {
+    override fun step(node: CanvasNode, dt: Float) {
         action(node,dt)
     }
 }
 
 class CanvasActionWait(duration: Long) : CanvasActionInterval(duration, 0)
 {
-    override fun step(node: CanvasNode, dt: Long) {
+    override fun step(node: CanvasNode, dt: Float) {
 
     }
 }
 
-class CanvasActionRemoveFromParent() : CanvasAction()
+abstract class CanvasActionInstant() : CanvasAction()
 {
+    private var done: Boolean = false
+    override fun isValid(): Boolean {
+        return !done
+    }
+
     override fun update( node: CanvasNode, dt: Long ) {
+        triggered(node)
+        done = true
+    }
+
+    abstract fun triggered ( node: CanvasNode )
+}
+
+class CanvasActionRemoveFromParent() : CanvasActionInstant()
+{
+    override fun triggered(node: CanvasNode) {
         node.parent = null
+    }
+}
+
+class CanvasActionInstantCustom(val action: (node: CanvasNode) -> Unit) : CanvasActionInstant() {
+    override fun triggered(node: CanvasNode) {
+        action(node)
     }
 }
 
@@ -161,22 +226,65 @@ class CanvasActionScaleTo(duration: Long, scale: Float) : CanvasActionInterval(d
     init {
         this.scale = scale
     }
-    override fun step(node: CanvasNode, dt: Long) {
-        var delta = dt.toFloat() / duration
-        node.scale = SizeF((scale - node.scale.width) * delta, (scale - node.scale.height) * delta)
+    override fun step(node: CanvasNode, dt: Float) {
+        node.scale = SizeF((scale - node.scale.width) * dt, (scale - node.scale.height) * dt)
     }
 }
 
-class CanvasActionMoveTo(duration: Long, position: Point) : CanvasActionInterval(duration,0)
+open class CanvasActionMoveBy(duration: Long, position: Point) : CanvasActionInterval(duration,0)
 {
-    override fun step(node: CanvasNode, dt: Long) {
+    protected var _positionDelta: Point
+    protected var _startPosition: Point
+    //protected var _previousPosition: Point
 
+    init {
+        _positionDelta = position
+        _startPosition = Point(0,0)
+        //_previousPosition = Point(0,0)
+    }
+
+    override fun start(node: CanvasNode) {
+        super.start(node)
+        //_previousPosition = Point(node.position)
+        _startPosition = Point(node.position)
+    }
+
+    override fun step(node: CanvasNode, dt: Float) {
+        //_startPosition += node.position - _previousPosition
+        node.position = _startPosition + _positionDelta * dt
+        //_previousPosition.set(node.position)
     }
 }
 
-class CanvasActionMoveBy(duration: Long, offset: Point) : CanvasActionInterval(duration,0)
+open class CanvasActionMoveTo(duration: Long, position: Point) : CanvasActionMoveBy(duration,position)
 {
-    override fun step(node: CanvasNode, dt: Long) {
-
+    override fun start(node: CanvasNode) {
+        super.start(node)
+        _positionDelta = _positionDelta - node.position
     }
+}
+
+open class CanvasActionFadeTo(duration: Long, opacity: Float) : CanvasActionInterval(duration,0)
+{
+    protected var _endOpacity : Float
+    protected var _startOpacity : Float
+
+    init {
+        _endOpacity = opacity
+        _startOpacity = 0.0f
+    }
+
+    override fun start(node: CanvasNode) {
+        super.start(node)
+        _startOpacity = node.opacity
+    }
+
+    override fun step(node: CanvasNode, dt: Float) {
+        node.opacity = _startOpacity + (_endOpacity - _startOpacity) * dt
+    }
+}
+
+class CanvasActionFadeOut(duration: Long) : CanvasActionFadeTo(duration,0.0f)
+{
+
 }

@@ -1,9 +1,216 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                             xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent"
-                                             android:layout_height="match_parent" android:id="@+id/menuLayout">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto"
+                                             xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+                                             android:layout_height="match_parent" android:id="@+id/menuLayout" android:orientation="vertical">
 
-    <ImageView
+    <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" app:srcCompat="@drawable/gold_piece" android:id="@+id/imageView"/>
-</android.support.constraint.ConstraintLayout>
+            android:layout_height="0dp" android:layout_weight="0.7">
+        <com.lanyard.pirateerlite.views.MenuCellView android:layout_width="0dp"
+                                                     android:layout_height="0dp"
+                                                     app:layout_constraintDimensionRatio="1"
+                                                     android:id="@+id/shipyardButton"
+                                                     app:layout_constraintStart_toStartOf="parent"
+                                                     app:layout_constraintEnd_toStartOf="@+id/marketButton"
+                                                     app:layout_constraintTop_toTopOf="parent"
+                                                     app:layout_constraintBottom_toTopOf="@+id/statsButton"
+                                                     android:layout_marginStart="8dp" android:layout_marginTop="8dp"
+                                                     android:layout_marginEnd="8dp" android:layout_marginBottom="8dp"
+                                                     app:label="Shipyard" app:image="@drawable/shop_small"/>
+        <com.lanyard.pirateerlite.views.MenuCellView android:layout_width="0dp"
+                                                     android:layout_height="0dp"
+                                                     app:layout_constraintEnd_toEndOf="parent"
+                                                     app:layout_constraintStart_toEndOf="@+id/shipyardButton"
+                                                     app:layout_constraintDimensionRatio="1"
+                                                     android:layout_marginStart="8dp"
+                                                     app:layout_constraintTop_toTopOf="parent"
+                                                     android:id="@+id/marketButton"
+                                                     app:layout_constraintBottom_toTopOf="@+id/bankConstraint"
+                                                     android:layout_marginBottom="8dp" android:layout_marginEnd="8dp"
+                                                     android:layout_marginTop="8dp" app:label="Market"
+                                                     app:image="@drawable/scrapyard_small"/>
+        <com.lanyard.pirateerlite.views.MenuCellView android:layout_width="0dp"
+                                                     android:layout_height="0dp"
+                                                     app:layout_constraintDimensionRatio="1"
+                                                     android:id="@+id/statsButton"
+                                                     app:layout_constraintStart_toStartOf="parent"
+                                                     app:layout_constraintEnd_toStartOf="@+id/bankConstraint"
+                                                     app:layout_constraintTop_toBottomOf="@+id/shipyardButton"
+                                                     android:layout_marginBottom="8dp"
+                                                     app:layout_constraintBottom_toBottomOf="parent"
+                                                     android:layout_marginTop="8dp" android:layout_marginStart="8dp"
+                                                     android:layout_marginEnd="8dp" app:label="Statisics"
+                                                     app:image="@drawable/abacus_small"/>
+        <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="0dp"
+                                                           android:layout_height="0dp"
+                                                           app:layout_constraintDimensionRatio="1"
+                                                           android:id="@+id/bankConstraint"
+                                                           app:layout_constraintStart_toEndOf="@+id/statsButton"
+                                                           app:layout_constraintEnd_toEndOf="parent"
+                                                           app:layout_constraintTop_toBottomOf="@+id/marketButton"
+                                                           android:layout_marginBottom="8dp"
+                                                           app:layout_constraintBottom_toBottomOf="parent"
+                                                           android:layout_marginStart="8dp" android:layout_marginTop="8dp"
+                                                           android:layout_marginEnd="8dp">
+            <com.lanyard.pirateerlite.views.MenuCellView android:layout_width="match_parent"
+                                                         android:layout_height="match_parent"
+                                                         android:id="@+id/bankButton" app:label="Bank"
+                                                         app:image="@drawable/chest_small"/>
+            <LinearLayout
+                    android:orientation="vertical"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" android:padding="16dp">
+                <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp" android:layout_weight="0.3">
+
+                </FrameLayout>
+                <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp" android:layout_weight="0.2">
+                    <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" app:srcCompat="@drawable/gold_piece"
+                            android:id="@+id/imageView12" android:layout_weight="1" android:adjustViewBounds="true"/>
+                    <TextView
+                            android:text="1"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent" android:id="@+id/textView5" android:layout_weight="1"
+                            android:gravity="center_vertical" android:textSize="24sp" android:textStyle="bold"
+                            android:textColor="@android:color/white" android:shadowColor="#000000"
+                            android:shadowDx="0" android:shadowDy="0" android:shadowRadius="8"/>
+                </LinearLayout>
+                <TextView
+                        android:text="="
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp" android:id="@+id/textView8" android:layout_weight="0.2"
+                        android:gravity="center" android:textSize="24sp" android:textColor="@android:color/white"
+                        android:textStyle="bold" android:shadowColor="#000000" android:shadowDx="0"
+                        android:shadowDy="0" android:shadowRadius="8"/>
+                <LinearLayout
+                        android:orientation="horizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp" android:layout_weight="0.2">
+                    <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" app:srcCompat="@drawable/silver_piece"
+                            android:id="@+id/imageView13" android:layout_weight="1" android:adjustViewBounds="true"/>
+                    <TextView
+                            android:text="TextView"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent" android:id="@+id/exchangeLabel"
+                            android:layout_weight="1" android:gravity="center_vertical" android:textSize="24sp"
+                            android:textStyle="bold" android:textColor="@android:color/white" android:shadowRadius="8"
+                            android:shadowDx="0" android:shadowDy="0" android:shadowColor="#000000"/>
+                </LinearLayout>
+                <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp" android:layout_weight="0.1">
+
+                </FrameLayout>
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    <TextView
+            android:text="@string/rank"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" android:id="@+id/textView3" android:layout_weight="0.05"
+            android:textSize="36sp" app:autoSizeMaxTextSize="100sp" app:autoSizeMinTextSize="2sp"
+            app:autoSizeStepGranularity="2sp" app:autoSizeTextType="uniform" android:textStyle="bold"
+            android:textColor="@android:color/black" android:paddingLeft="8dp"/>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="0dp" android:layout_weight="0.2">
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" android:layout_weight="1">
+            <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp" app:srcCompat="@drawable/rank_small_1"
+                    android:id="@+id/rankImage" android:layout_weight="0.5" android:scaleType="fitCenter"
+                    android:adjustViewBounds="true" android:padding="8dp"/>
+            <TextView
+                    android:text="TextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp" android:id="@+id/rankLabel" android:layout_weight="0.5"
+                    android:layout_gravity="center" android:gravity="center" android:textStyle="bold"
+                    android:textSize="18sp" app:autoSizeMinTextSize="2sp" app:autoSizeMaxTextSize="18sp"
+                    app:autoSizeStepGranularity="2sp" app:autoSizeTextType="uniform"/>
+        </LinearLayout>
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="0dp"
+                android:layout_height="match_parent" android:layout_weight="1" android:paddingRight="16dp">
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp" android:layout_weight="1" android:gravity="center_vertical">
+                <TextView
+                        android:text="@string/totalxp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:id="@+id/textView6" android:layout_weight="1"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:id="@+id/totalXPLabel" android:layout_weight="1"
+                        android:textAlignment="textEnd"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp" android:layout_weight="1" android:gravity="center_vertical">
+                <TextView
+                        android:text="@string/nextLevel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:id="@+id/totalXpLabel" android:layout_weight="1"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:id="@+id/nextXPLabel" android:layout_weight="1"
+                        android:textAlignment="textEnd"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp" android:layout_weight="1" android:gravity="center_vertical">
+                <TextView
+                        android:text="@string/gold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:id="@+id/textView15" android:layout_weight="1"/>
+                <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" app:srcCompat="@drawable/gold_piece"
+                        android:id="@+id/imageView9" android:layout_weight="1"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:id="@+id/goldLabel" android:layout_weight="1"
+                        android:textAlignment="textEnd"/>
+            </LinearLayout>
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp" android:layout_weight="1" android:gravity="center_vertical">
+                <TextView
+                        android:text="@string/silver"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:id="@+id/textView17" android:layout_weight="1"/>
+                <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" app:srcCompat="@drawable/silver_piece"
+                        android:id="@+id/imageView8" android:layout_weight="1"/>
+                <TextView
+                        android:text="TextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:id="@+id/silverLabel" android:layout_weight="1"
+                        android:textAlignment="textEnd"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

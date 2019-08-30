@@ -1,4 +1,4 @@
-package com.lanyard.pirateeronline
+package com.lanyard.pirateerlite
 
 import org.junit.Test
 

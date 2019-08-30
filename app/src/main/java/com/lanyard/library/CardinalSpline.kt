@@ -20,7 +20,7 @@ class CardinalSpline (path : List<Point>, tension: Float = 0.5F ) {
         this.tension = tension
         var dist : Float = 0.0F
         if ( this.path.size != 0 ) {
-            for ( segment in 1..this.path.size-1 ) {
+            for ( segment in 1 until this.path.size ) {
                 dist += this.path[segment - 1].distance( this.path[segment] ).toFloat()
             }
         }
@@ -89,7 +89,7 @@ class CardinalSpline (path : List<Point>, tension: Float = 0.5F ) {
 
         val start = DistanceTableEntry(0.0F,0.0F)
         table.add(start)
-        for ( i in 1..path.size-1 ){
+        for ( i in 1 until path.size ){
             val dist = path[i-1].distance(path[i])
             distSoFar += dist.toFloat()
             val curr = DistanceTableEntry( i.toFloat() / numPointsMin1, distSoFar )
@@ -101,7 +101,7 @@ class CardinalSpline (path : List<Point>, tension: Float = 0.5F ) {
     {
         var array = mutableListOf<Point>()
         val numPointsDesiredMin1 = segments-1
-        for ( i in 0..segments-1 ) {
+        for ( i in 0 until segments ) {
             val t = i as Float / numPointsDesiredMin1
             array.add(evaluateCurve(t).toPoint())
         }
@@ -116,7 +116,7 @@ class CardinalSpline (path : List<Point>, tension: Float = 0.5F ) {
         val numPointsDesiredMin1 = segments-1
         val totalLength = distTable[path.size-1].distance;
 
-        for ( i in 0..segments-1 ) {
+        for ( i in 0 until segments ) {
             val distT = i.toFloat() / numPointsDesiredMin1
             val distance = distT * totalLength
 
