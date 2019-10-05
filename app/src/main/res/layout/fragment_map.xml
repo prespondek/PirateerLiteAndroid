@@ -9,7 +9,7 @@
             app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" android:background="#00b6c5"/>
-    <com.lanyard.library.SuperScrollView
+    <com.lanyard.pirateerlite.views.MapScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent" android:fillViewport="true" android:id="@+id/vscrollview"
             app:isFillViewport="true">
@@ -23,7 +23,7 @@
                     android:layout_height="wrap_content" android:id="@+id/buttonlayout"
                     android:focusable="auto" android:focusableInTouchMode="true"/>
         </FrameLayout>
-    </com.lanyard.library.SuperScrollView>
+    </com.lanyard.pirateerlite.views.MapScrollView>
     <ImageButton
             android:layout_width="80dp"
             android:layout_height="80dp"

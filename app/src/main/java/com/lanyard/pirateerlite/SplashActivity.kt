@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Peter Respondek
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.lanyard.pirateerlite
 
 import androidx.lifecycle.Observer
@@ -8,9 +24,11 @@ import com.lanyard.pirateerlite.singletons.Game
 import com.lanyard.pirateerlite.singletons.Map
 import com.lanyard.pirateerlite.singletons.User
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.ActivityInfo.*
 import android.content.res.Configuration.*
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModel
 import com.lanyard.canvas.BitmapStream
 import com.lanyard.pirateerlite.data.BoatData
 import com.lanyard.pirateerlite.data.StatsData
@@ -18,13 +36,23 @@ import com.lanyard.pirateerlite.data.TownData
 import com.lanyard.pirateerlite.data.UserData
 import com.lanyard.pirateerlite.models.JobModel
 import com.lanyard.pirateerlite.singletons.Audio
+import androidx.lifecycle.ViewModelProviders
+import com.lanyard.library.SplinePath
+import com.lanyard.pirateerlite.models.TownModel
+import com.lanyard.pirateerlite.viewmodels.SplashViewModel
 
-class SplashActivity : FragmentActivity(), Game.GameListener {
+
+class SplashActivity : FragmentActivity() {
     var mapConfig : HashMap<String, Any>? = null
+    lateinit private var _viewModel : SplashViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if(getResources().getBoolean(R.bool.portrait_only)){
+            setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
+        }
         super.onCreate(savedInstanceState)
         mapConfig = Map.loadConfig(this)
+
         if (savedInstanceState == null) {
             var screenSize = getResources().getConfiguration().screenLayout and SCREENLAYOUT_SIZE_MASK
             if (screenSize == SCREENLAYOUT_SIZE_LARGE || screenSize == SCREENLAYOUT_SIZE_XLARGE) {
@@ -40,90 +68,103 @@ class SplashActivity : FragmentActivity(), Game.GameListener {
             BoatModel.initialize(applicationContext)
             Game.initialize(applicationContext, mapConfig!!)
             Audio.initialize(applicationContext)
-
         }
-        Game.instance.addGameListener(this)
-    }
 
-    override fun onDatabaseCreated () {
-        var userdata = Game.instance.db.userDao().getUser()
-        var statdata = Game.instance.db.statsDao().getStats()
-        var boatData = Game.instance.db.boatDao().getBoats()
-        var townData = Game.instance.db.townDao().getTowns()
-        var count = 4
-        var countDown = {
-            count -= 1
-            if (count == 0) {
-                onPrimaryDataFetch(userdata.value!!, statdata.value!!, boatData.value!!, townData.value!!)
+        _viewModel = ViewModelProviders.of(this).get(SplashViewModel::class.java)
+
+        _viewModel.dbReady.observe(this, Observer {
+            var count = 4
+            var countDown = {
+                count -= 1
+                if (count == 0) {
+                    onPrimaryDataFetch()
+                }
             }
-        }
-        userdata.observe(this, Observer {
-            userdata.removeObservers(this)
-            countDown()
-        })
-        statdata.observe(this, Observer {
-            statdata.removeObservers(this)
-            countDown()
-        })
-        boatData.observe(this, Observer {
-            boatData.removeObservers(this)
-            countDown()
-        })
-        townData.observe(this, Observer {
-            townData.removeObservers(this)
-            countDown()
+            var observer = Observer<Any> { countDown() }
+            _viewModel.userdata?.observe(this, observer)
+            _viewModel.statdata?.observe(this, observer)
+            _viewModel.boatData?.observe(this, observer)
+            _viewModel.townData?.observe(this, observer)
         })
     }
 
-    fun onPrimaryDataFetch(userData: Array<UserData>, statsData: Array<StatsData>, boatData: Array<BoatData>, townData: Array<TownData>) {
+
+
+    fun onPrimaryDataFetch() {
         var metrics = DisplayMetrics()
         windowManager.defaultDisplay.getMetrics(metrics)
-        Map.initialize(applicationContext,mapConfig!!, townData, metrics.density)
-        User.initialize(applicationContext,userData[0], statsData, boatData)
+        Map.initialize(applicationContext,mapConfig!!,_viewModel.townData?.value!!, metrics.density)
+        User.initialize(applicationContext,_viewModel.userdata?.value!![0], _viewModel.statdata?.value!!, _viewModel.boatData?.value!!)
         User.instance.addObserver(Game.instance)
-        BoatModel.scale = metrics.density
-        var count = User.instance.boats.size + Map.instance.towns.size * 2
+
+        var count = 3
         var countDown = {
             count -= 1
             if (count == 0) {
                 onSecondaryDataFetch()
             }
         }
-        for (boat in User.instance.boats) {
-            var boatJobs = Game.instance.db.boatJobDao().getJobs(boat.id)
-            boatJobs.observe(this, Observer {
-                boatJobs.removeObservers(this)
-                var jobs = List<JobModel>(boatJobs.value!!.size, {
-                    JobModel(boatJobs.value!![it].jobData)
-                })
-                boat.setCargo (jobs)
-                countDown()
-            })
-        }
-        for (town in Map.instance.towns) {
-            var townJobs = Game.instance.db.townJobDao().getJobs(town.id)
-            townJobs.observe(this, Observer {
-                townJobs.removeObservers(this)
-                var jobs = townJobs.value!!.mapNotNull { if (it.dateCreated >= town.jobsTimeStamp) JobModel(it.jobData) else null }
-                town.setJobs(jobs)
-                countDown()
-            })
-        }
-        for (town in Map.instance.towns) {
-            var storageJobs = Game.instance.db.storageJobDao().getJobs(town.id)
-            storageJobs.observe(this, Observer {
-                storageJobs.removeObservers(this)
-                var jobs = List<JobModel>(storageJobs.value!!.size, {
-                    JobModel(storageJobs.value!![it].jobData)
-                })
-                town.setStorage(jobs)
-                countDown()
-            })
-        }
+
+        var boatIds = mutableListOf<Long>()
+        User.instance.boats.mapTo(boatIds,{ it.id })
+        var townIds = mutableListOf<Long>()
+        Map.instance.towns.mapTo(townIds,{ it.id })
+
+        _viewModel.fetchBoatJobs(boatIds).observe(this, Observer {
+
+            var boat : BoatModel? = null
+            var jobs = mutableListOf<JobModel>()
+            for (data in it) {
+                if (boat == null || data.boatid != boat.id) {
+                    if (!jobs.isEmpty()) {
+                        boat?.setCargo(jobs)
+                    }
+                    boat = User.instance.boats.find { it.id == data.boatid }
+                }
+                if (boat != null) {
+                    jobs.add(JobModel(data.jobData))
+                }
+            }
+            countDown()
+        })
+        _viewModel.fetchTownJobs(townIds).observe(this, Observer {
+            var town : TownModel? = null
+            var jobs = mutableListOf<JobModel>()
+            for (data in it) {
+                if (town == null || data.townid != town.id) {
+                    if (!jobs.isEmpty()) {
+                        town?.setJobs(jobs)
+                    }
+                    town = Map.instance.towns.find { it.id == data.townid }
+                }
+                if (town != null) {
+                    jobs.add(JobModel(data.jobData))
+                }
+            }
+            countDown()
+        })
+
+        _viewModel.fetchStorageJobs(townIds).observe(this, Observer {
+            var town : TownModel? = null
+            var jobs = mutableListOf<JobModel>()
+            for (data in it) {
+                if (town == null || data.townid != town!!.id) {
+                    if (!jobs.isEmpty()) {
+                        town?.setStorage(jobs)
+                    }
+                    town = Map.instance.towns.find { it.id == data.townid }
+                }
+                if (town != null) {
+                    jobs.add(JobModel(data.jobData))
+                }
+            }
+            countDown()
+        })
 
     }
 
     fun onSecondaryDataFetch() {
+
         val intent = Intent(applicationContext, MapActivity::class.java)
         startActivity(intent)
         finish()

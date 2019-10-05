@@ -1,6 +1,21 @@
+/*
+ * Copyright 2019 Peter Respondek
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.lanyard.pirateerlite.singletons
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.Point
 import com.google.gson.Gson
@@ -9,7 +24,6 @@ import com.google.gson.stream.JsonReader
 import com.lanyard.library.Edge
 import com.lanyard.library.Graph
 import com.lanyard.library.Vertex
-import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.controllers.JobController
 import com.lanyard.pirateerlite.data.TownData
 import com.lanyard.pirateerlite.models.TownModel
@@ -25,8 +39,10 @@ class Map {
     companion object {
         private var _map: Map? = null
         fun initialize(context: Context, config: HashMap<String,Any>, data: Array<TownData>, scale: Float) {
-            _map = Map()
-            _map!!.setup(context, config, data, scale)
+            if (_map == null) {
+                _map = Map()
+                _map!!.setup(context, config, data, scale)
+            }
         }
         fun loadConfig (context: Context): HashMap<String, Any> {
             val gson = Gson()
@@ -60,7 +76,7 @@ throw ExceptionInInitializerError()
             }
     }
 
-    fun townPosition(town: TownModel): Point {
+    fun townPosition(town: TownModel) : Point {
         var pos: Point? = null
         for (vert in graph.vertices) {
             if (town === vert.data) {

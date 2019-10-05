@@ -14,13 +14,30 @@
             app:layout_constraintStart_toStartOf="parent" app:layout_constraintEnd_toEndOf="parent"
             android:id="@+id/frag_container" app:layout_constraintBottom_toTopOf="@+id/navigation"
             android:gravity="center">
-        <FrameLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp" android:layout_weight="1" android:id="@+id/mapFrame"/>
+                android:layout_height="0dp" android:layout_weight="1">
+
+            <FrameLayout
+                    android:layout_height="match_parent"
+                    android:layout_width="match_parent"
+                    android:id="@+id/mapFrame"
+                    app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"/>
+            <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:id="@+id/menuFrame"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintTop_toTopOf="parent"
+            />
+        </androidx.constraintlayout.widget.ConstraintLayout>
         <fragment
                 android:layout_width="match_parent"
                 android:layout_height="32dp" android:name="com.lanyard.pirateerlite.fragments.WalletFragment"
-                android:id="@+id/wallet"/>
+                android:id="@+id/wallet" android:tag="wallet"/>
     </LinearLayout>
     <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/navigation"

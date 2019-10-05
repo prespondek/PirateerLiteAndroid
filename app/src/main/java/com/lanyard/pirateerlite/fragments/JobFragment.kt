@@ -1,10 +1,30 @@
+/*
+ * Copyright 2019 Peter Respondek
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.lanyard.pirateerlite.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.*
 import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.widget.*
+import androidx.core.app.ShareCompat
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.lanyard.helpers.GridLayoutManagerAutofit
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.controllers.BoatController
@@ -13,6 +33,7 @@ import com.lanyard.pirateerlite.models.JobModel
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.singletons.Audio
 import com.lanyard.pirateerlite.singletons.Game
+import com.lanyard.pirateerlite.singletons.Map
 import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.views.CargoView
 import com.lanyard.pirateerlite.views.JobView
@@ -34,7 +55,7 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
     private var _jobThread: Thread? = null
 
 
-    inner class JobAdapter(val jobs: ArrayList<JobModel?>) :
+    inner class JobAdapter( val jobs: ArrayList<JobModel?> ) :
         androidx.recyclerview.widget.RecyclerView.Adapter<JobFragment.JobAdapter.JobViewHolder>() {
 
         fun setJobs(jobs: Iterable<JobModel?>) {
@@ -44,7 +65,7 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
             }
         }
 
-        inner class JobViewHolder(val view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view),
+        inner class JobViewHolder( val view: View ) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view),
             View.OnClickListener {
             init {
                 view.setOnClickListener(this)
@@ -129,9 +150,9 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
         }
 
         override fun getItemViewType(position: Int): Int {
-            if (position == 0 || position == _jobs!!.size + 1) {
+            if (position == 0 || position == jobs.size + 1) {
                 return JOBCELL_HEADER
-            } else if (position <= _jobs!!.size) {
+            } else if (position <= jobs.size) {
                 return JOBCELL_JOB
             }
             return JOBCELL_STORAGE
@@ -177,6 +198,7 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
 
 
     fun updateCargoValue() {
+        Game.instance.boatJobsChanged(boatController!!.model)
         val value = _cargoView.cargoValue
         _goldLabel.text = value[0].toString()
         _silverLabel.text = value[1].toString()
@@ -188,7 +210,9 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
             return
         }
         val label = holder.itemView.findViewById<TextView>(R.id.jobTimer)
-        if (townModel!!.jobsDirty == false) {
+        if (townModel == null) {
+            label.text = ""
+        } else if (townModel!!.jobsDirty == false) {
             val diff = (User.jobInterval - (Date().time - User.instance.jobDate.time)) / 60
             var secs = diff / 10
             val mins = secs / 60
@@ -211,7 +235,16 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
         if (boat === boatController?.model) {
             //NotificationCenter.default.removeObserver(self)
             //viewDidLoad()
-            _adapter.notifyDataSetChanged()
+            updateJobs()
+        }
+    }
+
+    override fun boatSailed(boat: BoatModel) {
+        if (boat === boatController?.model) {
+            //NotificationCenter.default.removeObserver(self)
+            //viewDidLoad()
+
+            updateJobs()
         }
     }
 
@@ -231,20 +264,61 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
             _storage = townModel!!.storage
             //_refreshControl.addTarget(self, action: #selector(reloadJobs(_:)), for: UIControl.Event.valueChanged)
             //jobView.addSubview(_refreshControl)
+            _adapter = JobAdapter(ArrayList(_jobs))
         } else if (boatController!!.isSailing != true) {
             townModel = boatController!!.model.town!!
             //townModel.delegate = self
             _jobs = townModel!!.jobs
             _storage = townModel!!.storage
+            val table_jobs = ArrayList(jobs)
+            for (boat in townModel!!.boats) {
+                for (job in boat.cargo) {
+                    if (job?.source === townModel) {
+                        val idx = table_jobs.indexOfFirst { it === job }
+                        if (idx >= 0) {
+                            table_jobs[idx] = null
+                        }
+                    }
+                }
+            }
+            _adapter = JobAdapter(table_jobs)
             _cargo = _cargoView.setup(this.activity!!, _size, boatController!!)
             _cargoView.cargoListener = object : CargoView.CargoListener {
                 override fun jobPressed(view: JobModel) : Boolean {
                     return cargoTouch(view)
                 }
             }
+            _cargoPanel.visibility = VISIBLE
         } else {
+            townModel = null
+            _jobThread?.interrupt()
+            updateJobTimer()
             _cargoPanel.visibility = GONE
+            _storage = ArrayList()
             _jobs = boatController!!.model.cargo.toList()
+            _adapter = JobAdapter(ArrayList(_jobs))
+        }
+
+        _jobView.adapter = _adapter
+
+        if (townModel != null) {
+
+            _jobThread = object : Thread() {
+
+                override fun run() {
+                    try {
+                        while (!this.isInterrupted) {
+                            Thread.sleep(1000)
+                            activity?.runOnUiThread(Runnable {
+                                updateJobTimer()
+                            })
+                        }
+                    } catch (e: InterruptedException) {
+                    }
+
+                }
+            }
+            _jobThread?.start();
         }
     }
 
@@ -319,22 +393,6 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
             swipe.isRefreshing = false
         }
 
-        updateJobs()
-        val table_jobs = ArrayList(jobs)
-        if (boatController != null && townModel != null) {
-            for (boat in townModel!!.boats) {
-                for (job in boat.cargo) {
-                    if (job?.source === townModel) {
-                        val idx = table_jobs.indexOfFirst { it === job }
-                        if (idx >= 0) {
-                            table_jobs[idx] = null
-                        }
-                    }
-                }
-            }
-        }
-        _adapter = JobAdapter(table_jobs)
-
         viewManager.spanSizeLookup = object : androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 val span = viewManager.spanCount
@@ -348,28 +406,35 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
         _jobView.apply {
             setHasFixedSize(true)
             layoutManager = viewManager
-            adapter = _adapter
         }
 
-        if (townModel != null) {
-
-            _jobThread = object : Thread() {
-
-                override fun run() {
-                    try {
-                        while (!this.isInterrupted) {
-                            Thread.sleep(1000)
-                            activity?.runOnUiThread(Runnable {
-                                updateJobTimer()
-                            })
-                        }
-                    } catch (e: InterruptedException) {
-                    }
-
-                }
+        if ( savedInstanceState != null ) {
+            val boatId = savedInstanceState["boatController"] as Long?
+            if ( boatId != null ) {
+                val map = fragmentManager!!.findFragmentByTag("map") as MapFragment
+                boatController = map.boatControllerForId(boatId)
             }
-            _jobThread?.start();
+            val townId = savedInstanceState["townModel"] as Long?
+            if ( townId != null ) {
+                townModel = Map.instance.towns.find { it.id == townId }
+            }
         }
+
+        updateJobs()
+
         return view
+    }
+
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        val boat = boatController
+        if (boat != null) {
+            outState.putLong("boatController", boat.model.id)
+        }
+        val town = townModel
+        if (town != null) {
+            outState.putLong("townModel", town.id)
+        }
     }
 }

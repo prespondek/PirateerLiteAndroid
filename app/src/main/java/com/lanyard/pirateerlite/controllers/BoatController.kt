@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Peter Respondek
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.lanyard.pirateerlite.controllers
 
 import android.graphics.Point
@@ -13,15 +29,16 @@ import com.lanyard.pirateerlite.singletons.Map
 import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.views.BoatView
 import kotlinx.coroutines.runBlocking
+import java.lang.ref.WeakReference
 import java.util.*
 
 
 class BoatController (model: BoatModel, view: BoatView) {
 
     companion object {
-        private var _mapController : MapFragment? = null
+        private var _mapController = WeakReference<MapFragment>(null)
         fun setController (controller: MapFragment) {
-            BoatController._mapController = controller
+            _mapController = WeakReference(controller)
         }
     }
     var model : BoatModel
@@ -43,7 +60,7 @@ class BoatController (model: BoatModel, view: BoatView) {
         }
     }
 
-    fun sail() {
+    fun sail() : Boolean {
         view.removePaths()
             for (job in model.cargo) {
                 if (job != null) {
@@ -75,7 +92,9 @@ class BoatController (model: BoatModel, view: BoatView) {
                 this.model.setCourseTime( view.length )
             }
             view.sail( Date(this.model.departureTime ), this.model.courseTime )
+            return true
         }
+        return false
     }
 
     private fun arrived (town: TownModel, quiet : Boolean = false) {
@@ -83,7 +102,7 @@ class BoatController (model: BoatModel, view: BoatView) {
         if (this.model.isMoored) {
             view.sprite.hidden = true
             view.sprite.removeAction("sail")
-            BoatController._mapController?.boatArrived(this)
+            _mapController.get()?.boatArrived(this)
         }
     }
 }

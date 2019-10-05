@@ -5,15 +5,15 @@
             android:id="@+id/navigation_map"
             android:icon="@drawable/ic_nav_map"
             android:title="@string/title_map"/>
-
+    <item
+            android:id="@+id/navigation_boats"
+            android:icon="@drawable/ic_nav_boats"
+            android:title="@string/title_boats"/>
     <item
             android:id="@+id/navigation_menu"
             android:icon="@drawable/ic_nav_menu"
             android:title="@string/title_menu"/>
 
-    <item
-            android:id="@+id/navigation_boats"
-            android:icon="@drawable/ic_nav_boats"
-            android:title="@string/title_boats"/>
+
 
 </menu>

@@ -1,7 +1,24 @@
+/*
+ * Copyright 2019 Peter Respondek
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.lanyard.pirateerlite.singletons
 
-import android.app.Activity
 import android.content.Context
+import android.os.Parcel
+import android.os.Parcelable
 import com.lanyard.pirateerlite.models.BoatModel
 import java.util.*
 import kotlin.collections.HashMap
@@ -37,10 +54,13 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             BoatStatInfo("maxVoyages", {boat-> boat.totalVoyages}))
 
         fun initialize(context: Context, userData: UserData, statData: Array<StatsData>, boatData: Array<BoatData>) {
-            val gson = Gson()
-            val reader = JsonReader(InputStreamReader(context.assets.open("user_model.json")))
-            userConfig = gson.fromJson<HashMap<String, Any>>(reader, object : TypeToken<HashMap<String, Any>>() {}.type)
-            _user = User(userData, statData, boatData)
+            if (_user == null) {
+                val gson = Gson()
+                val reader = JsonReader(InputStreamReader(context.assets.open("user_model.json")))
+                userConfig =
+                    gson.fromJson<HashMap<String, Any>>(reader, object : TypeToken<HashMap<String, Any>>() {}.type)
+                _user = User(userData, statData, boatData)
+            }
             //_user?._data = data
         }
 
@@ -146,19 +166,35 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
         }
     }
 
-    class BoatPart(boat: String, item: MarketItem) {
-        var boat: String
-        var item: MarketItem
+    class BoatPart(val boat: String, val item: MarketItem) : Parcelable {
 
-        init {
-            this.boat = boat
-            this.item = item
+        override fun writeToParcel(dest: Parcel?, flags: Int) {
+            dest?.writeString(boat)
+            dest?.writeInt(item.index)
+        }
+
+        constructor(parcel: Parcel) : this(
+            parcel.readString(),
+            MarketItem.withIndex(parcel.readInt()))
+
+        override fun describeContents(): Int {
+            return 0
         }
 
         override fun equals(other: Any?): Boolean {
             var rhs = other as? BoatPart
             if (rhs == null) return false
             return boat == rhs.boat && item == rhs.item
+        }
+
+        companion object CREATOR : Parcelable.Creator<BoatPart> {
+            override fun createFromParcel(parcel: Parcel): BoatPart {
+                return BoatPart(parcel)
+            }
+
+            override fun newArray(size: Int): Array<BoatPart?> {
+                return arrayOfNulls(size)
+            }
         }
     }
 
@@ -414,7 +450,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
 
     fun purchaseBoatWithParts(boat: BoatModel, parts: List<BoatPart>) {
         for (part in parts) {
-            this.parts.removeAll { it === part }
+            this.parts.remove(this.parts.last { it == part })
         }
         addBoat(boat)
     }
@@ -422,16 +458,9 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
     fun purchaseBoatWithMoney(boat: BoatModel, parts: List<BoatPart>) {
         addMoney(gold - (BoatModel.boatConfig(boat.type, BoatModel.BoatIndex.boat_cost) as Int), 0)
         for (part in parts) {
-            this._market.removeAll { it === part }
+            this._market.remove(this._market.last { it == part })
         }
         addBoat(boat)
-    }
-
-    fun removePart(part: BoatPart) {
-        val idx = _market.indexOfFirst { it === part }
-        if (idx != null) {
-            _market.removeAt(idx)
-        }
     }
 
     fun addObserver(observer: UserObserver) {

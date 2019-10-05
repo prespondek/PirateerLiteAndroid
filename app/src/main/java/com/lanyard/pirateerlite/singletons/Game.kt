@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 Peter Respondek
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.lanyard.pirateerlite.singletons
 
 import android.content.Context
@@ -32,8 +48,10 @@ class Game private constructor(context: Context, mapConfig: HashMap<String, Any>
     }
 
     interface GameListener {
+        fun boatSailed(boat: BoatModel) {}
         fun boatArrived(boat: BoatModel, town: TownModel) {}
         fun jobDelivered(boat: BoatModel, town: TownModel, gold: Int, silver: Int, quiet: Boolean) {}
+        fun boatJobsChanged(boat: BoatModel) {}
         fun onDatabaseCreated () {}
     }
 
@@ -41,13 +59,6 @@ class Game private constructor(context: Context, mapConfig: HashMap<String, Any>
 
     init {
         _listeners = ArrayList()
-    }
-
-    override fun databaseCreated() {
-        clearDeadReferences()
-        for (listener in _listeners) {
-            listener.get()?.onDatabaseCreated()
-        }
     }
 
     fun addGameListener(listener: GameListener) {
@@ -58,18 +69,30 @@ class Game private constructor(context: Context, mapConfig: HashMap<String, Any>
         _listeners.removeAll { it.get() == null }
     }
 
-    fun boatArrived(boat: BoatModel, town: TownModel) {
+    fun callListeners (exec: (GameListener)->Unit) {
         clearDeadReferences()
         for (listener in _listeners) {
-            listener.get()?.boatArrived(boat, town)
+            exec(listener.get()!!)
         }
+    }
+
+    override fun databaseCreated() {
+        callListeners { it.onDatabaseCreated() }
+    }
+
+    fun boatArrived(boat: BoatModel, town: TownModel) {
+        callListeners { it.boatArrived(boat, town) }
+    }
+
+    fun boatJobsChanged(boat: BoatModel) {
+        callListeners { it.boatJobsChanged(boat) }
     }
 
     fun jobDelivered(boat: BoatModel, town: TownModel, gold: Int, silver: Int, quiet: Boolean) {
-        clearDeadReferences()
-        for (listener in _listeners) {
-            listener.get()?.jobDelivered(boat, town, gold, silver, quiet)
-        }
+        callListeners { it.jobDelivered(boat, town, gold, silver, quiet) }
     }
 
+    fun boatSailed(boat: BoatModel) {
+        callListeners { it.boatSailed(boat) }
+    }
 }

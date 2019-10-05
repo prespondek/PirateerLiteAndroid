@@ -5,8 +5,9 @@
                                                    android:orientation="vertical"
                                                    android:layout_width="match_parent"
                                                    android:layout_height="wrap_content"
-                                                   android:background="?android:attr/selectableItemBackground"
-                                                   android:animateLayoutChanges="true">
+                                                   android:animateLayoutChanges="true"
+                                                   android:background="@drawable/boatcell_background"
+                                                   android:id="@+id/boatCellLayout">
 
     <LinearLayout
             android:orientation="horizontal"
@@ -17,12 +18,12 @@
             app:layout_constraintHorizontal_bias="0.0" app:layout_constraintVertical_bias="0.0">
         <FrameLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent" android:layout_weight="0.8">
+                android:layout_height="match_parent" android:layout_weight="0.35">
 
         </FrameLayout>
         <FrameLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent" android:layout_weight="2">
+                android:layout_height="match_parent" android:layout_weight="0.65">
 
             <TextView
                     android:text="@string/emptyslot"
@@ -42,7 +43,7 @@
             android:id="@+id/boatFrame" app:layout_constraintBottom_toTopOf="@+id/linearLayout2">
         <FrameLayout
                 android:layout_width="0dp"
-                android:layout_height="wrap_content" android:layout_weight="0.8">
+                android:layout_height="wrap_content" android:layout_weight="0.35">
 
             <ImageView
                     android:layout_width="wrap_content"
@@ -52,7 +53,7 @@
         </FrameLayout>
         <FrameLayout
                 android:layout_width="0dp"
-                android:layout_height="match_parent" android:layout_weight="2">
+                android:layout_height="match_parent" android:layout_weight="0.65">
 
             <LinearLayout
                     android:orientation="vertical"
@@ -106,4 +107,10 @@
                 android:layout_height="wrap_content" android:id="@+id/mooringCost" android:gravity="center"
                 android:layout_gravity="center_vertical"/>
     </LinearLayout>
+    <ImageView
+            android:layout_width="0dp"
+            android:layout_height="0dp" app:srcCompat="@android:color/holo_green_dark"
+            android:id="@+id/overlay" app:layout_constraintBottom_toBottomOf="@+id/boatFrame"
+            app:layout_constraintTop_toTopOf="@+id/boatFrame" app:layout_constraintEnd_toEndOf="@+id/boatFrame"
+    />
 </androidx.constraintlayout.widget.ConstraintLayout>

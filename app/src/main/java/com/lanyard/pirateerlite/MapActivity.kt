@@ -1,38 +1,41 @@
+/*
+ * Copyright 2019 Peter Respondek
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.lanyard.pirateerlite
 
-import android.content.Context
+import android.content.pm.ActivityInfo
 import android.content.res.Configuration
-import android.content.res.Resources
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Looper
-import android.os.PersistableBundle
-import android.util.AttributeSet
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
-import androidx.appcompat.app.ActionBar
 import androidx.appcompat.app.AppCompatActivity
-import android.util.DisplayMetrics
 import android.view.MenuItem
 import com.lanyard.canvas.BitmapCache
-import com.lanyard.canvas.BitmapStream
 import com.lanyard.pirateerlite.controllers.TownController
 import com.lanyard.pirateerlite.fragments.*
-import com.lanyard.pirateerlite.models.BoatModel
-import com.lanyard.pirateerlite.singletons.User
-import com.lanyard.pirateerlite.singletons.Map
 import kotlinx.android.synthetic.main.activity_map.*
 import android.view.Menu
-import android.view.View
 import android.view.View.*
 import android.widget.FrameLayout
-import androidx.constraintlayout.widget.ConstraintLayout
-import com.lanyard.pirateerlite.singletons.Game
-import java.util.concurrent.Executor
+import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
+import androidx.fragment.app.FragmentTransaction
+import com.lanyard.pirateerlite.singletons.Audio
 
 
 class MapActivity : AppCompatActivity() {
@@ -49,30 +52,60 @@ class MapActivity : AppCompatActivity() {
     init {
     }
 
-    private val mOnNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener {
+    private val _onNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener {
         if (currMenuItem == it.itemId) {
-            return@OnNavigationItemSelectedListener false
+            return@OnNavigationItemSelectedListener true
         }
         swapFragment(it.itemId)
         return@OnNavigationItemSelectedListener true
     }
 
+    private val _onBackStackChangedListener = FragmentManager.OnBackStackChangedListener {
+        var frag = supportFragmentManager.primaryNavigationFragment
+        if (frag != null) {
+            _fragment = frag
+        }
+        var item : Int? = null
+        when(frag?.tag) {
+            "map" -> item = R.id.navigation_map
+            "boats" -> item = R.id.navigation_boats
+            "menu" -> item = R.id.navigation_menu
+        }
+        if (item != null) {
+            currMenuItem = item
+            navigation.selectedItemId = item
+        }
+    }
+
+    override fun onBackPressed() {
+        val map = supportFragmentManager.findFragmentByTag("map")
+        if (getResources().getBoolean(R.bool.landscape) != true &&
+            supportFragmentManager.backStackEntryCount == 0 &&
+            map != null && map.isHidden ) {
+            navigation.selectedItemId = R.id.navigation_map
+        } else {
+            super.onBackPressed()
+        }
+    }
+
     fun swapFragment(id: Int?, tag: Any? = null): androidx.fragment.app.Fragment {
         val transaction = supportFragmentManager.beginTransaction()
         transaction.setReorderingAllowed(true)
-        transaction.setCustomAnimations(R.anim.abc_popup_enter,R.anim.abc_popup_exit)
-        if (currMenuItem == R.id.navigation_map) {
-            transaction.hide(_fragment)
-            currMenuItem = null
-        } else {
-            transaction.remove(_fragment)
-        }
+        transaction.setCustomAnimations(R.anim.abc_popup_enter, R.anim.abc_popup_exit)
+        var prevFrag = _fragment
+            if (currMenuItem == R.id.navigation_map) {
+                transaction.hide(prevFrag)
+                currMenuItem = null
+            } else {
+                transaction.remove(prevFrag)
+            }
         if (id == R.id.navigation_map) {
             navigation.menu.getItem(0).setCheckable(true)
-            transaction.remove(_fragment)
             _fragment = supportFragmentManager.findFragmentByTag("map")!!
-            for (i in 0 until supportFragmentManager.getBackStackEntryCount()) {
-                supportFragmentManager.popBackStack()
+            transaction.runOnCommit {
+                for (i in 0 until supportFragmentManager.getBackStackEntryCount()) {
+                    supportFragmentManager.popBackStack()
+                }
             }
             transaction.show(_fragment)
             navigation.visibility = VISIBLE
@@ -117,9 +150,10 @@ class MapActivity : AppCompatActivity() {
                     }
                 }
             }
-            transaction.add(R.id.mapFrame, _fragment, name)
-            transaction.addToBackStack(null);
+            transaction.add(R.id.menuFrame, _fragment, name)
+            transaction.addToBackStack(name)
         }
+        transaction.setPrimaryNavigationFragment(_fragment)
         transaction.commit()
         currMenuItem = id
         return _fragment
@@ -146,36 +180,62 @@ class MapActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        if(getResources().getBoolean(R.bool.portrait_only)){
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
         super.onCreate(savedInstanceState)
         Looper.getMainLooper().thread.name = "PirateerMain"
         setContentView(R.layout.activity_map)
-        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener)
+        navigation.setOnNavigationItemSelectedListener(_onNavigationItemSelectedListener)
+        supportFragmentManager.addOnBackStackChangedListener (_onBackStackChangedListener)
+
+        var arr = arrayOf("nav_plot.png", "nav_plotted.png")
+        for (n in arr) {
+            BitmapCache.instance.addBitmap(applicationContext, n, Bitmap.Config.ARGB_4444)
+        }
+        if (getResources().getBoolean(R.bool.landscape) == true) {
+            navigation.menu.removeItem(R.id.navigation_map)
+        }
+
+        val transaction = supportFragmentManager.beginTransaction()
         if (savedInstanceState == null) {
-            var arr = arrayOf("nav_plot.png", "nav_plotted.png")
-            for (n in arr) {
-                BitmapCache.instance.addBitmap(applicationContext, n, Bitmap.Config.ARGB_4444)
-            }
-            val transaction = supportFragmentManager.beginTransaction()
-            var map = MapFragment()
+            val map = MapFragment()
             transaction.add(R.id.mapFrame, map, "map")
-            transaction.commit()
-            _fragment = map
-            currMenuItem = R.id.navigation_map
-            supportFragmentManager.addOnBackStackChangedListener {
-                if (supportFragmentManager.backStackEntryCount == 0) {
-                    navigation.selectedItemId = R.id.navigation_map
-                } else {
-                    _fragment = supportFragmentManager.fragments.last()
+            if (getResources().getBoolean(R.bool.landscape) == true) {
+                _fragment = BoatListFragment()
+                transaction.add(R.id.menuFrame, _fragment, "boats")
+                currMenuItem = R.id.navigation_boats
+            } else {
+                currMenuItem = R.id.navigation_map
+                _fragment = map
+            }
+        } else {
+            val map = supportFragmentManager.findFragmentByTag("map")!!
+            val frag = supportFragmentManager.fragments.findLast { it.tag != null && it.tag != "wallet" && it.tag != "map" && it !is DialogFragment }
+            if (getResources().getBoolean(R.bool.landscape) == true) {
+                transaction.show(map)
+                if (frag == null) {
+                    _fragment = BoatListFragment()
+                    transaction.add(R.id.menuFrame, _fragment, "boats")
+                    currMenuItem = R.id.navigation_boats
                 }
+            } else {
+                transaction.hide(map)
+            }
+            if (frag != null) {
+                _fragment = frag
+                currMenuItem = savedInstanceState.getInt("currMenuItem")
             }
         }
+        transaction.setPrimaryNavigationFragment(_fragment)
+        transaction.commit()
     }
+
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
         super.onRestoreInstanceState(savedInstanceState)
-        _fragment = supportFragmentManager.fragments.last()
-        currMenuItem = savedInstanceState?.getInt("currMenuItem")
     }
 
     override fun onConfigurationChanged(newConfig: Configuration?) {
@@ -188,5 +248,15 @@ class MapActivity : AppCompatActivity() {
             outState?.putInt("currMenuItem", currMenuItem!!)
         }
         super.onSaveInstanceState(outState)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Audio.instance.pause()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Audio.instance.resume()
     }
 }
