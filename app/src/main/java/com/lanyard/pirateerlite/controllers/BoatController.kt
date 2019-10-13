@@ -41,14 +41,16 @@ class BoatController (model: BoatModel, view: BoatView) {
             _mapController = WeakReference(controller)
         }
     }
-    var model : BoatModel
-    var view : BoatView
+    val model : BoatModel
+    val view : BoatView
+    private val _handler : Handler
 
     val isSailing : Boolean get() {
         return this.model.town == null
     }
 
     init {
+        this._handler = Handler()
         this.model = model
         this.view = view
         if (model.town != null) {
@@ -58,6 +60,10 @@ class BoatController (model: BoatModel, view: BoatView) {
                 view.sprite.position = Point(source!!.position)
             }
         }
+    }
+
+    fun destroy() {
+        _handler.removeCallbacksAndMessages(null)
     }
 
     fun sail() : Boolean {
@@ -79,8 +85,8 @@ class BoatController (model: BoatModel, view: BoatView) {
                 if (model.departureTime != 0L) {
                     time -= Date().time - model.departureTime
                 }
-                Handler().postDelayed({
-                    this.arrived(path.last()!!.next.data as TownModel)
+                _handler.postDelayed({
+                    this.arrived(path.last().next.data as TownModel)
                 }, time)
             }
         }

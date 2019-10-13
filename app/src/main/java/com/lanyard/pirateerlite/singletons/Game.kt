@@ -65,6 +65,10 @@ class Game private constructor(context: Context, mapConfig: HashMap<String, Any>
         _listeners.add(WeakReference(listener))
     }
 
+    fun removeGameListener(listener: GameListener) {
+        _listeners.removeAll { it.get() == listener }
+    }
+
     fun clearDeadReferences() {
         _listeners.removeAll { it.get() == null }
     }

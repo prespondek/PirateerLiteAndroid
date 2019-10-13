@@ -74,6 +74,10 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
     private lateinit var _scrollView: MapScrollView
     lateinit var wallet: WalletFragment
     private lateinit var _toolTip: TextView
+    private val _cargoClickListener = View.OnClickListener {
+        val frag = (activity as MapActivity).swapFragment(R.id.holdButton) as JobFragment
+        frag.boatController = _selectedBoat!!
+    }
 
     val mode: Mode
         get () {
@@ -95,6 +99,13 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
                 return Mode.map
             }
         }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        for (boat in _boatControllers) {
+            boat.destroy()
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -123,10 +134,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
         _cancelButton = view.findViewById(R.id.cancelButton)
         _cancelButton.setOnClickListener { this.cancelButtonPressed() }
         _cargoButton = view.findViewById(R.id.holdButton)
-        _cargoButton.setOnClickListener(View.OnClickListener {
-            val frag = (activity as MapActivity).swapFragment(R.id.holdButton) as JobFragment
-            frag.boatController = _selectedBoat!!
-        })
+        _cargoButton.setOnClickListener(_cargoClickListener)
         _toolTip = view.findViewById(R.id.toolTip) as TextView
         val mapframe = view.findViewById(R.id.mapframe) as FrameLayout
         val buttonlayout = view.findViewById(R.id.buttonlayout) as ConstraintLayout
@@ -241,6 +249,14 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
             }
         }
         return view
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        var jobFrag = fragmentManager?.findFragmentByTag("job") as? JobFragment
+        if (jobFrag != null) {
+            jobFrag.boatController = _selectedBoat
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

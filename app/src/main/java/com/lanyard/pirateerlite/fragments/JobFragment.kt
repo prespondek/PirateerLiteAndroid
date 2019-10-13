@@ -16,8 +16,10 @@
 
 package com.lanyard.pirateerlite.fragments
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.DisplayMetrics
 import android.view.*
 import android.view.View.GONE
@@ -51,8 +53,26 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
     private lateinit var _cargo: Array<JobView>
     private lateinit var _jobView: androidx.recyclerview.widget.RecyclerView
     private lateinit var _adapter: JobAdapter
-    private var _jobTimer: Date
-    private var _jobThread: Thread? = null
+    private lateinit var _jobTimeStamp: Date
+    private lateinit var _jobTimer: CountDownTimer
+
+
+    fun getRemainingJobTime(): Long {
+        return User.jobInterval - (Date().time - _jobTimeStamp.time)
+    }
+
+    fun resetTimer() {
+        _jobTimer = object : CountDownTimer(getRemainingJobTime(), 1000) {
+            override fun onFinish() {
+                updateJobTimer(0)
+            }
+
+            override fun onTick(millisUntilFinished: Long) {
+                updateJobTimer(millisUntilFinished)
+            }
+        }
+        _jobTimer.start()
+    }
 
 
     inner class JobAdapter( val jobs: ArrayList<JobModel?> ) :
@@ -186,38 +206,37 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
     init {
         _size = 0.0f
         _jobs = null
-        _jobTimer = Date()
         townModel = null
         boatController = null
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        _jobThread?.interrupt()
     }
 
 
     fun updateCargoValue() {
         Game.instance.boatJobsChanged(boatController!!.model)
-        val value = _cargoView.cargoValue
-        _goldLabel.text = value[0].toString()
-        _silverLabel.text = value[1].toString()
+        if (_cargoPanel.visibility == VISIBLE) {
+            val value = _cargoView.cargoValue
+            _goldLabel.text = value[0].toString()
+            _silverLabel.text = value[1].toString()
+        }
     }
 
-    private fun updateJobTimer() {
-        val holder = _jobView.findViewHolderForLayoutPosition(0)
+    private fun updateJobTimer(millisUntilFinished: Long) {
+        var holder = _jobView.findViewHolderForLayoutPosition(0)
         if (holder == null) {
             return
         }
-        val label = holder.itemView.findViewById<TextView>(R.id.jobTimer)
+        var label = holder.itemView.findViewById<TextView>(R.id.jobTimer)
         if (townModel == null) {
             label.text = ""
-        } else if (townModel!!.jobsDirty == false) {
-            val diff = (User.jobInterval - (Date().time - User.instance.jobDate.time)) / 60
-            var secs = diff / 10
+        } else if (millisUntilFinished > 0) {
+            var secs = millisUntilFinished / 1000
             val mins = secs / 60
-            secs = secs - mins * 60
-            label.text = "New stock in " + mins + "." + secs + " minutes"
+            secs -= mins * 60
+            label.text = String.format("New stock in %d.%d minutes", mins, secs)
         } else {
             label.text = "New stock available"
         }
@@ -250,6 +269,7 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
 
     fun reloadJobs() {
         if (townModel!!.jobsDirty == true) {
+            _jobTimeStamp = User.instance.jobDate
             _jobs = townModel!!.jobs
             _adapter.setJobs(_jobs!!)
         }
@@ -262,12 +282,9 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
             _cargoPanel.visibility = GONE
             _jobs = townModel!!.jobs
             _storage = townModel!!.storage
-            //_refreshControl.addTarget(self, action: #selector(reloadJobs(_:)), for: UIControl.Event.valueChanged)
-            //jobView.addSubview(_refreshControl)
             _adapter = JobAdapter(ArrayList(_jobs))
         } else if (boatController!!.isSailing != true) {
             townModel = boatController!!.model.town!!
-            //townModel.delegate = self
             _jobs = townModel!!.jobs
             _storage = townModel!!.storage
             val table_jobs = ArrayList(jobs)
@@ -291,8 +308,7 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
             _cargoPanel.visibility = VISIBLE
         } else {
             townModel = null
-            _jobThread?.interrupt()
-            updateJobTimer()
+            updateJobTimer(0)
             _cargoPanel.visibility = GONE
             _storage = ArrayList()
             _jobs = boatController!!.model.cargo.toList()
@@ -301,25 +317,9 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
 
         _jobView.adapter = _adapter
 
-        if (townModel != null) {
+        resetTimer()
 
-            _jobThread = object : Thread() {
 
-                override fun run() {
-                    try {
-                        while (!this.isInterrupted) {
-                            Thread.sleep(1000)
-                            activity?.runOnUiThread(Runnable {
-                                updateJobTimer()
-                            })
-                        }
-                    } catch (e: InterruptedException) {
-                    }
-
-                }
-            }
-            _jobThread?.start();
-        }
     }
 
     fun cargoTouch(job: JobModel) : Boolean {
@@ -346,6 +346,10 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
             }
         }
         Audio.instance.queueSound(R.raw.button_select)
+        if (clear == true) {
+            var idx = boatController?.model?.cargo?.indexOfFirst { it === job }
+            boatController?.model?.cargo?.set(idx!!, null)
+        }
         updateCargoValue()
         return clear
     }
@@ -370,17 +374,25 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
         updateCargoValue()
     }
 
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        Game.instance.addGameListener(this)
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        Game.instance.removeGameListener(this)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        Game.instance.addGameListener(this)
         val metrics = DisplayMetrics()
         activity!!.windowManager.defaultDisplay.getMetrics(metrics)
         val viewManager = GridLayoutManagerAutofit(container!!.context, (120 * metrics.density).toInt())
-
+        _jobTimeStamp = User.instance.jobDate
         val view = inflater.inflate(R.layout.fragment_jobs, container, false)
         _jobView = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.jobTable)
         _cargoView = view.findViewById<CargoView>(R.id.cargoView)
@@ -421,6 +433,7 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
         }
 
         updateJobs()
+        updateCargoValue()
 
         return view
     }

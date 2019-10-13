@@ -60,7 +60,6 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
                 val view = _views.last()
                 if (view.job != null && cargoListener!!.jobPressed(view.job!!)) {
                     view.job = null
-                    _boat.cargo[_index.last()] = null
                 }
                 updateCells()
             }
