@@ -16,21 +16,13 @@
 
 package com.lanyard.pirateerlite.fragments
 
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.graphics.*
 import android.os.Bundle
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import android.util.DisplayMetrics
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import android.view.ViewTreeObserver
+import android.view.*
 import android.widget.*
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.lanyard.canvas.*
 import com.lanyard.helpers.*
 import com.lanyard.library.Edge
@@ -49,8 +41,6 @@ import com.lanyard.pirateerlite.singletons.Audio
 import com.lanyard.pirateerlite.singletons.Game
 import kotlinx.android.synthetic.main.activity_map.*
 import kotlinx.android.synthetic.main.fragment_map.*
-import kotlinx.coroutines.runBlocking
-import java.lang.NullPointerException
 
 class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.UserObserver {
 
@@ -67,6 +57,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
     private var _buildType: String? = null
     private var _buildParts = ArrayList<User.BoatPart>()
     private var _selectedTint = Color.BLACK
+    private var _density : Float = 0.0f
     private lateinit var _cargoButton: ImageButton
     private lateinit var _sailButton: ImageButton
     private lateinit var _cancelButton: ImageButton
@@ -124,6 +115,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
         // Inflate the layout for this fragment
         Game.instance.addGameListener(this)
         User.instance.addObserver(this)
+
         val view = inflater.inflate(R.layout.fragment_map, container, false)
         _scrollView = view.findViewById<MapScrollView>(R.id.vscrollview)
         _scene = view.findViewById<MapView>(R.id.mapView)
@@ -141,7 +133,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
 
         val metrics = DisplayMetrics()
         activity?.windowManager?.defaultDisplay?.getMetrics(metrics)
-        val logicalDensity = metrics.density
+        _density = metrics.density
 
         mapframe.layoutParams.width = _scene.scene!!.size.width
         mapframe.layoutParams.height = _scene.scene!!.size.height
@@ -157,7 +149,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
                 oldScrollX: Int,
                 oldScrollY: Int
             ) {
-                _scene.root.position = -Point(scrollX, scrollY) + _scene.padding
+                _scene.position = -Point(scrollX, scrollY) + _scene.padding
             }
         })
         _scrollView.setOnTouchListener { v, event ->
@@ -181,14 +173,14 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
             button.tag = town
             buttonlayout.addView(button)
 
-            button.layoutParams.width = (64 * logicalDensity).toInt()
-            button.layoutParams.height = (64 * logicalDensity).toInt()
+            button.layoutParams.width = (64 * _density).toInt()
+            button.layoutParams.height = (64 * _density).toInt()
             button.background = null
 
             val params = ConstraintSet()
             params.clone(buttonlayout)
 
-            val button_width = (32 * logicalDensity).toInt()
+            val button_width = (32 * _density).toInt()
             params.connect(
                 button.getId(), ConstraintSet.TOP, ConstraintSet.PARENT_ID,
                 ConstraintSet.TOP, (vert.position.y + _scene.padding.height - button_width).toInt()
@@ -204,7 +196,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
             val sprite = TownView()
             sprite.position = Point(vert.position.x, vert.position.y)
             sprite.zOrder = 2
-            _scene.root.addChild(sprite)
+            _scene.addChild(sprite)
 
             val label = CanvasLabel(town.name, null)
             label.position = Point(
@@ -216,7 +208,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
             label.strokeWidth = context!!.resources.getDimensionPixelSize(R.dimen.town_label_stroke).toFloat()
             label.zOrder = 2
             label.typeface = Typeface.DEFAULT_BOLD
-            _scene.root.addChild(label)
+            _scene.addChild(label)
 
             val townCtrl = TownController(town, button, sprite)
             _townControllers.add(townCtrl)
@@ -282,13 +274,14 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
     override fun onDestroy() {
         super.onDestroy()
         if (this::_scene.isInitialized) {
-            _scene.canvasThread?.setRunning(false)
+            _scene.canvasThread?.running = false
             _scene.canvasThread?.join()
         }
     }
 
     override fun onResume() {
         super.onResume()
+        _scene.canvasThread?.running = true
         when (mode) {
             Mode.track -> startTracking(_selectedBoat!!)
             Mode.nontrack -> {
@@ -297,6 +290,13 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
                 plotCourseForBoat(_selectedBoat!!)
             }
             else -> return
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (this::_scene.isInitialized) {
+            _scene.canvasThread?.running = false
         }
     }
 
@@ -317,7 +317,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
         val boatController = BoatController(boat, view)
         _boatControllers.add(boatController)
         view.sprite.zOrder = 4
-        this._scene.root.addChild(view.sprite)
+        this._scene.addChild(view.sprite)
         if (boatController.model.isMoored != true) {
             if (!boatController.sail()) {
                 boatController.view.sprite.position.set(townControllerForModel(boatController.model.town!!).view.position)
@@ -347,6 +347,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
     }
 
     fun plotRoutesForTown(townCtrl: TownController, distance: Float) {
+
         townCtrl.state = TownController.State.selected
         val startPos = Map.instance.townPosition(townCtrl.model)
         val paths = mutableListOf<List<Edge<WorldNode>>>()
@@ -356,7 +357,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
             }
             val endPos = Map.instance.townPosition(controller.model)
             val dist = startPos.distance(endPos)
-            if (dist > distance) {
+            if (dist > distance * _density) {
                 controller.state = TownController.State.blocked
             } else if (controller.model.level > 0) {
                 controller.state = TownController.State.unselected
@@ -366,7 +367,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
             }
             paths.add(Map.instance.getRoute(townCtrl.model, controller.model))
         }
-        _scene.plotRoutesForTown(townCtrl.model, paths, distance)
+        _scene.plotRoutesForTown(townCtrl.model, paths, distance * _density)
     }
 
     /*fun townUpgraded(notification: Notification) {
@@ -422,8 +423,9 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
     fun focusTown(town: TownModel) {
         val scene_pos = Map.instance.townPosition(town)
         val screen_pos = _scrollView.screenPosition(scene_pos)
+        println("scene position:" + scene_pos + "screen position:" + screen_pos)
         _scrollView.scrollTo(screen_pos.x, screen_pos.y)
-        _scene.root.position = -Point(screen_pos.x, screen_pos.y) + _scene.padding
+        _scene.position = -Point(screen_pos.x, screen_pos.y) + _scene.padding
     }
 
     fun boatSelected(boat: BoatController) {

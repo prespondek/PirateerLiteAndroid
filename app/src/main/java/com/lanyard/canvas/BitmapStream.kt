@@ -21,6 +21,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.DisplayMetrics
 import android.util.Size
+import androidx.lifecycle.LiveData
 import java.util.concurrent.Future
 
 
@@ -29,10 +30,12 @@ class BitmapStream {
         var scale : Int
         var density : Float
         var densityDpi : Int
+        var defaultTime : Long
         init {
             scale = 4
             density = 1.0f
             densityDpi = 1
+            defaultTime = 500
         }
     }
 
@@ -75,11 +78,12 @@ class BitmapStream {
     private var _fullSize : Size = Size(0,0)
     private var _scale : Int = 1
     private var _generator : BitmapGenerator
-    private var _timer : Long
+    private var _timestamp : Long
+    var timer : Long
     private var _future : Future<*>? = null
 
     fun getBitmap(timestamp: Long) : Bitmap {
-        _timer = timestamp
+        _timestamp = timestamp
         var bimp = _highBitmap
         if (bimp == null) {
             if (_future == null) {
@@ -91,13 +95,13 @@ class BitmapStream {
     }
 
     fun flush (timestamp: Long) : Boolean {
-        if (_timer <= timestamp) {
+        if (_timestamp + timer <= timestamp) {
             if (_highBitmap != null) {
-                //println("flushing " + _generator.name)
+                println("flushing " + _generator.name)
             }
             _highBitmap = null
             if (_future != null) {
-                //println("cancelling " + _generator.name)
+                println("cancelling " + _generator.name)
                 _future?.cancel(true)
             }
             _future = null
@@ -111,7 +115,8 @@ class BitmapStream {
     val height : Int get () { return _fullSize.height }
 
 init {
-    _timer = System.currentTimeMillis()
+    _timestamp = System.currentTimeMillis()
+    timer = defaultTime
 }
     constructor(context: Context, res: Int, options: Bitmap.Config) : this(BitmapGenerator.make(context, res, options))
     constructor(context: Context, file: String, options: Bitmap.Config) : this(BitmapGenerator.make(context, file, options))
@@ -151,7 +156,4 @@ init {
             return _highBitmap
         }
     }
-
-
-
 }

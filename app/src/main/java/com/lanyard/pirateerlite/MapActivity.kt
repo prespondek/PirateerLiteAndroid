@@ -181,10 +181,11 @@ class MapActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
         if (getResources().getBoolean(R.bool.portrait_only)) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         }
-        super.onCreate(savedInstanceState)
         Looper.getMainLooper().thread.name = "PirateerMain"
         setContentView(R.layout.activity_map)
         navigation.setOnNavigationItemSelectedListener(_onNavigationItemSelectedListener)

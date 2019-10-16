@@ -21,13 +21,11 @@ import android.view.SurfaceHolder
 import kotlin.math.max
 
 class CanvasThread(private val surfaceHolder: SurfaceHolder, private val gameView: CanvasView) : Thread() {
-    private var running: Boolean = false
-
     private val targetFPS = 60 // frames per second, the rate at which you would like to refresh the Canvas
     private var canvas: Canvas? = null
-
-    fun setRunning(isRunning: Boolean) {
-        this.running = isRunning
+    var running : Boolean = false
+    set(value) {
+        field = value
     }
 
     override fun run() {
@@ -48,7 +46,7 @@ class CanvasThread(private val surfaceHolder: SurfaceHolder, private val gameVie
                         this.gameView.postInvalidate()
                         this.gameView.update(timeMillis)
                         this.gameView.draw(canvas!!)
-                        BitmapCache.instance.flushExpired(System.currentTimeMillis() - 1000)
+                        BitmapCache.instance.flushExpired(System.currentTimeMillis())
                     }
 
             } catch (e: Exception) {

@@ -37,13 +37,19 @@ import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.models.WorldNode
 import java.io.InputStreamReader
 import com.lanyard.pirateerlite.singletons.Map
+import java.lang.NullPointerException
 import kotlin.math.max
 
 
 class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
     CanvasView(context, attrs, defStyleAttr) {
-    var pos = Point(0, 0)
-    var root = CanvasNode()
+    private var _root = CanvasNode()
+    var position : Point
+        get() = _root.position
+    set(value) {
+        println("position set:" + _root.position)
+        _root.position = value
+    }
     var padding = Size(0, 0)
     var density = 0.0f
     private var _plotNode: CanvasNode
@@ -53,7 +59,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
     init {
         this.scene = CanvasScene()
-        this.scene?.addChild(root)
+        this.scene?.addChild(_root)
         this._plotNode = CanvasNode()
         this._jobNode = CanvasNode()
         this._messageNode = CanvasNode()
@@ -69,10 +75,12 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         setup(context,json)
     }
 
-
-
     fun clearPlot() {
         _plotNode.removeAllChildren()
+    }
+
+    fun addChild(node: CanvasNode) {
+        _root.addChild(node)
     }
 
     fun clearJobMarkers() {
@@ -91,7 +99,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
                 var sprite = CanvasSprite(tile)
                 sprite.anchor.set(0.0f, 1.0f)
                 sprite.position.set(tile.width * (x - 1), tile.height * (y - 1))
-                this.root.addChild(sprite)
+                this._root.addChild(sprite)
             }
         }
     }
@@ -106,14 +114,14 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         BitmapCache.instance.addBitmap(context,"job_marker.png", Bitmap.Config.ARGB_4444)
         makeAnimations(context, data)
         makeFlags(context, data)
-        root.addChild(_plotNode)
-        root.addChild(_jobNode)
+        _root.addChild(_plotNode)
+        _root.addChild(_jobNode)
         _jobNode.zOrder = 3
     }
 
     fun setPadding(data: ArrayList<Int>) {
         padding = Size(data[0], -(data[1]))
-        root.position = Point(padding.width, padding.height)
+        _root.position = Point(padding.width, padding.height)
     }
 
     fun setDimensions(data: ArrayList<Int>) {
@@ -130,11 +138,14 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             val name = atom[0] as String
             val framenames = data[name] as ArrayList<String>
             var bimpl = ArrayList<BitmapStream>()
+            val frameTime = 1000 * atom[2] as Double
             for (frame in framenames) {
-                bimpl.add(BitmapCache.instance.addBitmap(context, frame + ".png", Bitmap.Config.ARGB_4444)!!)
+                var bimp = BitmapCache.instance.addBitmap(context, frame + ".png", Bitmap.Config.ARGB_4444) ?: throw NullPointerException()
+                bimp.timer = frameTime.toLong() * framenames.size + 100
+                bimpl.add(bimp)
             }
             val sprite = CanvasSprite(bimpl[0])
-            val action = CanvasActionAnimate(bimpl, (1000 * atom[2] as Double).toInt())
+            val action = CanvasActionAnimate(bimpl, frameTime.toInt())
 
             sprite.scale = SizeF((atom[5] as Double).toFloat(), (atom[6] as Double).toFloat())
             sprite.position = Point(
@@ -142,7 +153,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
                 -(atom[4] as Double * density).toInt()
             )
             sprite.run(action)
-            root.addChild(sprite)
+            _root.addChild(sprite)
         }
     }
 
@@ -174,12 +185,12 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             val sprite = CanvasSprite(bimpl[0])
             val action = CanvasActionAnimate(bimpl, 100)
             sprite.position = Point(((flag[0] + 8) * density).toInt(), ((-flag[1] - 32) * density).toInt())
-            root.addChild(sprite)
+            _root.addChild(sprite)
             sprite.run(action)
 
             val flag_pole = CanvasSprite(BitmapCache.instance.getBitmap("flag_pole.png")!!)
             flag_pole.position = Point((flag[0] * density).toInt(), ((-flag[1] - 16) * density).toInt())
-            root.addChild(flag_pole)
+            _root.addChild(flag_pole)
             idx += 1
         }
     }
@@ -256,7 +267,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     }
 
     fun scrollViewDidScroll(scrollView: ScrollView) {
-        root.position = Point(-scrollView.scrollX, scrollView.scrollY) + padding
+        _root.position = Point(-scrollView.scrollX, scrollView.scrollY) + padding
     }
 
     fun showCourseTrail(path: List<Edge<WorldNode>>, image: String) {
@@ -342,7 +353,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             CanvasActionWait(500),
             CanvasActionFadeTo(1000,0.0f),
             CanvasActionRemoveFromParent()))
-        root.addChild(message)
+        _root.addChild(message)
     }
 
 }

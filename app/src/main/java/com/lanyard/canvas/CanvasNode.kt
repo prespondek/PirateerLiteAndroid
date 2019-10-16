@@ -66,7 +66,15 @@ open class CanvasNode() : CanvasNodeTransform
     protected val _children = synchronizedList<CanvasNode>(ArrayList())
     protected val _actions = synchronizedList<CanvasAction>(ArrayList())
     override var position = Point(0,0)
+    set(value) {
+        field.x = value.x
+        field.y = value.y
+    }
     open var magnitude = Size(0,0)
+        set(value) {
+            field.width = value.width
+            field.height = value.height
+        }
     override var opacity = 1.0f
     private var _sortChildren = false
 
@@ -93,6 +101,10 @@ open class CanvasNode() : CanvasNodeTransform
 
     open var anchor = PointF(0.5f,0.5f)
     override var scale = SizeF(1.0f,1.0f)
+        set(value) {
+            field.width = value.width
+            field.height = value.height
+        }
 
     var zOrder = 0
     var tag = ""

@@ -37,44 +37,26 @@ open class CanvasView(context: Context, attributes: AttributeSet? = null, defSty
 
     init {
         holder.addCallback(this);
-        canvasThread = CanvasThread(holder, this)
     }
 
-
     override fun surfaceDestroyed(p0: SurfaceHolder?) {
-        var retry = true
-        while (retry) {
-            try {
-                this.canvasThread?.setRunning(false)
-                this.canvasThread?.join()
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            } finally {
-                retry = false
-            }
-        }
+        canvasThread?.running = false
+        canvasThread?.join()
+        canvasThread = null
     }
 
     override fun surfaceCreated(p0: SurfaceHolder?) {
-        setWillNotDraw(false)
-        this.canvasThread?.setRunning(true)
-        this.canvasThread?.start()
+        canvasThread = CanvasThread(holder, this)
+        canvasThread?.running = true
+        canvasThread?.start()
     }
 
     override fun surfaceChanged(p0: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {
     }
 
-    /**
-     * Function to update the positions of player and game objects
-     */
     fun update(dt: Long) {
         scene?.update(dt)
     }
-
-
-    /**
-     * Everything that has to be drawn on Canvas
-     */
 
     override fun draw(canvas: Canvas?) {
         super.draw(canvas)

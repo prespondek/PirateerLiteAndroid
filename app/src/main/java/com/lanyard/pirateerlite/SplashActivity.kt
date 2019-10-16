@@ -46,11 +46,16 @@ class SplashActivity : FragmentActivity() {
     var mapConfig : HashMap<String, Any>? = null
     lateinit private var _viewModel : SplashViewModel
 
+    init {
+
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
         if(getResources().getBoolean(R.bool.portrait_only)){
             setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
         }
-        super.onCreate(savedInstanceState)
         mapConfig = Map.loadConfig(this)
 
         if (savedInstanceState == null) {

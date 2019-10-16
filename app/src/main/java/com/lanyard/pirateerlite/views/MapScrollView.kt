@@ -33,7 +33,7 @@ class MapScrollView @JvmOverloads constructor(context: Context, attrs: Attribute
         if (curr_target != null && scene != null) {
             var pos = screenPosition(curr_target)
             scrollTo(pos.x,pos.y)
-            scene!!.root.position = -Point(pos.x, pos.y) + scene!!.padding
+            scene!!.position = -Point(pos.x, pos.y) + scene!!.padding
             target = null
         }
     }
