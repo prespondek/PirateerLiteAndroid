@@ -6,7 +6,7 @@ Clear For Action Lite. Non trivial sample Android game written in Kotlin.
 <img src=https://i.imgur.com/PabK8xU.png height=300>
 
 
-    $ git clone https://github.com/Rahnem/PirateerLiteAndroid
+    $ git clone https://github.com/prespondek/PirateerLiteAndroid
 
 Build with XCode 10+
 
