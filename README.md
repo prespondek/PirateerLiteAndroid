@@ -1,9 +1,9 @@
 # PirateerLiteAndroid
 Clear For Action Lite. Non trivial sample Android game written in Kotlin.
 
-<img src=https://i.imgur.com/Du6S9CH.png width=200 align=left>
-<img src=https://i.imgur.com/9L7kkRf.png width=200 align=left>
-<img src=https://i.imgur.com/PabK8xU.png width=200>
+<img src=https://i.imgur.com/Du6S9CH.png height=400 align=left>
+<img src=https://i.imgur.com/9L7kkRf.png height=400 align=left>
+<img src=https://i.imgur.com/PabK8xU.png height=400>
 
 
     $ git clone https://github.com/Rahnem/PirateerLiteAndroid
