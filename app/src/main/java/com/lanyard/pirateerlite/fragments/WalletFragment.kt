@@ -26,7 +26,7 @@ import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.singletons.User.UserObserver
 
-class WalletFragment : androidx.fragment.app.Fragment(), UserObserver
+class WalletFragment : AppFragment() , UserObserver
 {
     override fun onCreateView(
         inflater: LayoutInflater,

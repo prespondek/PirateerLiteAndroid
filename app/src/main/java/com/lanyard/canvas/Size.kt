@@ -29,6 +29,14 @@ data class Size (var width:Int, var height:Int){
         return Size(width + other.width, height + other.height)
     }*/
 
+    fun set(other:Size) {
+        width = other.width
+        height = other.height
+    }
+    fun set(width: Int, height: Int) {
+        this.width = width
+        this.height = height
+    }
     operator fun times(other: Float) : Size {
         return Size((width * other).toInt(), (height * other).toInt())
     }

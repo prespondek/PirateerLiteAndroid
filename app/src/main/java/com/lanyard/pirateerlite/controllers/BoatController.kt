@@ -18,6 +18,7 @@ package com.lanyard.pirateerlite.controllers
 
 import android.graphics.Point
 import android.os.Handler
+import com.lanyard.helpers.set
 import com.lanyard.library.Graph
 import com.lanyard.library.Vertex
 import com.lanyard.pirateerlite.fragments.MapFragment
@@ -57,7 +58,7 @@ class BoatController (model: BoatModel, view: BoatView) {
             var source : Vertex<WorldNode>? = null
             Map.instance.graph.vertices.forEach { if (it.data === model.town) { source = it }}
             if (source != null) {
-                view.sprite.position = Point(source!!.position)
+                view.sprite.position.set(source!!.position)
             }
         }
     }

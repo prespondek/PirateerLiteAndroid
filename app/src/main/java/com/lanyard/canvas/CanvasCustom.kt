@@ -29,7 +29,7 @@ class CanvasCustom (drawCall: (canvas: Canvas, node:CanvasNode, transform: Canva
 
     init {
         customDraw = drawCall
-        this.magnitude = size
+        this.magnitude.set(size)
     }
 
 }

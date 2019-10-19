@@ -28,6 +28,20 @@ data class SizeF (var width:Float, var height:Float){
     operator fun plus(size: SizeF): SizeF {
         return SizeF(width + size.width, height + size.height)
     }
+    fun set(other: SizeF) {
+        width = other.width
+        height = other.height
+    }
+
+    fun set(other: Float) {
+        width = other
+        height = other
+    }
+
+    fun set(width: Float, height: Float) {
+        this.width = width
+        this.height = height
+    }
     /*operator fun timesAssign(size: SizeF) {
         width *= size.width
         height *= size.height
@@ -35,5 +49,10 @@ data class SizeF (var width:Float, var height:Float){
 
     operator fun times(size: SizeF) : SizeF {
         return SizeF(width * size.width, height * size.height)
+    }
+
+    operator fun timesAssign(size: SizeF) {
+        width *= size.width
+        height *= size.height
     }
 }

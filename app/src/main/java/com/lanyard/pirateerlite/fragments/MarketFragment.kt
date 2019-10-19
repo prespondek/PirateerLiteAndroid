@@ -39,7 +39,7 @@ import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
 
-class MarketFragment : androidx.fragment.app.Fragment(), UserObserver {
+class MarketFragment : AppFragment() , UserObserver {
     private lateinit var _parts: ArrayList<User.BoatPart>
     private lateinit var _marketTimeStamp: Date
     private lateinit var _marketView: androidx.recyclerview.widget.RecyclerView

@@ -3,11 +3,7 @@
                                              android:layout_width="match_parent"
                                              android:layout_height="match_parent">
 
-    <ScrollView
+    <androidx.recyclerview.widget.RecyclerView
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-        <androidx.recyclerview.widget.RecyclerView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" android:id="@+id/syTable"/>
-    </ScrollView>
+            android:layout_height="wrap_content" android:id="@+id/syTable"/>
 </FrameLayout>

@@ -36,8 +36,9 @@ import com.lanyard.pirateerlite.controllers.TownController
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.singletons.User
 import kotlinx.android.synthetic.main.activity_map.*
+import java.lang.NullPointerException
 
-class TownFragment : androidx.fragment.app.Fragment() {
+class TownFragment : AppFragment()  {
     lateinit var townController: TownController
 
     inner class TownListAdapter() : androidx.recyclerview.widget.RecyclerView.Adapter<TownListAdapter.TownListViewHolder>() {
@@ -81,6 +82,15 @@ class TownFragment : androidx.fragment.app.Fragment() {
         val type = view.findViewById<TextView>(R.id.typeLabel)
         val image = view.findViewById<ImageView>(R.id.townPortrait)
         val upgradeButton = view.findViewById<Button>(R.id.upgradeButton)
+
+        if ( savedInstanceState != null ) {
+            val townId = savedInstanceState["townController"] as Long?
+            if (townId != null) {
+                val map = fragmentManager!!.findFragmentByTag("map") as MapFragment
+                townController = map.townControllerForId(townId) ?: throw NullPointerException()
+            }
+        }
+
         upgradeButton.setOnClickListener { upgradeButtonPressed() }
         val res = context?.resources?.getIdentifier(townController.model.type.name,"drawable", context?.getPackageName())
         image.setImageResource(res!!)
@@ -157,6 +167,11 @@ class TownFragment : androidx.fragment.app.Fragment() {
         refresh(view!!)
         User.instance.save()
         townController.reset()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putLong("townController", townController.model.id)
     }
 
 }

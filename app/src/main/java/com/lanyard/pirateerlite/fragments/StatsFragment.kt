@@ -32,7 +32,7 @@ import com.lanyard.pirateerlite.singletons.User.UserObserver
 import java.util.*
 import kotlin.math.max
 
-class StatsFragment : androidx.fragment.app.Fragment(), UserObserver {
+class StatsFragment : AppFragment() , UserObserver {
 
     fun update(view: View?) {
         if ( view == null ) { return }

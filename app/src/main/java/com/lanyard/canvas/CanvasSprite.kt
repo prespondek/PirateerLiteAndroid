@@ -28,7 +28,7 @@ open class CanvasSprite : CanvasNode {
 
     constructor(bitmap : BitmapStream) : super() {
         texture = bitmap
-        this.magnitude = Size(texture.width,texture.height)
+        this.magnitude.set(texture.width,texture.height)
     }
 
     override fun draw(canvas: Canvas, transform: CanvasNodeTransformData, view: Rect, timestamp: Long) {

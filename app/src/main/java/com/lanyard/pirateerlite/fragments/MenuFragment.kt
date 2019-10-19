@@ -23,6 +23,7 @@ import android.view.LayoutInflater
 import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
 import android.widget.ImageView
 import android.widget.TextView
 import com.lanyard.pirateerlite.MapActivity
@@ -32,8 +33,7 @@ import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.singletons.User.UserObserver
 import com.lanyard.pirateerlite.views.MenuCellView
 
-class MenuFragment : androidx.fragment.app.Fragment(), UserObserver {
-
+class MenuFragment : AppFragment(), UserObserver {
 
     override fun onCreateView(
         inflater: LayoutInflater,

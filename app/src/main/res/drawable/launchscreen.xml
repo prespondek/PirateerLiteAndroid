@@ -4,6 +4,5 @@
     <item android:drawable="@color/colorPrimary"/>
     <item>
         <bitmap android:src="@mipmap/launchscreen_portrait"/>
-
     </item>
 </layer-list>

@@ -19,6 +19,7 @@ package com.lanyard.canvas
 import android.graphics.Point
 import com.lanyard.helpers.minus
 import com.lanyard.helpers.plus
+import com.lanyard.helpers.set
 import com.lanyard.helpers.times
 import java.util.*
 import kotlin.collections.ArrayList
@@ -235,21 +236,31 @@ class CanvasActionInstantCustom(val action: (node: CanvasNode) -> Unit) : Canvas
     }
 }
 
-class CanvasActionScaleTo(duration: Long, scale: Float) : CanvasActionInterval(duration,0)
+class CanvasActionScaleTo(duration: Long, scale: SizeF) : CanvasActionInterval(duration,0)
 {
-    var scale : Float
+    protected val _scaleDelta: SizeF
+    protected val _startScale: SizeF
+    constructor(duration: Long, scale: Float) : this(duration, SizeF(scale,scale))
     init {
-        this.scale = scale
+        _scaleDelta = scale
+        _startScale = SizeF(0.0f,0.0f)
+    }
+    override fun start(node: CanvasNode) {
+        super.start(node)
+        _startScale.width = node.scale.width
+        _startScale.height = node.scale.height
     }
     override fun step(node: CanvasNode, dt: Float) {
-        node.scale = SizeF((scale - node.scale.width) * dt, (scale - node.scale.height) * dt)
+        node.scale.set(
+            _startScale.width + _scaleDelta.width * dt,
+            _startScale.height + _scaleDelta.height * dt)
     }
 }
 
 open class CanvasActionMoveBy(duration: Long, position: Point) : CanvasActionInterval(duration,0)
 {
-    protected var _positionDelta: Point
-    protected var _startPosition: Point
+    protected val _positionDelta: Point
+    protected val _startPosition: Point
     //protected var _previousPosition: Point
 
     init {
@@ -261,13 +272,12 @@ open class CanvasActionMoveBy(duration: Long, position: Point) : CanvasActionInt
     override fun start(node: CanvasNode) {
         super.start(node)
         //_previousPosition = Point(node.position)
-        _startPosition = Point(node.position)
+        _startPosition.x = node.position.x
+        _startPosition.y = node.position.y
     }
 
     override fun step(node: CanvasNode, dt: Float) {
-        //_startPosition += node.position - _previousPosition
-        node.position = _startPosition + _positionDelta * dt
-        //_previousPosition.set(node.position)
+        node.position.set(_startPosition + _positionDelta * dt)
     }
 }
 
@@ -275,7 +285,7 @@ open class CanvasActionMoveTo(duration: Long, position: Point) : CanvasActionMov
 {
     override fun start(node: CanvasNode) {
         super.start(node)
-        _positionDelta = _positionDelta - node.position
+        _positionDelta.set(_positionDelta - node.position)
     }
 }
 

@@ -20,6 +20,7 @@ import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Bundle
+import android.os.Handler
 import android.os.Looper
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
@@ -30,86 +31,100 @@ import com.lanyard.pirateerlite.fragments.*
 import kotlinx.android.synthetic.main.activity_map.*
 import android.view.Menu
 import android.view.View.*
-import android.widget.FrameLayout
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
-import androidx.fragment.app.FragmentTransaction
 import com.lanyard.pirateerlite.singletons.Audio
-import java.lang.ref.WeakReference
+import kotlinx.coroutines.runBlocking
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 
 class MapActivity : AppCompatActivity() {
 
-    private var currMenuItem: Int? = null
-
+    var ignoreBackStack = false
     init {
     }
 
     private val _onNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener {
-        navigation.getMenu().setGroupCheckable(0, true, true)
-        if (currMenuItem == it.itemId) {
-            return@OnNavigationItemSelectedListener true
+        navigation.menu.setGroupCheckable(0,true,true)
+        val manager = supportFragmentManager
+        val frag = manager.primaryNavigationFragment?.tag
+        if (manager.backStackEntryCount > 0) {
+            ignoreBackStack = true
+            AppFragment.blockAnimation = true
+            manager.popBackStackImmediate(null, POP_BACK_STACK_INCLUSIVE)
+            AppFragment.blockAnimation = false
         }
+        ignoreBackStack = true
         swapFragment(it.itemId)
         return@OnNavigationItemSelectedListener true
     }
 
     private val _onBackStackChangedListener = FragmentManager.OnBackStackChangedListener {
-        var frag = supportFragmentManager.primaryNavigationFragment
-        var item: Int? = null
-        when (frag?.tag) {
-            "map" -> item = R.id.navigation_map
-            "boats" -> item = R.id.navigation_boats
-            "menu" -> item = R.id.navigation_menu
+        if (ignoreBackStack == true) {
+            ignoreBackStack = false
+            return@OnBackStackChangedListener
         }
-        if (item != null) {
-            if (navigation.selectedItemId != item) {
-                currMenuItem = item
-                navigation.selectedItemId = item
+        val map = supportFragmentManager.findFragmentByTag("map") as MapFragment
+        val frag = supportFragmentManager.primaryNavigationFragment
+        val buttonId = arrayListOf(R.id.navigation_map, R.id.navigation_boats, R.id.navigation_menu)
+        val fragTag = arrayListOf("map", "boats", "menu")
+        if (resources.getBoolean(R.bool.landscape)) {
+            buttonId.removeAt(0)
+            fragTag.removeAt(0)
+        }
+        var item: Int = fragTag.indexOf(frag?.tag)
+
+        filterNavigationByFragment(frag?.tag)
+
+        if (item != -1) {
+            if (navigation.selectedItemId != buttonId[item]) {
+                navigation.menu.getItem(item).isChecked = true
             }
-            navigation.getMenu().setGroupCheckable(0, true, true)
+        }
+
+    }
+
+    fun filterNavigationByFragment(tag: String?) {
+        if (tag == "map" || tag == "boats" || tag == "menu") {
+            navigation.menu.setGroupCheckable(0,true,true)
         } else {
-            navigation.getMenu().setGroupCheckable(0, false, true)
+            navigation.menu.setGroupCheckable(0,false,true)
         }
     }
 
     override fun onBackPressed() {
-        val map = supportFragmentManager.findFragmentByTag("map")
-        if (getResources().getBoolean(R.bool.landscape) != true &&
-            supportFragmentManager.backStackEntryCount == 0 &&
-            map != null && map.isHidden
-        ) {
-            navigation.selectedItemId = R.id.navigation_map
+        val frag = supportFragmentManager.primaryNavigationFragment
+        if (frag?.tag == "town" && supportFragmentManager.backStackEntryCount == 0) {
+            swapFragment(navigation.selectedItemId)
         } else {
             super.onBackPressed()
         }
     }
 
+
+
     fun swapFragment(id: Int?, tag: Any? = null): androidx.fragment.app.Fragment {
         val transaction = supportFragmentManager.beginTransaction()
-        transaction.setReorderingAllowed(true)
-        transaction.setCustomAnimations( R.anim.abc_popup_enter, R.anim.abc_popup_exit )
+        //transaction.setReorderingAllowed(true)
+        //transaction.setCustomAnimations( R.anim.abc_popup_enter, R.anim.abc_popup_exit )
+        val map = supportFragmentManager.findFragmentByTag("map")!! as MapFragment
+        if ( map.mode == MapFragment.Mode.buy || map.mode == MapFragment.Mode.build ) {
+            map.reset()
+        }
         var prevFrag = supportFragmentManager.primaryNavigationFragment ?: throw NullPointerException()
-        if (currMenuItem == R.id.navigation_map) {
+        if (prevFrag.tag == "map") {
             transaction.hide(prevFrag)
-            currMenuItem = null
         } else {
             transaction.remove(prevFrag)
         }
         var frag: androidx.fragment.app.Fragment? = null
-
+        var name = ""
         if (id == R.id.navigation_map) {
-            frag = supportFragmentManager.findFragmentByTag("map")!!
-            transaction.runOnCommit {
-                for (i in 0 until supportFragmentManager.getBackStackEntryCount()) {
-                    supportFragmentManager.popBackStack()
-                }
-            }
+            frag = map
+            name = "map"
             transaction.show(frag)
-            navigation.visibility = VISIBLE
         } else {
-            var name = ""
             if (tag is TownController) {
                 frag = TownFragment()
                 frag.townController = tag
@@ -147,12 +162,16 @@ class MapActivity : AppCompatActivity() {
                     }
                 }
             }
-            transaction.addToBackStack(name)
             transaction.add(R.id.menuFrame, frag!!, name)
+        }
+        if ((name != "map" && name != "boats" && name != "menu" && name != "town") ||
+            (name == "town" && supportFragmentManager.backStackEntryCount > 0) ) {
+            transaction.addToBackStack(name)
+        } else {
+            filterNavigationByFragment(name)
         }
         transaction.setPrimaryNavigationFragment(frag)
         transaction.commit()
-        currMenuItem = id
         return frag
     }
 
@@ -188,8 +207,8 @@ class MapActivity : AppCompatActivity() {
         }
         Looper.getMainLooper().thread.name = "PirateerMain"
         setContentView(R.layout.activity_map)
-        navigation.setOnNavigationItemSelectedListener(_onNavigationItemSelectedListener)
         supportFragmentManager.addOnBackStackChangedListener(_onBackStackChangedListener)
+        navigation.getMenu().setGroupCheckable(0, true, true)
 
         var arr = arrayOf("nav_plot.png", "nav_plotted.png")
         for (n in arr) {
@@ -207,35 +226,34 @@ class MapActivity : AppCompatActivity() {
             if (getResources().getBoolean(R.bool.landscape) == true) {
                 frag = BoatListFragment()
                 transaction.add(R.id.menuFrame, frag, "boats")
-                currMenuItem = R.id.navigation_boats
+                navigation.menu.getItem(0).isChecked = true
             } else {
-                currMenuItem = R.id.navigation_map
                 frag = map
             }
         } else {
-            val map = supportFragmentManager.findFragmentByTag("map")!!
+            val map = supportFragmentManager.findFragmentByTag("map") as MapFragment
             frag = supportFragmentManager.primaryNavigationFragment
+            filterNavigationByFragment(frag?.tag)
+
             if (getResources().getBoolean(R.bool.landscape) == true) {
                 transaction.show(map)
                 if (frag == null || frag.tag == "map") {
                     frag = BoatListFragment()
                     transaction.add(R.id.menuFrame, frag, "boats")
+                    navigation.menu.getItem(0).isChecked = true
                 }
             } else {
-                transaction.hide(map)
-            }
-            if (frag != null) {
-                currMenuItem = savedInstanceState.getInt("currMenuItem")
-                if (currMenuItem != R.id.navigation_boats &&
-                    currMenuItem != R.id.navigation_menu &&
-                    currMenuItem != R.id.navigation_map
-                ) {
-                    navigation.getMenu().setGroupCheckable(0, false, true)
+                if (frag != null && savedInstanceState.getBoolean("mapVisible") == true) {
+                    transaction.hide(frag)
+                } else {
+                    transaction.hide(map)
                 }
             }
         }
         transaction.setPrimaryNavigationFragment(frag)
         transaction.commit()
+
+        navigation.setOnNavigationItemSelectedListener(_onNavigationItemSelectedListener)
     }
 
 
@@ -249,14 +267,18 @@ class MapActivity : AppCompatActivity() {
 
 
     override fun onSaveInstanceState(outState: Bundle?) {
-        if (currMenuItem != null) {
-            outState?.putInt("currMenuItem", currMenuItem!!)
-        }
         super.onSaveInstanceState(outState)
+        val map = supportFragmentManager.findFragmentByTag("map") as MapFragment
+        if (map.mode == MapFragment.Mode.build || map.mode == MapFragment.Mode.buy) {
+            outState?.putBoolean("mapVisible",true)
+        } else {
+            outState?.putBoolean("mapVisible",false)
+        }
     }
 
     override fun onPause() {
         super.onPause()
+
         Audio.instance.pause()
     }
 

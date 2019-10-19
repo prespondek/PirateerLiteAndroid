@@ -16,13 +16,16 @@
 
 package com.lanyard.pirateerlite.fragments
 
+import android.content.Context
 import android.graphics.*
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import android.util.DisplayMetrics
 import android.view.*
 import android.widget.*
+import androidx.fragment.app.FragmentManager
 import com.lanyard.canvas.*
 import com.lanyard.helpers.*
 import com.lanyard.library.Edge
@@ -41,8 +44,9 @@ import com.lanyard.pirateerlite.singletons.Audio
 import com.lanyard.pirateerlite.singletons.Game
 import kotlinx.android.synthetic.main.activity_map.*
 import kotlinx.android.synthetic.main.fragment_map.*
+import android.view.View.VISIBLE
 
-class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.UserObserver {
+class MapFragment : AppFragment() , Game.GameListener, User.UserObserver {
 
     enum class Mode {
         plot, map, track, nontrack, build, buy
@@ -80,7 +84,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
                 } else {
                     return Mode.track
                 }
-            } else if (_toolTip.isShown == true) {
+            } else if (_toolTip.visibility == VISIBLE) {
                 if (_buildParts.size > 1) {
                     return Mode.build
                 } else {
@@ -95,6 +99,14 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
         super.onDestroyView()
         for (boat in _boatControllers) {
             boat.destroy()
+        }
+    }
+
+
+    private val _onBackStackChangedListener = FragmentManager.OnBackStackChangedListener {
+        val frag = fragmentManager?.primaryNavigationFragment
+        if (frag != null && frag.tag != "map" && (mode == Mode.build || mode == Mode.buy)) {
+            reset()
         }
     }
 
@@ -115,6 +127,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
         // Inflate the layout for this fragment
         Game.instance.addGameListener(this)
         User.instance.addObserver(this)
+        fragmentManager?.addOnBackStackChangedListener(_onBackStackChangedListener)
 
         val view = inflater.inflate(R.layout.fragment_map, container, false)
         _scrollView = view.findViewById<MapScrollView>(R.id.vscrollview)
@@ -194,12 +207,12 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
             params.applyTo(buttonlayout)
 
             val sprite = TownView()
-            sprite.position = Point(vert.position.x, vert.position.y)
+            sprite.position.set(vert.position.x, vert.position.y)
             sprite.zOrder = 2
             _scene.addChild(sprite)
 
             val label = CanvasLabel(town.name, null)
-            label.position = Point(
+            label.position.set(
                 vert.position.x,
                 vert.position.y - context!!.resources.getDimensionPixelSize(R.dimen.town_label_offset)
             )
@@ -230,7 +243,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
             _scrollView.target = screen_pos
             if ( savedInstanceState.containsKey("selectedBoat") ) {
                 val selectedBoat = _boatControllers.find { it.model.id == savedInstanceState.getLong("selectedBoat") }
-                boatSelected(selectedBoat!!)
+                boatSelected(selectedBoat!!,false)
             }
             val boatCourse = savedInstanceState.getLongArray("boatCourse")
             if ( boatCourse != null && boatCourse.size > 0 ) {
@@ -238,6 +251,11 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
                     val town = _townControllers.find { it.model.id == boatCourse[i] }
                     townSelected(town!!)
                 }
+            }
+            _buildType = savedInstanceState.getString("buildType")
+            if (_buildType != null) {
+                _buildParts = savedInstanceState.getParcelableArrayList<User.BoatPart>("buildParts")
+                buildBoat()
             }
         }
         return view
@@ -267,7 +285,7 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
         outState.putLongArray("boatCourse",path.toLongArray())
         if(_buildType != null) {
             outState.putString("buildType",_buildType)
-            outState.putParcelableArray("buildParts",_buildParts.toTypedArray())
+            outState.putParcelableArrayList("buildParts", _buildParts)
         }
     }
 
@@ -310,6 +328,10 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
 
     fun boatControllerForId(idx: Long) : BoatController? {
         return _boatControllers.find { it.model.id == idx }
+    }
+
+    fun townControllerForId(idx: Long) : TownController? {
+        return _townControllers.find { it.model.id == idx }
     }
 
     fun addBoat(boat: BoatModel): BoatController {
@@ -420,21 +442,25 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
         return boatController
     }
 
-    fun focusTown(town: TownModel) {
+    fun focusTown(town: TownModel, animate: Boolean = true) {
         val scene_pos = Map.instance.townPosition(town)
         val screen_pos = _scrollView.screenPosition(scene_pos)
-        println("scene position:" + scene_pos + "screen position:" + screen_pos)
-        _scrollView.scrollTo(screen_pos.x, screen_pos.y)
-        _scene.position = -Point(screen_pos.x, screen_pos.y) + _scene.padding
+        //println("scene position:" + scene_pos + "screen position:" + screen_pos)
+        if (animate) {
+            _scrollView.smoothScrollTo(screen_pos.x, screen_pos.y)
+        } else {
+            _scrollView.scrollTo(screen_pos.x, screen_pos.y)
+        }
+        //_scene.position = -Point(screen_pos.x, screen_pos.y) + _scene.padding
     }
 
-    fun boatSelected(boat: BoatController) {
+    fun boatSelected(boat: BoatController, animate: Boolean = true) {
         stopTracking()
         reset()
         _selectedBoat = boat
         val town = _selectedBoat!!.model.town
         if (town != null) {
-            focusTown(town)
+            focusTown(town,animate)
             townSelected(townControllerForModel(town))
         } else {
             startTracking(this._selectedBoat!!)
@@ -554,11 +580,8 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
             reset()
         }
     */
-    fun buildBoat(fragment: androidx.fragment.app.Fragment) {
+    fun transferBoatBuild(fragment: androidx.fragment.app.Fragment) {
         reset()
-        _toolTip.visibility = View.VISIBLE
-        activity?.navigation?.visibility = View.GONE
-        //cancelButton.visibility = View.VISIBLE
         if (fragment is BoatInfoFragment) {
             _buildType = fragment.boatType
             _buildParts = fragment.parts
@@ -566,6 +589,13 @@ class MapFragment : androidx.fragment.app.Fragment(), Game.GameListener, User.Us
             _buildType = fragment.selectedPart?.boat
             _buildParts = arrayListOf(fragment.selectedPart!!)
         }
+        buildBoat()
+    }
+
+    fun buildBoat() {
+        _toolTip.visibility = View.VISIBLE
+        //activity?.navigation?.visibility = View.GONE
+        _cancelButton.visibility = View.VISIBLE
         val harborType =
             TownModel.HarbourSize.valueOf(BoatModel.boatConfig(_buildType!!, BoatModel.BoatIndex.harbourType) as String)
         for (town in _townControllers) {

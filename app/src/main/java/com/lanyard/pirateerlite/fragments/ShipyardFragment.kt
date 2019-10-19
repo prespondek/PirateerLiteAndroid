@@ -35,7 +35,7 @@ import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.singletons.User
 import kotlinx.android.synthetic.main.activity_map.*
 
-class ShipyardFragment : androidx.fragment.app.Fragment() {
+class ShipyardFragment : AppFragment()  {
     inner class ShipyardAdapter() : androidx.recyclerview.widget.RecyclerView.Adapter<ShipyardFragment.ShipyardAdapter.ShipyardViewHolder>() {
 
         override fun onBindViewHolder(p0: ShipyardViewHolder, p1: Int) {

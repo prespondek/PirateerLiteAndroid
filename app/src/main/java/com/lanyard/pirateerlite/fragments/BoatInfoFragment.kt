@@ -27,6 +27,7 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
 import android.widget.ImageView
 import android.widget.TextView
 import com.lanyard.pirateerlite.MapActivity
@@ -35,7 +36,8 @@ import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.singletons.User
 
-class BoatInfoFragment() : androidx.fragment.app.Fragment() {
+
+class BoatInfoFragment : AppFragment() {
     var boatType: String? = null
     var parts = ArrayList<User.BoatPart>()
 
@@ -72,10 +74,20 @@ class BoatInfoFragment() : androidx.fragment.app.Fragment() {
         val cannonsLabel = view.findViewById<TextView>(R.id.boatInfoCannons)
         val button = view.findViewById<TextView>(R.id.boatInfoBuildButton)
 
+        if (savedInstanceState != null) {
+            boatType = savedInstanceState.getString("boatType")
+        }
+
         button.setOnClickListener {
             if (User.instance.numBoats < User.instance.boatSlots) {
-                var map = (activity as MapActivity).swapFragment(R.id.navigation_map) as MapFragment
-                map.buildBoat(this)
+                var map : MapFragment? = null
+                if (resources.getBoolean(R.bool.landscape) == true) {
+                    map = fragmentManager?.findFragmentByTag("map") as MapFragment
+                } else {
+                    map = (activity as MapActivity).swapFragment(R.id.navigation_map) as MapFragment
+                }
+                map.transferBoatBuild(this)
+                button.isClickable = false
             } else {
                 var dialog = BoatInfoDialogFragment()
                 dialog.show(fragmentManager, "expand")
@@ -130,5 +142,10 @@ class BoatInfoFragment() : androidx.fragment.app.Fragment() {
 
 
         return view
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("boatType", boatType)
     }
 }

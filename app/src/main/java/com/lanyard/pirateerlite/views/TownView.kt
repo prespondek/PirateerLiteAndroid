@@ -45,7 +45,7 @@ class TownView : CanvasSprite( BitmapCache.instance.getBitmap("town_c1_selected.
     }
     private var boatCounter : CanvasLabel
     init {
-        scale = SizeF(0.5f,0.5f)
+        scale.set(0.5f,0.5f)
         boatCounter = CanvasLabel("0", null)
         boatCounter.fontSize = fontSize
         boatCounter.fontColor = Color.BLACK

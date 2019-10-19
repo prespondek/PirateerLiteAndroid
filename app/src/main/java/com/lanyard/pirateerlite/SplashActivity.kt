@@ -24,9 +24,11 @@ import com.lanyard.pirateerlite.singletons.Game
 import com.lanyard.pirateerlite.singletons.Map
 import com.lanyard.pirateerlite.singletons.User
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
 import android.content.pm.ActivityInfo
 import android.content.pm.ActivityInfo.*
 import android.content.res.Configuration.*
+import android.os.PersistableBundle
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.ViewModel
 import com.lanyard.canvas.BitmapStream
@@ -47,7 +49,6 @@ class SplashActivity : FragmentActivity() {
     lateinit private var _viewModel : SplashViewModel
 
     init {
-
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,6 +57,7 @@ class SplashActivity : FragmentActivity() {
         if(getResources().getBoolean(R.bool.portrait_only)){
             setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
         }
+
         mapConfig = Map.loadConfig(this)
 
         if (savedInstanceState == null) {
@@ -168,8 +170,11 @@ class SplashActivity : FragmentActivity() {
 
     }
 
-    fun onSecondaryDataFetch() {
+    override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
+        super.onSaveInstanceState(outState, outPersistentState)
+    }
 
+    fun onSecondaryDataFetch() {
         val intent = Intent(applicationContext, MapActivity::class.java)
         startActivity(intent)
         finish()

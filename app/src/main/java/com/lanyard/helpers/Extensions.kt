@@ -26,6 +26,9 @@ import kotlin.math.atan2
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
+import android.view.animation.Animation
+import androidx.fragment.app.Fragment
+
 
 operator fun Point.plus(other: Point): Point {
     return Point(x + other.x, y + other.y)
@@ -73,8 +76,8 @@ operator fun Point.timesAssign (other: Point) {
 }
 
 operator fun Point.timesAssign (other: Float) {
-    x = (x * other).toInt()
-    y = (y * other).toInt()
+    x *= other.toInt()
+    y *= other.toInt()
 }
 
 operator fun Point.minusAssign(other: Point) {
@@ -101,8 +104,8 @@ operator fun Point.plusAssign(other: Point) {
 }
 
 fun Point.set(other: PointF) {
-    this.x = other.x.toInt()
-    this.y = other.y.toInt()
+    x = other.x.toInt()
+    y = other.y.toInt()
 }
 
 fun <T> MutableList<T>.popLast() : T
@@ -142,14 +145,11 @@ fun Rect.intersects(rect: Rect) : Boolean {
     return intersects(min(rect.left,rect.right),min(rect.top,rect.bottom),max(rect.right,rect.left) ,max(rect.bottom,rect.top))
 }
 
-
-
-
 fun Point.set(other: Point) {
-    x = other.x
-    y = other.y
+    set(other.x,other.y)
 }
 
 inline fun <reified T> Gson.fromJson(json: String) = this.fromJson<T>(json, object: TypeToken<T>() {}.type)
+
 
 

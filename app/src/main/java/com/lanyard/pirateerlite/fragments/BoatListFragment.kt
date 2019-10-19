@@ -38,7 +38,7 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
 
-class BoatListFragment() : androidx.fragment.app.Fragment() {
+class BoatListFragment() : AppFragment()  {
     class BoatSellFragment(): androidx.fragment.app.DialogFragment() {
 
         constructor(position: Int) : this() {

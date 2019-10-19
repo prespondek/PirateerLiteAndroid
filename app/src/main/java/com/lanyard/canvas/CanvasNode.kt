@@ -17,17 +17,19 @@
 package com.lanyard.canvas
 import android.graphics.*
 import com.lanyard.helpers.plus
+import com.lanyard.helpers.plusAssign
+import com.lanyard.helpers.set
 import java.util.Collections.synchronizedList
 
 interface CanvasNodeTransform
 {
-    var position : Point
-    var scale : SizeF
+    val position : Point
+    val scale : SizeF
     var opacity : Float
 
     fun set(other: CanvasNodeTransform) {
-        position = other.position
-        scale = other.scale
+        position.set(other.position)
+        scale.set(other.scale)
         opacity = other.opacity
     }
 
@@ -39,14 +41,19 @@ interface CanvasNodeTransform
 
 }
 
-data class CanvasNodeTransformData(override var position : Point,
-                          override var scale : SizeF,
-                          override var opacity: Float) : CanvasNodeTransform
+class CanvasNodeTransformData(position : Point, scale : SizeF, opacity: Float) : CanvasNodeTransform
 {
+    override val position : Point
+    override val scale : SizeF
+    override var opacity = 0.0f
+
     constructor(other: CanvasNodeTransform) : this(other.position, other.scale, other.opacity)
     constructor() : this(Point(0,0), SizeF(1.0f,1.0f), 1.0f)
     init {
 
+        this.position = Point(position)
+        this.scale = SizeF(scale)
+        this.opacity = opacity
     }
 
     fun  transformed (other: CanvasNodeTransform) : CanvasNodeTransformData {
@@ -65,16 +72,8 @@ open class CanvasNode() : CanvasNodeTransform
 
     protected val _children = synchronizedList<CanvasNode>(ArrayList())
     protected val _actions = synchronizedList<CanvasAction>(ArrayList())
-    override var position = Point(0,0)
-    set(value) {
-        field.x = value.x
-        field.y = value.y
-    }
-    open var magnitude = Size(0,0)
-        set(value) {
-            field.width = value.width
-            field.height = value.height
-        }
+    override val position = Point(0,0)
+    open val magnitude = Size(0,0)
     override var opacity = 1.0f
     private var _sortChildren = false
 
@@ -100,11 +99,7 @@ open class CanvasNode() : CanvasNodeTransform
     }
 
     open var anchor = PointF(0.5f,0.5f)
-    override var scale = SizeF(1.0f,1.0f)
-        set(value) {
-            field.width = value.width
-            field.height = value.height
-        }
+    override val scale = SizeF(1.0f,1.0f)
 
     var zOrder = 0
     var tag = ""
@@ -196,10 +191,10 @@ open class CanvasNode() : CanvasNodeTransform
                 if (node.hidden == true) {
                     continue
                 }
-                node.draw(canvas, transform.copy(), view, timestamp)
+                node.draw(canvas, CanvasNodeTransformData(transform), view, timestamp)
                 if (debugBounds) {
                     val paint = Paint()
-                    var bounds = node.bounds(transform.copy())
+                    var bounds = node.bounds(transform)
                     paint.style = Paint.Style.STROKE
                     paint.strokeWidth = 4.0f
                     paint.color = Color.parseColor("#ffffffff")

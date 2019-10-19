@@ -48,7 +48,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         get() = _root.position
     set(value) {
         println("position set:" + _root.position)
-        _root.position = value
+        _root.position.set(value)
     }
     var padding = Size(0, 0)
     var density = 0.0f
@@ -121,11 +121,11 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
 
     fun setPadding(data: ArrayList<Int>) {
         padding = Size(data[0], -(data[1]))
-        _root.position = Point(padding.width, padding.height)
+        _root.position.set(padding.width, padding.height)
     }
 
     fun setDimensions(data: ArrayList<Int>) {
-        scene?.magnitude = Size(
+        scene?.magnitude?.set(
             ((data[0] + padding.width * 2) * density).toInt(),
             ((data[1] + padding.height * 2) * density).toInt()
         )
@@ -147,8 +147,8 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             val sprite = CanvasSprite(bimpl[0])
             val action = CanvasActionAnimate(bimpl, frameTime.toInt())
 
-            sprite.scale = SizeF((atom[5] as Double).toFloat(), (atom[6] as Double).toFloat())
-            sprite.position = Point(
+            sprite.scale.set((atom[5] as Double).toFloat(), (atom[6] as Double).toFloat())
+            sprite.position.set(
                 (atom[3] as Double * density).toInt(),
                 -(atom[4] as Double * density).toInt()
             )
@@ -184,12 +184,12 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             }
             val sprite = CanvasSprite(bimpl[0])
             val action = CanvasActionAnimate(bimpl, 100)
-            sprite.position = Point(((flag[0] + 8) * density).toInt(), ((-flag[1] - 32) * density).toInt())
+            sprite.position.set(((flag[0] + 8) * density).toInt(), ((-flag[1] - 32) * density).toInt())
             _root.addChild(sprite)
             sprite.run(action)
 
             val flag_pole = CanvasSprite(BitmapCache.instance.getBitmap("flag_pole.png")!!)
-            flag_pole.position = Point((flag[0] * density).toInt(), ((-flag[1] - 16) * density).toInt())
+            flag_pole.position.set((flag[0] * density).toInt(), ((-flag[1] - 16) * density).toInt())
             _root.addChild(flag_pole)
             idx += 1
         }
@@ -220,7 +220,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             marker.position.set(pos.x,pos.y - 32)
             marker.zOrder = 2
             marker.anchor = PointF(0.5f, 0.0f)
-            marker.scale = SizeF(1.25f,1.25f)
+            marker.scale.set(1.25f,1.25f)
             marker.run(
                 CanvasActionRepeat(
                     CanvasActionSequence(
@@ -245,17 +245,17 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             canvas.drawCircle(
                 transform.position.x.toFloat(),
                 transform.position.y.toFloat(),
-                distance * 2 * node.scale.width, paint)
+                distance * node.scale.width, paint)
             paint.style = Paint.Style.FILL
             paint.color = Color.parseColor("#33ffffff")
             canvas.drawCircle(
                 transform.position.x.toFloat(),
                 transform.position.y.toFloat(),
-                distance * 2 * node.scale.width, paint)
+                distance * node.scale.width, paint)
         }
         , Size((distance * 2).toInt(),(distance * 2).toInt()))
-        shape.position = Point(scene_pos)
-        shape.scale = SizeF(0.0f,0.0f)
+        shape.position.set(scene_pos)
+        shape.scale.set(0.0f,0.0f)
         shape.run(CanvasActionScaleTo(1000,1.0f))
         if (paths.size > 0) {
             val parts = Map.instance.mergeRoutes(paths[0].first().source, paths)
@@ -267,7 +267,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
     }
 
     fun scrollViewDidScroll(scrollView: ScrollView) {
-        _root.position = Point(-scrollView.scrollX, scrollView.scrollY) + padding
+        _root.position.set(-scrollView.scrollX + padding.width, scrollView.scrollY + padding.height)
     }
 
     fun showCourseTrail(path: List<Edge<WorldNode>>, image: String) {
@@ -276,7 +276,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         spline.getUniform(max(spline.length / density * 0.06, 4.0).toInt())
         for (point in 0 until spline.path.size) {
             val plotSprite = CanvasSprite(BitmapCache.instance.getBitmap(image)!!)
-            plotSprite.position = Point(spline.path[point])
+            plotSprite.position.set(spline.path[point])
             _plotNode.addChild(plotSprite)
             if (point == 0) { plotSprite.hidden = true }
         }
@@ -323,15 +323,15 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             label.strokeWidth = context.resources.getDimensionPixelSize(R.dimen.money_label_stroke).toFloat()
             label.text = "+" + arr[i+1].toString()
             val scale = label.size.height.toFloat() / image.size.height * 1.75f
-            image.scale = SizeF(scale)
+            image.scale.set(scale)
             var pad = 0.0f
             if (i > 0) {
                 pad += (sarr[i-3] as CanvasSprite).size.width * 1.5f
                 pad += (sarr[i-2] as CanvasLabel).size.width
             }
             label.fontColor = arr[i+2] as Int
-            image.position = Point(pad.toInt(), 0)
-            label.position = Point(image.position.x + (image.size.width.toInt() *0.5f).toInt()+ (label.size.width * 0.5f).toInt(), image.position.y)
+            image.position.set(pad.toInt(), 0)
+            label.position.set(image.position.x + (image.size.width.toInt() *0.5f).toInt()+ (label.size.width * 0.5f).toInt(), image.position.y)
             sarr.addAll(arrayOf(image,label))
         }
         var messageWidth = 0
@@ -346,7 +346,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         sarr.forEach({
             message.addChild(it)
         })
-        message.position = pos - messageSize * 0.5f
+        message.position.set(pos - messageSize * 0.5f)
         message.position.y -= 64
         message.run(CanvasActionMoveBy(1000,Point(0,-128)))
         message.run(CanvasActionSequence(

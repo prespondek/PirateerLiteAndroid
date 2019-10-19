@@ -43,7 +43,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
+class JobFragment : AppFragment() , Game.GameListener {
 
     private val JOBCELL_HEADER = 0
     private val JOBCELL_JOB = 1
@@ -216,6 +216,7 @@ class JobFragment : androidx.fragment.app.Fragment(), Game.GameListener {
 
 
     fun updateCargoValue() {
+        if (boatController == null) { return }
         Game.instance.boatJobsChanged(boatController!!.model)
         if (_cargoPanel.visibility == VISIBLE) {
             val value = _cargoView.cargoValue
