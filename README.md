@@ -1,4 +1,8 @@
 # PirateerLiteAndroid
+
+[![CircleCI](https://circleci.com/gh/prespondek/PirateerLiteAndroid.svg?style=shield)](https://circleci.com/gh/prespondek/PirateerLiteAndroid)
+
+
 Clear For Action Lite. Non trivial sample Android game written in Kotlin.
 
 <img src=https://i.imgur.com/Du6S9CH.png height=300 align=left>
