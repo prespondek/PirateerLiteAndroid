@@ -32,7 +32,7 @@ open class WorldNode {
 
 }
 
-class TownModel (data: TownData): WorldNode(), User.UserObserver {
+class TownModel (data: TownData): WorldNode(), User.UserListener {
 
     interface TownDelegate {
         fun jobsUpdated ()

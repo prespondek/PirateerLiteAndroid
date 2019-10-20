@@ -84,7 +84,7 @@ class BoatView(boatType: String) : SplinePath() {
 
         smooth((length / 20.0).toInt())
         val action1 = CanvasActionCutom(this.duration, { node, dt ->
-            val currTime = (Date().time - startTime.time).toFloat() / duration
+            val currTime = min(1.0f,(Date().time - startTime.time).toFloat() / duration)
             val nextTime = min(1.0f, (currTime * this.duration + 500) / this.duration)
             val pos = this.splinePosition(currTime)
             this.sprite.position.set(pos)

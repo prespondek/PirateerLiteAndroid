@@ -24,22 +24,14 @@ import com.lanyard.pirateerlite.singletons.Game
 import com.lanyard.pirateerlite.singletons.Map
 import com.lanyard.pirateerlite.singletons.User
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
-import android.content.pm.ActivityInfo
 import android.content.pm.ActivityInfo.*
 import android.content.res.Configuration.*
 import android.os.PersistableBundle
 import androidx.fragment.app.FragmentActivity
-import androidx.lifecycle.ViewModel
 import com.lanyard.canvas.BitmapStream
-import com.lanyard.pirateerlite.data.BoatData
-import com.lanyard.pirateerlite.data.StatsData
-import com.lanyard.pirateerlite.data.TownData
-import com.lanyard.pirateerlite.data.UserData
 import com.lanyard.pirateerlite.models.JobModel
 import com.lanyard.pirateerlite.singletons.Audio
 import androidx.lifecycle.ViewModelProviders
-import com.lanyard.library.SplinePath
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.viewmodels.SplashViewModel
 
@@ -102,7 +94,7 @@ class SplashActivity : FragmentActivity() {
         windowManager.defaultDisplay.getMetrics(metrics)
         Map.initialize(applicationContext,mapConfig!!,_viewModel.townData?.value!!, metrics.density)
         User.initialize(applicationContext,_viewModel.userdata?.value!![0], _viewModel.statdata?.value!!, _viewModel.boatData?.value!!)
-        User.instance.addObserver(Game.instance)
+        User.instance.addListerner(Game.instance)
 
         var count = 3
         var countDown = {

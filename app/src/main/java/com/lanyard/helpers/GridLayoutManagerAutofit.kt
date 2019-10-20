@@ -21,17 +21,17 @@ class GridLayoutManagerAutofit  : androidx.recyclerview.widget.GridLayoutManager
     }
 
     private fun checkedColumnWidth(context: Context, columnWidth: Int): Int {
-        var columnWidth = columnWidth
-        if (columnWidth <= 0) {
+        var lColumnWidth = columnWidth
+        if (lColumnWidth <= 0) {
             /* Set default columnWidth value (48dp here). It is better to move this constant
             to static constant on top, but we need context to convert it to dp, so can't really
             do so. */
-            columnWidth = TypedValue.applyDimension(
+            lColumnWidth = TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP, 48f,
                 context.getResources().getDisplayMetrics()
             ).toInt()
         }
-        return columnWidth
+        return lColumnWidth
     }
 
     fun setColumnWidth(newColumnWidth: Int) {

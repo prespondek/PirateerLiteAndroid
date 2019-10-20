@@ -37,8 +37,11 @@ import kotlinx.android.synthetic.main.activity_map.*
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import androidx.core.content.ContextCompat
+import com.lanyard.pirateerlite.models.BoatModel
+import com.lanyard.pirateerlite.models.TownModel
+import com.lanyard.pirateerlite.singletons.Game
 
-class BoatListFragment() : AppFragment()  {
+class BoatListFragment() : AppFragment(), Game.GameListener  {
     class BoatSellFragment(): androidx.fragment.app.DialogFragment() {
 
         constructor(position: Int) : this() {
@@ -221,19 +224,18 @@ class BoatListFragment() : AppFragment()  {
             var emptyLabel = holder.view.findViewById<TextView>(R.id.emptyLabel)!!
 
             if (position < user.boats.size) {
+                val boat = user.boats[position]
                 boatframe.visibility = VISIBLE
                 moorframe.visibility = INVISIBLE
                 emptyLabel.visibility = INVISIBLE
-                holder.view.findViewById<TextView>(R.id.boatName)!!.text = user.boats[position].name
-                if (user.boats[position].isMoored) {
-                    holder.view.findViewById<TextView>(R.id.boatStatus)!!.text =
-                        "Moored at " + user.boats[position].town!!.name
+                holder.view.findViewById<TextView>(R.id.boatName)!!.text = boat.name
+                if (boat.isMoored) {
+                    holder.view.findViewById<TextView>(R.id.boatStatus)?.setText(getString(R.string.mooredAt,boat.town?.name))
                 } else {
-                    holder.view.findViewById<TextView>(R.id.boatStatus)!!.text =
-                        "Sailing to " + user.boats[position].destination!!.name
+                    holder.view.findViewById<TextView>(R.id.boatStatus)?.setText(getString(R.string.sailingTo,boat.destination?.name))
                 }
                 holder.view.findViewById<ImageView>(R.id.boatImg)!!.setImageResource(
-                    context!!.resources.getIdentifier(user.boats[position].type + "_01", "drawable", context!!.getPackageName())
+                    context!!.resources.getIdentifier(boat.type + "_01", "drawable", context!!.getPackageName())
                 )
             } else if (position < user.boatSlots) {
                 boatframe.visibility = INVISIBLE
@@ -270,9 +272,20 @@ class BoatListFragment() : AppFragment()  {
             layoutManager = _viewManager
             adapter = _viewAdapter
         }
+        Game.instance.addGameListener(this)
         swipeCallback = SwipeToSellCallback()
         ItemTouchHelper(swipeCallback).attachToRecyclerView(_table)
         return view
+    }
+
+    override fun boatArrived(boat: BoatModel, town: TownModel) {
+        super.boatArrived(boat, town)
+        _viewAdapter.notifyItemChanged(User.instance.boats.indexOf(boat))
+    }
+
+    override fun boatSailed(boat: BoatModel) {
+        super.boatSailed(boat)
+        _viewAdapter.notifyItemChanged(User.instance.boats.indexOf(boat))
     }
 
 }

@@ -24,9 +24,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.singletons.User
-import com.lanyard.pirateerlite.singletons.User.UserObserver
+import com.lanyard.pirateerlite.singletons.User.UserListener
 
-class WalletFragment : AppFragment() , UserObserver
+class WalletFragment : AppFragment() , UserListener
 {
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,7 +40,7 @@ class WalletFragment : AppFragment() , UserObserver
         _silverLabel = view.findViewById<TextView>(R.id.silverText)
         _xpLabel = view.findViewById<TextView>(R.id.xpText)
         _xpImage = view.findViewById<ImageView>(R.id.xpIcon)
-        User.instance.addObserver(this)
+        User.instance.addListerner(this)
         goldUpdated( 0,  0)
         silverUpdated( 0,  0)
         xpUpdated( 0,  0)

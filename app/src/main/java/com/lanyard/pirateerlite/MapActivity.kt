@@ -17,10 +17,8 @@
 package com.lanyard.pirateerlite
 
 import android.content.pm.ActivityInfo
-import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.os.Bundle
-import android.os.Handler
 import android.os.Looper
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import androidx.appcompat.app.AppCompatActivity
@@ -30,13 +28,9 @@ import com.lanyard.pirateerlite.controllers.TownController
 import com.lanyard.pirateerlite.fragments.*
 import kotlinx.android.synthetic.main.activity_map.*
 import android.view.Menu
-import android.view.View.*
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
 import com.lanyard.pirateerlite.singletons.Audio
-import kotlinx.coroutines.runBlocking
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 
 
 class MapActivity : AppCompatActivity() {
@@ -48,7 +42,6 @@ class MapActivity : AppCompatActivity() {
     private val _onNavigationItemSelectedListener = BottomNavigationView.OnNavigationItemSelectedListener {
         navigation.menu.setGroupCheckable(0,true,true)
         val manager = supportFragmentManager
-        val frag = manager.primaryNavigationFragment?.tag
         if (manager.backStackEntryCount > 0) {
             ignoreBackStack = true
             AppFragment.blockAnimation = true
@@ -73,7 +66,7 @@ class MapActivity : AppCompatActivity() {
             buttonId.removeAt(0)
             fragTag.removeAt(0)
         }
-        var item: Int = fragTag.indexOf(frag?.tag)
+        val item: Int = fragTag.indexOf(frag?.tag)
 
         filterNavigationByFragment(frag?.tag)
 
@@ -112,7 +105,7 @@ class MapActivity : AppCompatActivity() {
         if ( map.mode == MapFragment.Mode.buy || map.mode == MapFragment.Mode.build ) {
             map.reset()
         }
-        var prevFrag = supportFragmentManager.primaryNavigationFragment ?: throw NullPointerException()
+        val prevFrag = supportFragmentManager.primaryNavigationFragment ?: throw NullPointerException()
         if (prevFrag.tag == "map") {
             transaction.hide(prevFrag)
         } else {
@@ -176,7 +169,7 @@ class MapActivity : AppCompatActivity() {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        var frag = supportFragmentManager.primaryNavigationFragment ?: throw NullPointerException()
+        val frag = supportFragmentManager.primaryNavigationFragment ?: throw NullPointerException()
         if (frag.tag == "town") {
             menuInflater.inflate(R.menu.jobs_menu, menu)
         }
@@ -185,13 +178,13 @@ class MapActivity : AppCompatActivity() {
 
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        var frag = supportFragmentManager.primaryNavigationFragment ?: throw NullPointerException()
+        val frag = supportFragmentManager.primaryNavigationFragment ?: throw NullPointerException()
         if (frag.tag == "town") {
-            var town = frag as TownFragment
+            val town = frag as TownFragment
             when (item?.title) {
                 "Jobs" -> {
-                    var frag = swapFragment(R.id.holdButton, null) as JobFragment
-                    frag.townModel = town.townController.model
+                    val jobFrag = swapFragment(R.id.holdButton, null) as JobFragment
+                    jobFrag.townModel = town.townController.model
                 }
             }
         }
@@ -210,7 +203,7 @@ class MapActivity : AppCompatActivity() {
         supportFragmentManager.addOnBackStackChangedListener(_onBackStackChangedListener)
         navigation.getMenu().setGroupCheckable(0, true, true)
 
-        var arr = arrayOf("nav_plot.png", "nav_plotted.png")
+        val arr = arrayOf("nav_plot.png", "nav_plotted.png")
         for (n in arr) {
             BitmapCache.instance.addBitmap(applicationContext, n, Bitmap.Config.ARGB_4444)
         }
@@ -257,15 +250,6 @@ class MapActivity : AppCompatActivity() {
     }
 
 
-    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
-        super.onRestoreInstanceState(savedInstanceState)
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration?) {
-        super.onConfigurationChanged(newConfig)
-    }
-
-
     override fun onSaveInstanceState(outState: Bundle?) {
         super.onSaveInstanceState(outState)
         val map = supportFragmentManager.findFragmentByTag("map") as MapFragment
@@ -278,7 +262,6 @@ class MapActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-
         Audio.instance.pause()
     }
 

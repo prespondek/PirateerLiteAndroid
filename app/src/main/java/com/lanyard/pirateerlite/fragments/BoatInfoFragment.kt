@@ -19,15 +19,10 @@ package com.lanyard.pirateerlite.fragments
 import android.app.Dialog
 import android.graphics.Color
 import android.os.Bundle
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
 import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Animation
 import android.widget.ImageView
 import android.widget.TextView
 import com.lanyard.pirateerlite.MapActivity
@@ -94,8 +89,8 @@ class BoatInfoFragment : AppFragment() {
             }
         }
 
-        rangeLabel.text = (boatValue(BoatModel.BoatIndex.distance) as Double).toInt().toString() + " miles"
-        speedLabel.text = (boatValue(BoatModel.BoatIndex.speed) as Double).toInt().toString() + " knots"
+        rangeLabel.setText(getString(R.string.rangeLabel, boatValue(BoatModel.BoatIndex.distance)))
+        speedLabel.setText(getString(R.string.speedLabel, boatValue(BoatModel.BoatIndex.speed)))
         val imgname = boatValue(BoatModel.BoatIndex.image) as String
         boatImage.setImageResource(context!!.resources.getIdentifier(imgname.removeRange(imgname.length - 4, imgname.length), "drawable", context!!.getPackageName()))
         boatNameLabel.text = boatValue(BoatModel.BoatIndex.title) as String
@@ -125,7 +120,7 @@ class BoatInfoFragment : AppFragment() {
             val tparts = (User.instance.parts.filter { it == currPart })
             val numParts = tparts.size
             val targetParts = parts[i]
-            label?.text = (numParts).toString() + "/" + (targetParts).toString()
+            label?.setText(getString(R.string.partsLabel,numParts, targetParts))
             if (numParts >= targetParts) {
                 for (i in 0 until targetParts) {
                     this.parts.add(tparts[i])

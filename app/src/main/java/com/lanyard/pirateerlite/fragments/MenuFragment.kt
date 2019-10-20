@@ -30,10 +30,10 @@ import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.singletons.User
-import com.lanyard.pirateerlite.singletons.User.UserObserver
+import com.lanyard.pirateerlite.singletons.User.UserListener
 import com.lanyard.pirateerlite.views.MenuCellView
 
-class MenuFragment : AppFragment(), UserObserver {
+class MenuFragment : AppFragment(), UserListener {
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,7 +45,7 @@ class MenuFragment : AppFragment(), UserObserver {
         // Inflate the layout for this fragment
         var view = inflater.inflate(R.layout.fragment_menu, container, false)
 
-        User.instance.addObserver(this)
+        User.instance.addListerner(this)
         var arr = arrayOf(R.id.shipyardButton,R.id.marketButton,R.id.statsButton,R.id.bankButton)
         for (idx in arr) {
             var cell = view.findViewById<MenuCellView>(idx)
@@ -108,6 +108,6 @@ class MenuFragment : AppFragment(), UserObserver {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        User.instance.removeObserver(this)
+        User.instance.removeListener(this)
     }
 }

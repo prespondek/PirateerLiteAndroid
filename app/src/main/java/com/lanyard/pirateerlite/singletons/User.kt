@@ -142,7 +142,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
 
     }
 
-    interface UserObserver {
+    interface UserListener {
         fun goldUpdated     (oldValue: Int, newValue: Int) {}
         fun silverUpdated   (oldValue: Int, newValue: Int) {}
         fun xpUpdated       (oldValue: Int, newValue: Int) {}
@@ -202,7 +202,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
     private var _stats: MutableList<StatsData>
     private var _data : UserData
     private var _boatModels: ArrayList<BoatModel>
-    private var _observers = ArrayList<WeakReference<UserObserver>>()
+    private var _listeners = ArrayList<WeakReference<UserListener>>()
 
     init {
         this._data = userData
@@ -223,7 +223,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             _data.gold = value
             if (oldvalue != _data.gold) {
                 cleanObservers()
-                for (container in _observers) {
+                for (container in _listeners) {
                     container.get()?.goldUpdated(oldvalue, _data.gold)
                 }
             }
@@ -236,7 +236,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             _data.silver = value
             if (oldvalue != _data.silver) {
                 cleanObservers()
-                for (container in _observers) {
+                for (container in _listeners) {
                     container.get()?.silverUpdated(oldvalue, _data.silver)
                 }
             }
@@ -247,7 +247,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             var oldvalue = _data.xp
             _data.xp = value
             cleanObservers()
-            for (container in _observers) {
+            for (container in _listeners) {
                 container.get()?.xpUpdated(oldvalue, silver)
             }
             if (levelForXp(oldvalue) != levelForXp(_data.xp)) {
@@ -302,7 +302,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
 
     fun statsUpdated() {
         cleanObservers()
-        for (container in _observers) {
+        for (container in _listeners) {
             container.get()?.statsUpdated()
         }
     }
@@ -363,7 +363,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             boat.data.id = Game.instance.db.boatDao().insert(boat.data)
         }
         cleanObservers()
-        for (observer in _observers) {
+        for (observer in _listeners) {
             observer.get()?.boatAdded(boat)
         }
     }
@@ -383,7 +383,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
     }
 
     private fun cleanObservers() {
-        _observers.removeAll { it.get() == null }
+        _listeners.removeAll { it.get() == null }
     }
 
     fun boatAtIndex(idx: Int): BoatModel? {
@@ -436,7 +436,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             _boatModels[idx].id = idx
         }*/
         cleanObservers()
-        for (observer in _observers) {
+        for (observer in _listeners) {
             observer.get()?.boatRemoved(boat)
         }
         _data.boatsSold += 1
@@ -463,12 +463,12 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
         addBoat(boat)
     }
 
-    fun addObserver(observer: UserObserver) {
-        _observers.add(WeakReference(observer))
+    fun addListerner(observer: UserListener) {
+        _listeners.add(WeakReference(observer))
     }
 
-    fun removeObserver(observer: UserObserver) {
-        _observers.removeAll { it.get() === observer }
+    fun removeListener(observer: UserListener) {
+        _listeners.removeAll { it.get() === observer }
     }
 
     private fun updateMarket() {

@@ -118,7 +118,7 @@ class CardinalSpline (path : List<Point>, tension: Float = 0.5F ) {
         var array = mutableListOf<Point>()
         val numPointsDesiredMin1 = segments-1
         for ( i in 0 until segments ) {
-            val t = i as Float / numPointsDesiredMin1
+            val t = i.toFloat() / numPointsDesiredMin1
             array.add(evaluateCurve(t).toPoint())
         }
         path = array

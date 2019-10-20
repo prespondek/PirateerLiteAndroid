@@ -92,7 +92,7 @@ open class CanvasNode() : CanvasNodeTransform
             this.view = null
         }
         if ( value != null) {
-            value!!._children.add(this)
+            value._children.add(this)
             this.view = value.view
         }
         field = value

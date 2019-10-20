@@ -28,11 +28,11 @@ import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.singletons.Map
-import com.lanyard.pirateerlite.singletons.User.UserObserver
+import com.lanyard.pirateerlite.singletons.User.UserListener
 import java.util.*
 import kotlin.math.max
 
-class StatsFragment : AppFragment() , UserObserver {
+class StatsFragment : AppFragment() , UserListener {
 
     fun update(view: View?) {
         if ( view == null ) { return }
@@ -160,7 +160,7 @@ class StatsFragment : AppFragment() , UserObserver {
         val view = inflater.inflate(R.layout.fragment_stats, container, false)
         val stats = view.findViewById<TextView>(R.id.statistics)
         stats.setText(R.string.statistics)
-        User.instance.addObserver(this)
+        User.instance.addListerner(this)
         update(view)
         return view
     }

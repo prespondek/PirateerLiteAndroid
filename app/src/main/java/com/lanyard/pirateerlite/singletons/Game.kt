@@ -24,7 +24,7 @@ import com.lanyard.pirateerlite.models.GameModel
 import java.util.*
 import kotlin.collections.ArrayList
 
-class Game private constructor(context: Context, mapConfig: HashMap<String, Any>) : GameModel(context, mapConfig), User.UserObserver {
+class Game private constructor(context: Context, mapConfig: HashMap<String, Any>) : GameModel(context, mapConfig), User.UserListener {
 
     companion object {
         private lateinit var _instance: Game

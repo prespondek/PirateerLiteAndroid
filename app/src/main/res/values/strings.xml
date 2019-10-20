@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
     <string name="app_name">Clear for Action Lite</string>
     <string name="title_map">Map</string>
     <string name="title_menu">Menu</string>
@@ -58,5 +58,20 @@
     <string name="stattownmf">Town: Most Frequented:</string>
     <string name="stattownmgs">Town: Most Goods Sold:</string>
     <string name="stattownmgb">Town: Most Goods Bought:</string>
-
+    <string name="mooredAt">Moored at
+        <xliff:g id="town" example="Sydney">%s</xliff:g>
+    </string>
+    <string name="sailingTo">Sailing to
+        <xliff:g id="town" example="Sydney">%s</xliff:g>
+    </string>
+    <string name="rangeLabel">
+        <xliff:g id="range" example="10">%s</xliff:g>
+        miles
+    </string>
+    <string name="speedLabel">
+        <xliff:g id="speed" example="10">%s</xliff:g>
+        knots
+    </string>
+    <string name="partsLabel">%i/%i
+    </string>
 </resources>

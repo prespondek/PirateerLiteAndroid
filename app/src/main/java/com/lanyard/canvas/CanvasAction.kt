@@ -26,7 +26,7 @@ import kotlin.collections.ArrayList
 import kotlin.math.floor
 import kotlin.math.min
 
-abstract open class CanvasAction {
+abstract class CanvasAction {
     var _running = false
     var tag : String? = null
     val running : Boolean get() {
@@ -35,13 +35,13 @@ abstract open class CanvasAction {
     open fun isValid() : Boolean {
         return true
     }
-    abstract open fun update( node: CanvasNode, dt: Long )
+    abstract fun update( node: CanvasNode, dt: Long )
     open fun start( node: CanvasNode ) {
         _running = true
     }
 }
 
-abstract open class CanvasActionInterval (duration: Long, interval: Long) : CanvasAction() {
+abstract class CanvasActionInterval (duration: Long, interval: Long) : CanvasAction() {
     var duration: Long
     var interval: Long
     protected var _timer: Long
@@ -185,7 +185,7 @@ class CanvasActionAnimate (frames: List<BitmapStream>, interval: Int): CanvasAct
             changeFrame(sprite!!, index)
         }
     }
-    open fun changeFrame ( node: CanvasSprite, frame: Int ) {
+    fun changeFrame ( node: CanvasSprite, frame: Int ) {
         node.texture = bitmaps[frame]
     }
 }

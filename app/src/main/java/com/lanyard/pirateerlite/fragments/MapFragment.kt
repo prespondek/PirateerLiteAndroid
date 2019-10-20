@@ -46,7 +46,7 @@ import kotlinx.android.synthetic.main.activity_map.*
 import kotlinx.android.synthetic.main.fragment_map.*
 import android.view.View.VISIBLE
 
-class MapFragment : AppFragment() , Game.GameListener, User.UserObserver {
+class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
 
     enum class Mode {
         plot, map, track, nontrack, build, buy
@@ -126,7 +126,7 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserObserver {
         }
         // Inflate the layout for this fragment
         Game.instance.addGameListener(this)
-        User.instance.addObserver(this)
+        User.instance.addListerner(this)
         fragmentManager?.addOnBackStackChangedListener(_onBackStackChangedListener)
 
         val view = inflater.inflate(R.layout.fragment_map, container, false)

@@ -31,7 +31,7 @@ import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.singletons.User
-import com.lanyard.pirateerlite.singletons.User.UserObserver
+import com.lanyard.pirateerlite.singletons.User.UserListener
 import kotlinx.coroutines.*
 import java.lang.Runnable
 import java.util.*
@@ -39,7 +39,7 @@ import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
 
-class MarketFragment : AppFragment() , UserObserver {
+class MarketFragment : AppFragment() , UserListener {
     private lateinit var _parts: ArrayList<User.BoatPart>
     private lateinit var _marketTimeStamp: Date
     private lateinit var _marketView: androidx.recyclerview.widget.RecyclerView
@@ -49,7 +49,7 @@ class MarketFragment : AppFragment() , UserObserver {
     var selectedPart: User.BoatPart? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        User.instance.addObserver(this)
+        User.instance.addListerner(this)
         _parts = User.instance.market
         _marketTimeStamp = User.instance.marketDate
         _adapter = MarketAdapter()

@@ -64,15 +64,15 @@ class Heap<T>(sort: (T, T) -> Boolean) {
         return nodes.size
     }
 
-    inline internal fun parentIndex(idx: Int): Int {
+    internal fun parentIndex(idx: Int): Int {
         return (idx - 1) / 2
     }
 
-    inline internal fun leftChildIndex(idx: Int): Int {
+    internal fun leftChildIndex(idx: Int): Int {
         return 2 * idx + 1
     }
 
-    inline internal fun rightChildIndex(idx: Int): Int {
+    internal fun rightChildIndex(idx: Int): Int {
         return 2 * idx + 2
     }
 
