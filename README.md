@@ -12,7 +12,65 @@ Clear For Action Lite. Non trivial sample Android game written in Kotlin.
 
     $ git clone https://github.com/prespondek/PirateerLiteAndroid
 
-Build with XCode 10+
+Build with Android Studio
 
 Please note that assets have been stripped so you can compile the project but it will error when debugging.
 
+## Libraries Used
+
+* [Foundation][0] - Components for core system capabilities, Kotlin extensions and support for
+  multidex and automated testing.
+  * [AppCompat][1] - Degrade gracefully on older versions of Android.
+  * [Test][4] - An Android testing framework for unit and runtime UI tests.
+* [Architecture][10] - A collection of libraries that help you design robust, testable, and
+  maintainable apps. Start with classes for managing your UI component lifecycle and handling data
+  persistence.
+  * [Auto Rotate][34] - App supports different layouts portrait on handheld
+  * [Lifecycles][12] - Create a UI that automatically responds to lifecycle events.
+  * [LiveData][13] - Build data objects that notify views when the underlying database changes.
+  * [Room][16] - SQLite database with in-app objects and compile-time checks.
+  * [ViewModel][17] - Store UI-related data that isn't destroyed on app rotations. Easily schedule
+     asynchronous tasks for optimal execution.
+  * [Threads][38] - App has a seperate render thread.
+  * [Executors][43] - To save memory images are constantly un/loaded based on viewport position.
+  * [Kotlin Coroutines][91] for managing background threads with simplified code and reducing needs for callbacks
+  * [Backstack][45] - Handles back button behaviour. A horrible, immalleable thing, that will probably not do what you want.
+* [UI][30] - Details on why and how to use UI Components in your apps - together or separate
+  * [Animations & Transitions][31] - Move widgets and transition between screens.
+  * [Fragment][34] - A basic unit of composable UI.
+  * [Layout][35] - Lay out widgets using different algorithms.
+  * [ScrollView, Scrollview Adapter][39] - Boatlist, Market, Shipyard menus
+  * [Gesture Detector][40] - Swipe gesture for cargo selection.
+  * [Grid Layout Manager][41] - Jobs grid layout
+  * [Surface View][42] - For the Map view 
+* Third party
+  * [GSon][36] Easier JSON parsing
+  * [Super Scroll View][37] Scrollview that works in vertical and horizontal directions
+
+[0]: https://developer.android.com/jetpack/components
+[1]: https://developer.android.com/topic/libraries/support-library/packages#v7-appcompat
+[2]: https://developer.android.com/kotlin/ktx
+[4]: https://developer.android.com/training/testing/
+[10]: https://developer.android.com/jetpack/arch/
+[11]: https://developer.android.com/topic/libraries/data-binding/
+[12]: https://developer.android.com/topic/libraries/architecture/lifecycle
+[13]: https://developer.android.com/topic/libraries/architecture/livedata
+[14]: https://developer.android.com/topic/libraries/architecture/navigation/
+[16]: https://developer.android.com/topic/libraries/architecture/room
+[17]: https://developer.android.com/topic/libraries/architecture/viewmodel
+[18]: https://developer.android.com/topic/libraries/architecture/workmanager
+[30]: https://developer.android.com/guide/topics/ui
+[31]: https://developer.android.com/training/animation/
+[34]: https://developer.android.com/guide/components/fragments
+[35]: https://developer.android.com/guide/topics/ui/declaring-layout
+[36]: https://sites.google.com/site/gson/Home
+[38]: https://developer.android.com/guide/components/processes-and-threads
+[37]: https://github.com/huangmb/SuperScrollView
+[90]: https://bumptech.github.io/glide/
+[91]: https://kotlinlang.org/docs/reference/coroutines-overview.html
+[42]: https://www.google.com/url?client=internal-uds-cse&cx=000521750095050289010:zpcpi1ea4s8&q=https://developer.android.com/reference/android/view/SurfaceView&sa=U&ved=2ahUKEwiR1Ie0iarlAhUBN48KHfJwDtIQFjAAegQIBRAB&usg=AOvVaw1xtZEaZcXdkxTKRyLCJf2z
+[39]: https://developer.android.com/reference/android/widget/ScrollView
+[43]: https://developer.android.com/reference/java/util/concurrent/Executor
+[45]: https://developer.android.com/guide/components/activities/tasks-and-back-stack
+[40]: https://developer.android.com/training/gestures/detector
+[41]: https://developer.android.com/reference/android/widget/GridLayout
