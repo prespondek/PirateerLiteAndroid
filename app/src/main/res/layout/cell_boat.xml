@@ -67,17 +67,19 @@
                         android:text="TextView"
                         android:layout_width="match_parent"
                         android:layout_height="0dp" android:id="@+id/boatName" android:layout_weight="0.5"
-                        android:gravity="bottom|center_horizontal" android:textSize="16sp"
-                        android:textAlignment="viewStart" android:textColor="@android:color/black"
+                        android:gravity="start" android:textSize="16sp"
+                        android:textColor="@android:color/black"
                         app:autoSizeMaxTextSize="200dp" app:autoSizeMinTextSize="2dp"
-                        app:autoSizeStepGranularity="2dp" app:autoSizeTextType="none"/>
+                        app:autoSizeStepGranularity="2dp" app:autoSizeTextType="none"
+                        android:textAlignment="textStart"/>
                 <TextView
                         android:text="TextView"
                         android:layout_width="match_parent"
                         android:layout_height="0dp" android:id="@+id/boatStatus" android:layout_weight="0.5"
-                        android:gravity="center_horizontal|top" android:textAlignment="viewStart"
+                        android:gravity="start"
                         app:autoSizeMaxTextSize="200dp" app:autoSizeMinTextSize="2dp"
-                        app:autoSizeStepGranularity="2dp" app:autoSizeTextType="none"/>
+                        app:autoSizeStepGranularity="2dp" app:autoSizeTextType="none"
+                        android:textAlignment="textStart"/>
             </LinearLayout>
         </FrameLayout>
     </LinearLayout>

@@ -33,7 +33,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/levelLabel" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -48,7 +48,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/totalXpLabel" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -63,7 +63,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/nextXpLabel" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -83,7 +83,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/goldLabel" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -103,7 +103,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/silverLabel" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -118,7 +118,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/fleetSize" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -133,7 +133,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/boatsSold" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -153,7 +153,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/netWorth" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -173,7 +173,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/totalSPM" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -188,7 +188,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/totalVoyages" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -203,7 +203,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/distanceSailed" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                 android:orientation="horizontal"
@@ -218,7 +218,7 @@
                     android:text="TextView"
                     android:layout_width="0dp"
                     android:layout_height="match_parent" android:id="@+id/topEarningName" android:layout_weight="0.2"
-                    android:gravity="center_vertical" android:textAlignment="textEnd"/>
+                    android:gravity="center_vertical|end" android:textAlignment="textEnd"/>
             <ImageView
                     android:layout_width="0dp"
                     android:layout_height="match_parent" app:srcCompat="@drawable/raft_01"
@@ -228,7 +228,7 @@
                     android:text="TextView"
                     android:layout_width="0dp"
                     android:layout_height="match_parent" android:id="@+id/topEarningValue" android:layout_weight="0.2"
-                    android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                    android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
         </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -243,7 +243,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/spmName" android:layout_weight="0.2"
-                        android:gravity="center_vertical" android:textAlignment="textEnd"/>
+                        android:gravity="center_vertical|end" android:textAlignment="textEnd"/>
                 <ImageView
                         android:layout_width="0dp"
                         android:layout_height="match_parent" app:srcCompat="@drawable/raft_01"
@@ -253,7 +253,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/spmValue" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -268,7 +268,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/mostVoyagesName" android:layout_weight="0.2"
-                        android:gravity="center_vertical" android:textAlignment="textEnd"/>
+                        android:gravity="center_vertical|end" android:textAlignment="textEnd"/>
                 <ImageView
                         android:layout_width="0dp"
                         android:layout_height="match_parent" app:srcCompat="@drawable/raft_01"
@@ -278,7 +278,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/mostVoyagesValue" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -293,7 +293,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/mostMileageName" android:layout_weight="0.2"
-                        android:gravity="center_vertical" android:textAlignment="textEnd"/>
+                        android:gravity="center_vertical|end" android:textAlignment="textEnd"/>
                 <ImageView
                         android:layout_width="0dp"
                         android:layout_height="match_parent" app:srcCompat="@drawable/raft_01"
@@ -303,7 +303,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/mostMileageValue" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -318,12 +318,12 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/mostFrequentedName" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
                 <TextView
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/mostFrequentedValue" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -338,7 +338,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/mostGoodsSoldLabel" android:layout_weight="0.2"
-                        android:gravity="center_vertical" android:textAlignment="textEnd"/>
+                        android:gravity="center_vertical|end" android:textAlignment="textEnd"/>
                 <ImageView
                         android:layout_width="0dp"
                         android:layout_height="match_parent" app:srcCompat="@drawable/silver_piece"
@@ -348,7 +348,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/mostGoodsSoldSilver" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -363,7 +363,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/mostGoodsBoughtLabel" android:layout_weight="0.2"
-                        android:gravity="center_vertical" android:textAlignment="textEnd"/>
+                        android:gravity="center_vertical|end" android:textAlignment="textEnd"/>
                 <ImageView
                         android:layout_width="0dp"
                         android:layout_height="match_parent" app:srcCompat="@drawable/silver_piece"
@@ -373,7 +373,7 @@
                         android:text="TextView"
                         android:layout_width="0dp"
                         android:layout_height="match_parent" android:id="@+id/mostGoodsBoughtSilver" android:layout_weight="0.2"
-                        android:textAlignment="textEnd" android:gravity="center_vertical"/>
+                        android:textAlignment="textEnd" android:gravity="center_vertical|end"/>
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
