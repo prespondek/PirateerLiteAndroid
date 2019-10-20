@@ -2,6 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/prespondek/PirateerLiteAndroid.svg?style=shield)](https://circleci.com/gh/prespondek/PirateerLiteAndroid)
 
+#### https://github.com/prespondek/PirateerLiteAndroid/tree/master/app/src/main/java/com/lanyard
 
 Clear For Action Lite. Non trivial sample Android game written in Kotlin.
 
@@ -49,6 +50,7 @@ Please note that assets have been stripped so you can compile the project but it
   * [Super Scroll View][37] Scrollview that works in vertical and horizontal directions. Handles map scrolling and interaction.
   
 ## CanvasKit:
+#### https://github.com/prespondek/PirateerLiteAndroid/tree/master/app/src/main/java/com/lanyard/canvas
 I utilised Apple's SpriteKit for the IOS version, but no such thing exists on Android. I couldn't find a suitable kotlin alternative so ended up writing my own using surface view. It behaves similar to SpriteKit or Cocos2D, but uses the android canvas rather than opengl. I have ported some of the basic actions and nodes to CanvasKit. 
   
 ## Comments:
