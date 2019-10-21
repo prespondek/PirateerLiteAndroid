@@ -104,9 +104,6 @@ open class CanvasNode() : CanvasNodeTransform
     var zOrder = 0
     var tag = ""
     var hidden : Boolean = false
-        set (value){
-        field = value
-    }
 
     init {
         //_children = mutableListOf()
@@ -127,6 +124,11 @@ open class CanvasNode() : CanvasNodeTransform
         _children.clear()
     }
 
+    fun removeChildren(list: Iterable<CanvasNode>) {
+        _sortChildren = true
+        _children.removeAll(list)
+    }
+
     fun removeChild( node: CanvasNode ) {
         _sortChildren = true
         _children.remove(node)
@@ -140,8 +142,7 @@ open class CanvasNode() : CanvasNodeTransform
         get() { return _children }
 
 
-
-    open protected fun bounds(transform: CanvasNodeTransform) : Rect
+    protected open fun bounds(transform: CanvasNodeTransform): Rect
     {
         var left =      (transform.position.x + position.x - magnitude.width * scale.width * transform.scale.width * anchor.x).toInt()
         var top =       (transform.position.y + position.y - magnitude.height * scale.height * transform.scale.height * (1-anchor.y)).toInt()

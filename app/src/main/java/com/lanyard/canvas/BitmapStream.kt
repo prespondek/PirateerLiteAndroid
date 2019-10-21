@@ -21,7 +21,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.DisplayMetrics
 import android.util.Size
-import androidx.lifecycle.LiveData
 import java.util.concurrent.Future
 
 
@@ -39,7 +38,7 @@ class BitmapStream {
         }
     }
 
-    inner class BitmapFetcher() : Runnable {
+    inner class BitmapFetcher : Runnable {
 
         override fun run() {
             _highBitmap = inflate()
@@ -97,11 +96,11 @@ class BitmapStream {
     fun flush (timestamp: Long) : Boolean {
         if (_timestamp + timer <= timestamp) {
             if (_highBitmap != null) {
-                println("flushing " + _generator.name)
+                //println("flushing " + _generator.name)
             }
             _highBitmap = null
             if (_future != null) {
-                println("cancelling " + _generator.name)
+                //println("cancelling " + _generator.name)
                 _future?.cancel(true)
             }
             _future = null

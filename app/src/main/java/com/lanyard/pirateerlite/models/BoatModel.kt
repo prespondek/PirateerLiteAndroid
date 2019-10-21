@@ -20,7 +20,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
-import com.google.gson.internal.bind.ArrayTypeAdapter
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.lanyard.canvas.BitmapCache
@@ -33,7 +32,6 @@ import kotlinx.coroutines.runBlocking
 import java.io.InputStreamReader
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 class BoatModel {
     enum class BoatIndex(val index: Int) {
@@ -205,10 +203,16 @@ class BoatModel {
         _course.addAll(towns)
     }
 
-    fun save() = runBlocking {
-        Game.instance.db.boatDao().update(_data)
-        Game.instance.db.boatJobDao().deleteByBoatId(id)
-        Game.instance.db.boatJobDao().insert(_cargo.mapNotNull { if (it != null) { BoatJobData(0, id, it.data)} else null} )
+    fun save() {
+        runBlocking {
+            Game.instance.db.boatDao().update(_data)
+            Game.instance.db.boatJobDao().deleteByBoatId(id)
+            Game.instance.db.boatJobDao().insert(_cargo.mapNotNull {
+                if (it != null) {
+                    BoatJobData(0, id, it.data)
+                } else null
+            })
+        }
     }
 
     fun setCargo(jobs: List<JobModel?>) {
@@ -313,12 +317,12 @@ class BoatModel {
             //AudioManager.sharedInstance.playSound(sound: "boat_arrive")
             //NotificationCenter.default.post(name: NSNotification.Name.boatArrived, object: self, userInfo: ["Boat": self, "Town" : town])
             Game.instance.boatArrived(this, town)
-            if (quiet == false) {
-                User.instance.save()
-                this.save()
-                town.save()
-            }
+            //if (quiet == false) {
+            //}
         }
+        User.instance.save()
+        this.save()
+        town.save()
     }
 
     val destination: TownModel?

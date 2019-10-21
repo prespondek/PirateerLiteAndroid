@@ -350,7 +350,7 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
         if (boatController.model.isMoored != true) {
             if (!boatController.sail()) {
                 boatController.view.sprite.position.set(townControllerForModel(boatController.model.town!!).view.position)
-            }
+            } 
         } else {
             val tc = townControllerForModel(boat.town!!)
             tc.updateView()

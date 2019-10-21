@@ -16,29 +16,28 @@
 
 package com.lanyard.pirateerlite
 
-import androidx.lifecycle.Observer
+import android.content.Intent
+import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
+import android.content.res.Configuration.*
 import android.os.Bundle
 import android.util.DisplayMetrics
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import com.lanyard.canvas.BitmapStream
 import com.lanyard.pirateerlite.models.BoatModel
+import com.lanyard.pirateerlite.models.JobModel
+import com.lanyard.pirateerlite.singletons.Audio
 import com.lanyard.pirateerlite.singletons.Game
 import com.lanyard.pirateerlite.singletons.Map
 import com.lanyard.pirateerlite.singletons.User
-import android.content.Intent
-import android.content.pm.ActivityInfo.*
-import android.content.res.Configuration.*
-import android.os.PersistableBundle
-import androidx.fragment.app.FragmentActivity
-import com.lanyard.canvas.BitmapStream
-import com.lanyard.pirateerlite.models.JobModel
-import com.lanyard.pirateerlite.singletons.Audio
-import androidx.lifecycle.ViewModelProviders
-import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.viewmodels.SplashViewModel
 
 
 class SplashActivity : FragmentActivity() {
     var mapConfig : HashMap<String, Any>? = null
-    lateinit private var _viewModel : SplashViewModel
+    private lateinit var _viewModel: SplashViewModel
 
     init {
     }
@@ -46,19 +45,19 @@ class SplashActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if(getResources().getBoolean(R.bool.portrait_only)){
-            setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
+        if (resources.getBoolean(R.bool.portrait_only)) {
+            requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
         }
 
         mapConfig = Map.loadConfig(this)
 
         if (savedInstanceState == null) {
-            var screenSize = getResources().getConfiguration().screenLayout and SCREENLAYOUT_SIZE_MASK
+            var screenSize = resources.configuration.screenLayout and SCREENLAYOUT_SIZE_MASK
             if (screenSize == SCREENLAYOUT_SIZE_LARGE || screenSize == SCREENLAYOUT_SIZE_XLARGE) {
                 // width > height, better to use Landscape
-                setRequestedOrientation(SCREEN_ORIENTATION_UNSPECIFIED);
+                requestedOrientation = SCREEN_ORIENTATION_UNSPECIFIED
             } else {
-                setRequestedOrientation(SCREEN_ORIENTATION_PORTRAIT);
+                requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
             }
             var metrics = DisplayMetrics()
             windowManager.defaultDisplay.getMetrics(metrics)
@@ -110,60 +109,34 @@ class SplashActivity : FragmentActivity() {
         Map.instance.towns.mapTo(townIds,{ it.id })
 
         _viewModel.fetchBoatJobs(boatIds).observe(this, Observer {
-
-            var boat : BoatModel? = null
-            var jobs = mutableListOf<JobModel>()
-            for (data in it) {
-                if (boat == null || data.boatid != boat.id) {
-                    if (!jobs.isEmpty()) {
-                        boat?.setCargo(jobs)
-                    }
-                    boat = User.instance.boats.find { it.id == data.boatid }
+            if (count > 0) {
+                for (boat in User.instance.boats) {
+                    val boatJobs = it.filter { boat.id == it.boatid }.map { JobModel(it.jobData) }
+                    boat.setCargo(boatJobs)
                 }
-                if (boat != null) {
-                    jobs.add(JobModel(data.jobData))
-                }
+                countDown()
             }
-            countDown()
         })
         _viewModel.fetchTownJobs(townIds).observe(this, Observer {
-            var town : TownModel? = null
-            var jobs = mutableListOf<JobModel>()
-            for (data in it) {
-                if (town == null || data.townid != town.id) {
-                    if (!jobs.isEmpty()) {
-                        town?.setJobs(jobs)
-                    }
-                    town = Map.instance.towns.find { it.id == data.townid }
+            if (count > 0) {
+                for (town in Map.instance.towns) {
+                    val townJobs = it.filter { town.id == it.townid }.map { JobModel(it.jobData) }
+                    town.setJobs(townJobs)
                 }
-                if (town != null) {
-                    jobs.add(JobModel(data.jobData))
-                }
+                countDown()
             }
-            countDown()
         })
 
         _viewModel.fetchStorageJobs(townIds).observe(this, Observer {
-            var town : TownModel? = null
-            var jobs = mutableListOf<JobModel>()
-            for (data in it) {
-                if (town == null || data.townid != town!!.id) {
-                    if (!jobs.isEmpty()) {
-                        town?.setStorage(jobs)
-                    }
-                    town = Map.instance.towns.find { it.id == data.townid }
+            if (count > 0) {
+                for (town in Map.instance.towns) {
+                    val townJobs = it.filter { town.id == it.townid }.map { JobModel(it.jobData) }
+                    town.setStorage(townJobs)
                 }
-                if (town != null) {
-                    jobs.add(JobModel(data.jobData))
-                }
+                countDown()
             }
-            countDown()
         })
 
-    }
-
-    override fun onSaveInstanceState(outState: Bundle?, outPersistentState: PersistableBundle?) {
-        super.onSaveInstanceState(outState, outPersistentState)
     }
 
     fun onSecondaryDataFetch() {
