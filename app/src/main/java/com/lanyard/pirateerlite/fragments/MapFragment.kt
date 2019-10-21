@@ -76,8 +76,10 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
     lateinit var wallet: WalletFragment
     private lateinit var _toolTip: TextView
     private val _cargoClickListener = View.OnClickListener {
-        val frag = (activity as MapActivity).swapFragment(R.id.holdButton) as JobFragment
-        frag.boatController = _selectedBoat!!
+        if (fragmentManager?.primaryNavigationFragment?.tag != "jobs") {
+            val frag = (activity as MapActivity).swapFragment(R.id.holdButton) as JobFragment
+            frag.boatController = _selectedBoat!!
+        }
     }
 
     private var _touchListener = View.OnTouchListener { v, event ->
@@ -350,7 +352,7 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
         if (boatController.model.isMoored != true) {
             if (!boatController.sail()) {
                 boatController.view.sprite.position.set(townControllerForModel(boatController.model.town!!).view.position)
-            } 
+            }
         } else {
             val tc = townControllerForModel(boat.town!!)
             tc.updateView()
@@ -470,9 +472,13 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
             focusTown(town,animate)
             townSelected(townControllerForModel(town))
         } else {
-            startTracking(this._selectedBoat!!)
+            if (animate == true) {
+                startTracking(this._selectedBoat!!)
+            }
             plotCourseForBoat(this._selectedBoat!!)
-            _cargoButton.visibility = View.VISIBLE
+            if (fragmentManager?.primaryNavigationFragment?.tag != "jobs") {
+                _cargoButton.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -500,7 +506,9 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
             _boatCourse.add(town)
             if (_boatCourse.size == 1) {
                 townCtrl = townControllerForModel(_selectedBoat?.model?.town!!)
-                _cargoButton.visibility = View.VISIBLE
+                if (fragmentManager?.primaryNavigationFragment?.tag != "jobs") {
+                    _cargoButton.visibility = View.VISIBLE
+                }
                 _sailButton.visibility = View.INVISIBLE
                 _cancelButton.visibility = View.VISIBLE
             } else {
@@ -522,6 +530,7 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
             }
             reset()
         } else {
+            reset()
             (activity as MapActivity).swapFragment(null, town)
         }
     }
@@ -539,9 +548,7 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
         val town = townControllerForModel(boat.model.town!!)
         town.updateView()
         if (_selectedBoat === boat) {
-            stopTracking()
-            _selectedBoat = null
-            reset()
+            boatSelected(boat, true)
         }
     }
 
@@ -573,13 +580,14 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
 
     fun sailButtonPressed() {
         _scene.clearPlot()
-        if (_selectedBoat != null) {
-            _selectedBoat!!.model.plotCourse(_boatCourse.map { it.model })
-            val controller = townControllerForModel(_selectedBoat!!.model.town!!)
-            _selectedBoat!!.sail()
+        var boat = _selectedBoat
+        if (boat != null) {
+            boat.model.plotCourse(_boatCourse.map { it.model })
+            val controller = townControllerForModel(boat.model.town!!)
+            boat.sail()
             controller.updateView()
             Audio.instance.queueSound(R.raw.ship_bell)
-            Game.instance.boatSailed(_selectedBoat!!.model)
+            Game.instance.boatSailed(boat.model)
             /*UNUserNotificationCenter.current().getPendingNotificationRequests { (notifications:[UNNotificationRequest]) in
                 var pendingnotify = false
                 let date = Date(timeIntervalSince1970:boat.model.arrivalTime)
@@ -603,6 +611,7 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
                 }
             }*/
             reset()
+            boatSelected(boat, false)
         }
     }
 
