@@ -72,6 +72,6 @@
         <xliff:g id="speed" example="10">%s</xliff:g>
         knots
     </string>
-    <string name="partsLabel">%i/%i
+    <string name="partsLabel">%d/%d
     </string>
 </resources>
