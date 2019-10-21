@@ -19,6 +19,7 @@ package com.lanyard.pirateerlite.views
 import android.content.Context
 import android.graphics.Point
 import android.util.AttributeSet
+import com.lanyard.canvas.CanvasNode
 import com.lanyard.helpers.plus
 import com.lanyard.helpers.unaryMinus
 import com.lanyard.library.SuperScrollView
@@ -35,6 +36,20 @@ class MapScrollView @JvmOverloads constructor(context: Context, attrs: Attribute
             scrollTo(pos.x,pos.y)
             scene!!.position = -Point(pos.x, pos.y) + scene!!.padding
             target = null
+        }
+    }
+
+    fun boatTracker(node: CanvasNode, dt: Float): Unit {
+        focusNode(node, false)
+    }
+
+    fun focusNode(node: CanvasNode, smooth: Boolean) {
+        val pos = node.position
+        val screen_pos = screenPosition(pos)
+        if (smooth) {
+            this.smoothScrollTo(screen_pos.x, screen_pos.y)
+        } else {
+            this.scrollTo(screen_pos.x, screen_pos.y)
         }
     }
 

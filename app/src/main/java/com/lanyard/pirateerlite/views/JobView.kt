@@ -44,15 +44,15 @@ class JobView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             if (value != null) {
                 val element = JobController.jobData.first { it[0] == field!!.type }
 
-                var res = context.resources.getIdentifier(element!![1],"drawable", context.getPackageName())
+                val res = context.resources.getIdentifier(element[1], "drawable", context.packageName)
                 jobImage.setImageDrawable(context.resources.getDrawable(res,null))
                 destinationLabel.text = field!!.destination.name
                 costLabel.text = field!!.value.toString()
                 if (field!!.isGold) {
-                    var res = context.resources.getIdentifier("gold_piece","drawable", context.getPackageName())
+                    val res = context.resources.getIdentifier("gold_piece", "drawable", context.packageName)
                     currencyIcon.setImageDrawable(context.resources.getDrawable(res,null))
                 } else {
-                    var res = context.resources.getIdentifier("silver_piece","drawable", context.getPackageName())
+                    val res = context.resources.getIdentifier("silver_piece", "drawable", context.packageName)
                     currencyIcon.setImageDrawable(context.resources.getDrawable(res,null))
                 }
                 jobStack.visibility = View.VISIBLE

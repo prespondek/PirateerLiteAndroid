@@ -30,25 +30,36 @@ open class CanvasView(context: Context, attributes: AttributeSet? = null, defSty
         field = value
         value?.view = this
     }
-    var canvasThread: CanvasThread? = null
-    private set
+    private var canvasThread: CanvasThread? = null
 
     private var view : View? = null
 
     init {
-        holder.addCallback(this);
+        holder.addCallback(this)
     }
 
-    override fun surfaceDestroyed(p0: SurfaceHolder?) {
+    fun stopThread() {
         canvasThread?.running = false
         canvasThread?.join()
         canvasThread = null
     }
 
+    fun startThread() {
+        if (canvasThread == null || canvasThread?.running == false) {
+            canvasThread = CanvasThread(holder, this)
+            canvasThread?.running = true
+            canvasThread?.start()
+        } else {
+            println("canvas thread already running")
+        }
+    }
+
+    override fun surfaceDestroyed(p0: SurfaceHolder?) {
+        stopThread()
+    }
+
     override fun surfaceCreated(p0: SurfaceHolder?) {
-        canvasThread = CanvasThread(holder, this)
-        canvasThread?.running = true
-        canvasThread?.start()
+        startThread()
     }
 
     override fun surfaceChanged(p0: SurfaceHolder?, p1: Int, p2: Int, p3: Int) {

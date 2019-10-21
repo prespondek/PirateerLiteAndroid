@@ -16,35 +16,41 @@
 
 package com.lanyard.pirateerlite.fragments
 
-import android.content.Context
 import android.graphics.*
 import android.os.Bundle
-import android.os.Parcelable
+import android.util.DisplayMetrics
+import android.view.LayoutInflater
+import android.view.View
+import android.view.View.VISIBLE
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.ImageButton
+import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
-import android.util.DisplayMetrics
-import android.view.*
-import android.widget.*
 import androidx.fragment.app.FragmentManager
 import com.lanyard.canvas.*
 import com.lanyard.helpers.*
 import com.lanyard.library.Edge
 import com.lanyard.library.SuperScrollView
 import com.lanyard.pirateerlite.MapActivity
+import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.controllers.BoatController
 import com.lanyard.pirateerlite.controllers.TownController
 import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.models.WorldNode
-import com.lanyard.pirateerlite.singletons.User
-import com.lanyard.pirateerlite.singletons.Map
-import com.lanyard.pirateerlite.views.*
-import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.singletons.Audio
 import com.lanyard.pirateerlite.singletons.Game
+import com.lanyard.pirateerlite.singletons.Map
+import com.lanyard.pirateerlite.singletons.User
+import com.lanyard.pirateerlite.views.BoatView
+import com.lanyard.pirateerlite.views.MapScrollView
+import com.lanyard.pirateerlite.views.MapView
+import com.lanyard.pirateerlite.views.TownView
 import kotlinx.android.synthetic.main.activity_map.*
 import kotlinx.android.synthetic.main.fragment_map.*
-import android.view.View.VISIBLE
 
 class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
 
@@ -72,6 +78,11 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
     private val _cargoClickListener = View.OnClickListener {
         val frag = (activity as MapActivity).swapFragment(R.id.holdButton) as JobFragment
         frag.boatController = _selectedBoat!!
+    }
+
+    private var _touchListener = View.OnTouchListener { v, event ->
+        stopTracking()
+        false
     }
 
     val mode: Mode
@@ -165,10 +176,7 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
                 _scene.position = -Point(scrollX, scrollY) + _scene.padding
             }
         })
-        _scrollView.setOnTouchListener { v, event ->
-            stopTracking()
-            false
-        }
+        _scrollView.setOnTouchListener(_touchListener)
 
         //_scrollView.scrollListener = this
 
@@ -195,15 +203,15 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
 
             val button_width = (32 * _density).toInt()
             params.connect(
-                button.getId(), ConstraintSet.TOP, ConstraintSet.PARENT_ID,
+                button.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID,
                 ConstraintSet.TOP, (vert.position.y + _scene.padding.height - button_width).toInt()
             )
             params.connect(
-                button.getId(), ConstraintSet.LEFT, ConstraintSet.PARENT_ID,
+                button.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID,
                 ConstraintSet.LEFT, (vert.position.x + _scene.padding.width - button_width).toInt()
             )
-            params.constrainWidth(button.getId(), button_width * 2)
-            params.constrainHeight(button.getId(), button_width * 2)
+            params.constrainWidth(button.id, button_width * 2)
+            params.constrainHeight(button.id, button_width * 2)
             params.applyTo(buttonlayout)
 
             val sprite = TownView()
@@ -292,29 +300,28 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
     override fun onDestroy() {
         super.onDestroy()
         if (this::_scene.isInitialized) {
-            _scene.canvasThread?.running = false
-            _scene.canvasThread?.join()
+            _scene.stopThread()
         }
     }
 
     override fun onResume() {
         super.onResume()
-        _scene.canvasThread?.running = true
-        when (mode) {
-            Mode.track -> startTracking(_selectedBoat!!)
-            Mode.nontrack -> {
-                startTracking(_selectedBoat!!)
-                _scene.clearPlot()
-                plotCourseForBoat(_selectedBoat!!)
-            }
-            else -> return
+        if (this::_scene.isInitialized) {
+            _scene.startThread()
+        }
+        if (mode == Mode.track) {
+            startTracking(_selectedBoat!!)
+        }
+        if (mode == Mode.track || mode == Mode.nontrack) {
+            _scene.clearPlot()
+            plotCourseForBoat(_selectedBoat!!)
         }
     }
 
     override fun onPause() {
         super.onPause()
         if (this::_scene.isInitialized) {
-            _scene.canvasThread?.running = false
+            _scene.stopThread()
         }
     }
 
@@ -392,17 +399,19 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
         _scene.plotRoutesForTown(townCtrl.model, paths, distance * _density)
     }
 
-    /*fun townUpgraded(notification: Notification) {
+    fun townUpgraded() {
         if (mode == Mode.plot) {
-            var town = _boatCourse.popLast()
-            if (town == null) {
+            var town: TownController? = null
+            if (_boatCourse.size > 0) {
+                town = _boatCourse.popLast()
+            } else {
                 val townModel = _selectedBoat!!.model.town
                 town = townControllerForModel(townModel!!)
             }
-            town!!.state = TownController.State.unselected
-            townSelected(town!!)
+            town.state = TownController.State.unselected
+            townSelected(town)
         }
-    }*/
+    }
 
     override fun jobDelivered(boat: BoatModel, town: TownModel, gold: Int, silver: Int, quiet: Boolean) {
         if (quiet == false) {
@@ -445,13 +454,11 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
     fun focusTown(town: TownModel, animate: Boolean = true) {
         val scene_pos = Map.instance.townPosition(town)
         val screen_pos = _scrollView.screenPosition(scene_pos)
-        //println("scene position:" + scene_pos + "screen position:" + screen_pos)
         if (animate) {
             _scrollView.smoothScrollTo(screen_pos.x, screen_pos.y)
         } else {
             _scrollView.scrollTo(screen_pos.x, screen_pos.y)
         }
-        //_scene.position = -Point(screen_pos.x, screen_pos.y) + _scene.padding
     }
 
     fun boatSelected(boat: BoatController, animate: Boolean = true) {
@@ -477,11 +484,12 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
     fun startTracking(boat: BoatController) {
         stopTracking()
         _trackBoat = true
-        val action = CanvasActionRepeat(CanvasActionCutom(1000, { node, dt ->
-            val pos = node.position
-            val screen_pos = _scrollView.screenPosition(pos)
-            this._scrollView.scrollTo(screen_pos.x, screen_pos.y)
-        }))
+        val sprite = boat.view.sprite
+        _scrollView.focusNode(sprite, true)
+        val action = CanvasActionSequence(
+            CanvasActionWait(250),
+            CanvasActionRepeat(CanvasActionCutom(1000, _scrollView::boatTracker))
+        )
         _selectedBoat!!.view.sprite.run(action, "track")
     }
 
@@ -512,26 +520,12 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
             } else {
                 User.instance.purchaseBoatWithMoney(boat, _buildParts)
             }
-            //User.instance.save()
-            //tabBar(enabled: true)
             reset()
         } else {
             (activity as MapActivity).swapFragment(null, town)
-            //performSegue( withIdentifier: "TownSegue", sender: town )
         }
     }
 
-    /*fun tabBar (enabled: Boolean) {
-        if enabled {
-            tabBarController?.tabBar.isUserInteractionEnabled = true
-            tabBarController?.tabBar.tintColor = _selectedTint
-            tabBarController?.tabBar.unselectedItemTintColor = UIColor.lightGray
-        } else {
-            tabBarController?.tabBar.isUserInteractionEnabled = false
-            tabBarController?.tabBar.tintColor = UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 1.0)
-            tabBarController?.tabBar.unselectedItemTintColor = UIColor(red: 0.9, green: 0.9, blue: 0.9, alpha: 1.0)
-        }
-    }*/
 
     fun stopTracking() {
         if (_trackBoat == true && this._selectedBoat != null) {
@@ -541,45 +535,16 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
         _trackBoat = false
     }
 
-
-    /*required init?(coder aDecoder: NSCoder)
-    {
-        super.init(coder: aDecoder)
-    }*/
-
-
     fun boatArrived(boat: BoatController) {
         val town = townControllerForModel(boat.model.town!!)
         town.updateView()
-    }
-
-    /*override func prepare(for segue: UIStoryboardSegue, sender: Any?)
-    {
-        if let vc = segue.destination as? TownViewController
-                {
-                    let town = sender as! TownController
-                    vc.townController = town
-                } else if let vc = segue.destination as? JobViewController {
-            vc.boatController = _selectedBoat
-        }
-    }*/
-
-
-    /*extension MapViewController : UIScrollViewDelegate
-    {
-
-        func scrollViewDidScroll(_ scrollView: UIScrollView) {
-            scene.scrollViewDidScroll(scrollView)
-        }
-
-        func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        if (_selectedBoat === boat) {
             stopTracking()
-        }
-    }
-        fun unwindBoatSold(segue:UIStoryboardSegue) {
+            _selectedBoat = null
             reset()
         }
-    */
+    }
+
     fun transferBoatBuild(fragment: androidx.fragment.app.Fragment) {
         reset()
         if (fragment is BoatInfoFragment) {
@@ -654,7 +619,7 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
                 val town = _boatCourse.first()
                 town.state = TownController.State.unselected
                 reset()
-                if (getResources().getBoolean(R.bool.landscape) == true && fragmentManager?.findFragmentByTag("jobs") != null ) {
+                if (resources.getBoolean(R.bool.landscape) == true && fragmentManager?.findFragmentByTag("jobs") != null) {
                     fragmentManager?.popBackStack()
                 }
             }
@@ -663,20 +628,6 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
             _cancelButton.visibility = View.INVISIBLE
             //tabBarController?.selectedIndex = 2
             //tabBar(enabled: true)
-        }
-    }
-
-    fun applicationWillEnterBackground() {
-
-    }
-
-    fun applicationWillEnterForeground() {
-        if (mode == Mode.track) {
-            startTracking(_selectedBoat!!)
-        }
-        if (mode == Mode.track || mode == Mode.nontrack) {
-            _scene.clearPlot()
-            plotCourseForBoat(_selectedBoat!!)
         }
     }
 

@@ -18,34 +18,35 @@ package com.lanyard.pirateerlite.fragments
 
 import android.graphics.Color
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import androidx.appcompat.widget.Toolbar
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.controllers.TownController
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.singletons.User
 import kotlinx.android.synthetic.main.activity_map.*
-import java.lang.NullPointerException
 
 class TownFragment : AppFragment()  {
     lateinit var townController: TownController
 
-    inner class TownListAdapter() : androidx.recyclerview.widget.RecyclerView.Adapter<TownListAdapter.TownListViewHolder>() {
+    inner class TownListAdapter :
+        androidx.recyclerview.widget.RecyclerView.Adapter<TownListAdapter.TownListViewHolder>() {
         override fun onBindViewHolder(holder: TownFragment.TownListAdapter.TownListViewHolder, position: Int) {
             holder.view.findViewById<TextView>(R.id.townboatName)!!.text = townController.model.boats[position].name
             holder.view.findViewById<ImageView>(R.id.townboatImg)!!.setImageResource(
-                context!!.resources.getIdentifier(townController.model.boats[position].type + "_01", "drawable", context!!.getPackageName())
+                context!!.resources.getIdentifier(
+                    townController.model.boats[position].type + "_01",
+                    "drawable",
+                    context!!.packageName
+                )
             )
         }
 
@@ -92,7 +93,7 @@ class TownFragment : AppFragment()  {
         }
 
         upgradeButton.setOnClickListener { upgradeButtonPressed() }
-        val res = context?.resources?.getIdentifier(townController.model.type.name,"drawable", context?.getPackageName())
+        val res = context?.resources?.getIdentifier(townController.model.type.name, "drawable", context?.packageName)
         image.setImageResource(res!!)
 
         townLabel.text = townController.model.name
@@ -130,10 +131,12 @@ class TownFragment : AppFragment()  {
         val upgradeButton = view.findViewById<Button>(R.id.upgradeButton)
         sizeLabel.text = townController.model.level.toString()
         if (townController.model.level == 0) {
-            upgradeButton.setBackgroundTintList(ContextCompat.getColorStateList(context!!, android.R.color.holo_red_light))
+            upgradeButton.backgroundTintList =
+                ContextCompat.getColorStateList(context!!, android.R.color.holo_red_light)
             upgradeButton.text = "Unlock"
         } else {
-            upgradeButton.setBackgroundTintList(ContextCompat.getColorStateList(context!!, android.R.color.holo_blue_light))
+            upgradeButton.backgroundTintList =
+                ContextCompat.getColorStateList(context!!, android.R.color.holo_blue_light)
             upgradeButton.text = "Upgrade"
         }
         val cost = getCost()
@@ -143,7 +146,7 @@ class TownFragment : AppFragment()  {
             costLabel.setTextColor(Color.YELLOW)
             costLabel.text = "Maximum"
         } else if (User.instance.silver < cost) {
-            upgradeButton.setBackgroundTintList(ContextCompat.getColorStateList(context!!, android.R.color.darker_gray))
+            upgradeButton.backgroundTintList = ContextCompat.getColorStateList(context!!, android.R.color.darker_gray)
             upgradeButton.isEnabled = false
             costLabel.setTextColor(Color.RED)
         }
@@ -167,6 +170,8 @@ class TownFragment : AppFragment()  {
         refresh(view!!)
         User.instance.save()
         townController.reset()
+        val map = activity?.supportFragmentManager?.findFragmentByTag("map") as MapFragment
+        map.townUpgraded()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
