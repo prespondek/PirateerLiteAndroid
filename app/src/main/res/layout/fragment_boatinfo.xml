@@ -7,7 +7,7 @@
     <TextView
             android:text="TextView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/boatInfoLable" android:gravity="center"
+            android:layout_height="wrap_content" android:id="@+id/boatInfoLable"
             android:textSize="@dimen/menu_header" android:typeface="sans"
             android:textAppearance="@style/TextAppearance.AppCompat.Large" android:textStyle="bold"
             android:textAlignment="textStart"/>
