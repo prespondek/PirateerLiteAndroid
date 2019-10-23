@@ -30,7 +30,8 @@
                     app:layout_constraintTop_toTopOf="@+id/imageView"
                     app:layout_constraintEnd_toEndOf="@+id/imageView"
                     android:layout_marginEnd="8dp" android:layout_marginBottom="8dp"
-                    app:layout_constraintBottom_toBottomOf="@+id/imageView"/>
+                    app:layout_constraintBottom_toBottomOf="@+id/imageView"
+                    android:textSize="@dimen/menu_cell_title" android:textColor="@android:color/white"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"

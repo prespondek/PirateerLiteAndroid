@@ -16,21 +16,23 @@
 
 package com.lanyard.pirateerlite
 
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.os.Looper
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import androidx.appcompat.app.AppCompatActivity
+import android.view.Menu
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.lanyard.canvas.BitmapCache
 import com.lanyard.pirateerlite.controllers.TownController
 import com.lanyard.pirateerlite.fragments.*
-import kotlinx.android.synthetic.main.activity_map.*
-import android.view.Menu
-import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
 import com.lanyard.pirateerlite.singletons.Audio
+import kotlinx.android.synthetic.main.activity_map.*
 
 
 class MapActivity : AppCompatActivity() {
@@ -47,6 +49,10 @@ class MapActivity : AppCompatActivity() {
             AppFragment.blockAnimation = true
             manager.popBackStackImmediate(null, POP_BACK_STACK_INCLUSIVE)
             AppFragment.blockAnimation = false
+            var fragTag = manager.primaryNavigationFragment?.tag
+            if (fragTag == "map" && it.itemId == R.id.navigation_map) {
+                return@OnNavigationItemSelectedListener true
+            }
         }
         ignoreBackStack = true
         swapFragment(it.itemId)
@@ -102,9 +108,6 @@ class MapActivity : AppCompatActivity() {
         //transaction.setReorderingAllowed(true)
         //transaction.setCustomAnimations( R.anim.abc_popup_enter, R.anim.abc_popup_exit )
         val map = supportFragmentManager.findFragmentByTag("map")!! as MapFragment
-        if ( map.mode == MapFragment.Mode.buy || map.mode == MapFragment.Mode.build ) {
-            map.reset()
-        }
         val prevFrag = supportFragmentManager.primaryNavigationFragment ?: throw NullPointerException()
         if (prevFrag.tag == "map") {
             transaction.hide(prevFrag)
@@ -158,7 +161,9 @@ class MapActivity : AppCompatActivity() {
             transaction.add(R.id.menuFrame, frag!!, name)
         }
         if ((name != "map" && name != "boats" && name != "menu" && name != "town") ||
-            (name == "town" && supportFragmentManager.backStackEntryCount > 0) ) {
+            (name == "town" && supportFragmentManager.backStackEntryCount > 0) ||
+            (name == "map" && prevFrag.tag == "boatinfo" && (map.mode == MapFragment.Mode.build || map.mode == MapFragment.Mode.buy))
+        ) {
             transaction.addToBackStack(name)
         } else {
             filterNavigationByFragment(name)
@@ -195,28 +200,28 @@ class MapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (getResources().getBoolean(R.bool.portrait_only)) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        if (resources.getBoolean(R.bool.portrait_only)) {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
         Looper.getMainLooper().thread.name = "PirateerMain"
         setContentView(R.layout.activity_map)
         supportFragmentManager.addOnBackStackChangedListener(_onBackStackChangedListener)
-        navigation.getMenu().setGroupCheckable(0, true, true)
-
+        navigation.menu.setGroupCheckable(0, true, true)
         val arr = arrayOf("nav_plot.png", "nav_plotted.png")
         for (n in arr) {
             BitmapCache.instance.addBitmap(applicationContext, n, Bitmap.Config.ARGB_4444)
         }
-        if (getResources().getBoolean(R.bool.landscape) == true) {
+        if (resources.getBoolean(R.bool.landscape) == true) {
             navigation.menu.removeItem(R.id.navigation_map)
         }
 
         val transaction = supportFragmentManager.beginTransaction()
+        transaction.setReorderingAllowed(true)
         var frag: androidx.fragment.app.Fragment? = null
         if (savedInstanceState == null) {
             val map = MapFragment()
             transaction.add(R.id.mapFrame, map, "map")
-            if (getResources().getBoolean(R.bool.landscape) == true) {
+            if (resources.getBoolean(R.bool.landscape) == true) {
                 frag = BoatListFragment()
                 transaction.add(R.id.menuFrame, frag, "boats")
                 navigation.menu.getItem(0).isChecked = true
@@ -228,7 +233,7 @@ class MapActivity : AppCompatActivity() {
             frag = supportFragmentManager.primaryNavigationFragment
             filterNavigationByFragment(frag?.tag)
 
-            if (getResources().getBoolean(R.bool.landscape) == true) {
+            if (resources.getBoolean(R.bool.landscape) == true) {
                 transaction.show(map)
                 if (frag == null || frag.tag == "map") {
                     frag = BoatListFragment()
@@ -245,8 +250,12 @@ class MapActivity : AppCompatActivity() {
         }
         transaction.setPrimaryNavigationFragment(frag)
         transaction.commit()
+        transaction.runOnCommit {
+            LocalBroadcastManager.getInstance(this).sendBroadcast(Intent("surfaceCreated"))
 
+        }
         navigation.setOnNavigationItemSelectedListener(_onNavigationItemSelectedListener)
+
     }
 
 
@@ -261,8 +270,10 @@ class MapActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
-        super.onPause()
+        //val intent = Intent(applicationContext, PauseActivity::class.java)
+        //startActivity(intent)
         Audio.instance.pause()
+        super.onPause()
     }
 
     override fun onResume() {

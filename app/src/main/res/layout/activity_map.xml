@@ -36,7 +36,7 @@
         </androidx.constraintlayout.widget.ConstraintLayout>
         <fragment
                 android:layout_width="match_parent"
-                android:layout_height="32dp" android:name="com.lanyard.pirateerlite.fragments.WalletFragment"
+                android:layout_height="wrap_content" android:name="com.lanyard.pirateerlite.fragments.WalletFragment"
                 android:id="@+id/wallet" android:tag="wallet"/>
     </LinearLayout>
     <com.google.android.material.bottomnavigation.BottomNavigationView

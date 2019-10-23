@@ -1,0 +1,11 @@
+<resources>
+    <dimen name="menu_cell_title">18sp</dimen>
+    <dimen name="stat_font">16sp</dimen>
+    <dimen name="stat_font_small">12sp</dimen>
+    <dimen name="menu_header">30sp</dimen>
+    <dimen name="rank_text">20sp</dimen>
+    <dimen name="bank_text">20sp</dimen>
+    <dimen name="wallet_text">18sp</dimen>
+    <dimen name="cell_text_grey">18sp</dimen>
+    <dimen name="description">18sp</dimen>
+</resources>

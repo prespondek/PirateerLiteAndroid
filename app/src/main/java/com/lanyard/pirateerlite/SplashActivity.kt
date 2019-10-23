@@ -143,5 +143,6 @@ class SplashActivity : FragmentActivity() {
         val intent = Intent(applicationContext, MapActivity::class.java)
         startActivity(intent)
         finish()
+        overridePendingTransition(R.anim.fadein, R.anim.fadeout)
     }
 }

@@ -17,10 +17,12 @@
 package com.lanyard.pirateerlite.fragments
 
 import android.app.Dialog
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.PorterDuff
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.INVISIBLE
@@ -29,19 +31,19 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.R
-import com.lanyard.pirateerlite.singletons.User
-import kotlinx.android.synthetic.main.activity_map.*
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
-import androidx.core.content.ContextCompat
 import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.singletons.Game
+import com.lanyard.pirateerlite.singletons.User
+import kotlinx.android.synthetic.main.activity_map.*
 
-class BoatListFragment() : AppFragment(), Game.GameListener  {
+class BoatListFragment : AppFragment(), Game.GameListener {
     class BoatSellFragment(): androidx.fragment.app.DialogFragment() {
 
         constructor(position: Int) : this() {
@@ -54,9 +56,9 @@ class BoatListFragment() : AppFragment(), Game.GameListener  {
                 _position = savedInstanceState.getInt("position") }
             return activity?.let {
                 // Use the Builder class for convenient dialog construction
-                var user = User.instance
-                var boat = user.boats[_position]
-                var cell = (fragmentManager?.findFragmentByTag("boats") as BoatListFragment).swipeCallback
+                val user = User.instance
+                val boat = user.boats[_position]
+                val cell = (fragmentManager?.findFragmentByTag("boats") as BoatListFragment).swipeCallback
                 val builder = AlertDialog.Builder(it)
                 builder.setMessage("Sell boat for " + boat.value * User.exchangeRate + " silver?")
                     .setPositiveButton(com.lanyard.pirateerlite.R.string.yes, { dialog, id ->
@@ -85,12 +87,14 @@ class BoatListFragment() : AppFragment(), Game.GameListener  {
                 // Use the Builder class for convenient dialog construction
                 var user = User.instance
                 val builder = AlertDialog.Builder(it)
+                val cell = (fragmentManager?.findFragmentByTag("boats") as BoatListFragment).swipeCallback
                 if (user.silver >= user.boatSlotCost) {
                     builder.setMessage("Buy extra boat slot for " + user.boatSlotCost.toString() + " silver")
                         .setPositiveButton(R.string.yes, { dialog, id ->
                             user.addMoney(0, -user.boatSlotCost)
                             user.boatSlots += 1
                             user.save()
+                            cell.append()
                         })
                         .setNegativeButton(R.string.no, { dialog, id -> })
                 } else {
@@ -123,12 +127,14 @@ class BoatListFragment() : AppFragment(), Game.GameListener  {
         }
 
         override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-            val boat = User.instance.boats[viewHolder.layoutPosition]
-            if ( !boat.isMoored ) {
-                return 0
-            } else {
-                return super.getSwipeDirs(recyclerView, viewHolder)
+            if (viewHolder.layoutPosition < User.instance.boats.size) {
+                val boat = User.instance.boats[viewHolder.layoutPosition]
+                if (boat.isMoored) {
+                    return super.getSwipeDirs(recyclerView, viewHolder)
+                }
             }
+            return 0
+
         }
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
@@ -144,6 +150,10 @@ class BoatListFragment() : AppFragment(), Game.GameListener  {
         fun commit (position : Int) {
             _viewAdapter.notifyItemRemoved(position)
             _viewAdapter.notifyItemChanged(_viewAdapter.itemCount - 2)
+        }
+
+        fun append() {
+            _viewAdapter.notifyItemRangeChanged(_viewAdapter.itemCount - 2, _viewAdapter.itemCount - 1)
         }
 
         fun cancel (position : Int) {
@@ -162,21 +172,25 @@ class BoatListFragment() : AppFragment(), Game.GameListener  {
             super.onChildDraw(canvas, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             var itemView = viewHolder.itemView
             val backgroundCornerOffset = 20
-            val iconMargin = (itemView.getHeight() - icon.getIntrinsicHeight()) / 2
-            val iconTop = itemView.getTop() + (itemView.getHeight() - icon.getIntrinsicHeight()) / 2
-            val iconBottom = iconTop + icon.getIntrinsicHeight()
+            val iconMargin = (itemView.height - icon.intrinsicHeight) / 2
+            val iconTop = itemView.top + (itemView.height - icon.intrinsicHeight) / 2
+            val iconBottom = iconTop + icon.intrinsicHeight
             if (dX > 0) {
-                val iconLeft = itemView.getLeft() + iconMargin + icon.getIntrinsicWidth()
-                val iconRight = itemView.getLeft() + iconMargin
+                val iconLeft = itemView.left + iconMargin + icon.intrinsicWidth
+                val iconRight = itemView.left + iconMargin
                 icon.setBounds(iconLeft, iconTop, iconRight, iconBottom)
-                background.setBounds(itemView.getLeft(), itemView.getTop(),
-                    itemView.getLeft() + dX.toInt() + backgroundCornerOffset, itemView.getBottom())
+                background.setBounds(
+                    itemView.left, itemView.top,
+                    itemView.left + dX.toInt() + backgroundCornerOffset, itemView.bottom
+                )
             } else if (dX < 0) {
-                val iconLeft = itemView.getRight() - iconMargin - icon.getIntrinsicWidth()
-                val iconRight = itemView.getRight() - iconMargin
+                val iconLeft = itemView.right - iconMargin - icon.intrinsicWidth
+                val iconRight = itemView.right - iconMargin
                 icon.setBounds(iconLeft, iconTop, iconRight, iconBottom)
-                background.setBounds(itemView.getRight() + dX.toInt() - backgroundCornerOffset,
-                    itemView.getTop(), itemView.getRight(), itemView.getBottom())
+                background.setBounds(
+                    itemView.right + dX.toInt() - backgroundCornerOffset,
+                    itemView.top, itemView.right, itemView.bottom
+                )
             } else {
                 background.setBounds(0, 0, 0, 0)
                 icon.setBounds(0,0,0,0)
@@ -186,7 +200,8 @@ class BoatListFragment() : AppFragment(), Game.GameListener  {
         }
     }
 
-    inner class BoatListAdapter() : androidx.recyclerview.widget.RecyclerView.Adapter<BoatListAdapter.BoatListViewHolder>() {
+    inner class BoatListAdapter :
+        androidx.recyclerview.widget.RecyclerView.Adapter<BoatListAdapter.BoatListViewHolder>() {
 
         inner class BoatListViewHolder(val view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
             init {
@@ -197,6 +212,7 @@ class BoatListFragment() : AppFragment(), Game.GameListener  {
                         val map_activity = (activity as MapActivity)
                         val map = map_activity.supportFragmentManager.findFragmentByTag("map") as MapFragment
                         map.boatSelected(this.layoutPosition)
+                        //map_activity.swapFragment(R.id.navigation_map)
                         map_activity.navigation.selectedItemId = R.id.navigation_map
                     } else if (this.layoutPosition < user.boatSlots) {
                     } else {
@@ -230,12 +246,14 @@ class BoatListFragment() : AppFragment(), Game.GameListener  {
                 emptyLabel.visibility = INVISIBLE
                 holder.view.findViewById<TextView>(R.id.boatName)!!.text = boat.name
                 if (boat.isMoored) {
-                    holder.view.findViewById<TextView>(R.id.boatStatus)?.setText(getString(R.string.mooredAt,boat.town?.name))
+                    holder.view.findViewById<TextView>(R.id.boatStatus)?.text =
+                        getString(R.string.mooredAt, boat.town?.name)
                 } else {
-                    holder.view.findViewById<TextView>(R.id.boatStatus)?.setText(getString(R.string.sailingTo,boat.destination?.name))
+                    holder.view.findViewById<TextView>(R.id.boatStatus)?.text =
+                        getString(R.string.sailingTo, boat.destination?.name)
                 }
                 holder.view.findViewById<ImageView>(R.id.boatImg)!!.setImageResource(
-                    context!!.resources.getIdentifier(boat.type + "_01", "drawable", context!!.getPackageName())
+                    context!!.resources.getIdentifier(boat.type + "_01", "drawable", context!!.packageName)
                 )
             } else if (position < user.boatSlots) {
                 boatframe.visibility = INVISIBLE

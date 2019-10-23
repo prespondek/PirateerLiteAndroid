@@ -19,12 +19,12 @@ package com.lanyard.pirateerlite.fragments
 import android.app.Dialog
 import android.graphics.Color
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.models.BoatModel
@@ -76,12 +76,12 @@ class BoatInfoFragment : AppFragment() {
         button.setOnClickListener {
             if (User.instance.numBoats < User.instance.boatSlots) {
                 var map : MapFragment? = null
-                if (resources.getBoolean(R.bool.landscape) == true) {
-                    map = fragmentManager?.findFragmentByTag("map") as MapFragment
-                } else {
-                    map = (activity as MapActivity).swapFragment(R.id.navigation_map) as MapFragment
-                }
+                map = fragmentManager?.findFragmentByTag("map") as MapFragment
                 map.transferBoatBuild(this)
+                if (resources.getBoolean(R.bool.landscape) != true) {
+                    (activity as MapActivity).swapFragment(R.id.navigation_map) as MapFragment
+                }
+                map.buildBoat()
                 button.isClickable = false
             } else {
                 var dialog = BoatInfoDialogFragment()
@@ -89,25 +89,32 @@ class BoatInfoFragment : AppFragment() {
             }
         }
 
-        rangeLabel.setText(getString(R.string.rangeLabel, boatValue(BoatModel.BoatIndex.distance)))
-        speedLabel.setText(getString(R.string.speedLabel, boatValue(BoatModel.BoatIndex.speed)))
+        rangeLabel.text = getString(R.string.rangeLabel, boatValue(BoatModel.BoatIndex.distance))
+        speedLabel.text = getString(R.string.speedLabel, boatValue(BoatModel.BoatIndex.speed))
         val imgname = boatValue(BoatModel.BoatIndex.image) as String
-        boatImage.setImageResource(context!!.resources.getIdentifier(imgname.removeRange(imgname.length - 4, imgname.length), "drawable", context!!.getPackageName()))
+        boatImage.setImageResource(
+            context!!.resources.getIdentifier(
+                imgname.removeRange(
+                    imgname.length - 4,
+                    imgname.length
+                ), "drawable", context!!.packageName
+            )
+        )
         boatNameLabel.text = boatValue(BoatModel.BoatIndex.title) as String
         cargoSizeLabel.text = (boatValue(BoatModel.BoatIndex.hold_size) as Double).toInt().toString()
         boatInfo.text = boatValue(BoatModel.BoatIndex.description) as? String
         when (TownModel.HarbourSize.valueOf(boatValue(BoatModel.BoatIndex.harbourType) as String)) {
             TownModel.HarbourSize.pier ->
                 harbourSizeLabel.setImageResource(
-                    context!!.resources.getIdentifier("town_c1_unselected", "drawable", context!!.getPackageName())
+                    context!!.resources.getIdentifier("town_c1_unselected", "drawable", context!!.packageName)
                 )
             TownModel.HarbourSize.docks ->
                 harbourSizeLabel.setImageResource(
-                    context!!.resources.getIdentifier("town_c2_unselected", "drawable", context!!.getPackageName())
+                    context!!.resources.getIdentifier("town_c2_unselected", "drawable", context!!.packageName)
                 )
             TownModel.HarbourSize.marina ->
                 harbourSizeLabel.setImageResource(
-                    context!!.resources.getIdentifier("town_c3_unselected", "drawable", context!!.getPackageName())
+                    context!!.resources.getIdentifier("town_c3_unselected", "drawable", context!!.packageName)
                 )
         }
 
@@ -120,7 +127,7 @@ class BoatInfoFragment : AppFragment() {
             val tparts = (User.instance.parts.filter { it == currPart })
             val numParts = tparts.size
             val targetParts = parts[i]
-            label?.setText(getString(R.string.partsLabel,numParts, targetParts))
+            label?.text = getString(R.string.partsLabel, numParts, targetParts)
             if (numParts >= targetParts) {
                 for (i in 0 until targetParts) {
                     this.parts.add(tparts[i])

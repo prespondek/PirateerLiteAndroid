@@ -16,12 +16,14 @@
 
 package com.lanyard.pirateerlite.fragments
 
-import android.graphics.*
+import android.graphics.Bitmap
+import android.graphics.Paint
+import android.graphics.Point
+import android.graphics.Typeface
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
@@ -58,7 +60,6 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
         plot, map, track, nontrack, build, buy
     }
 
-    //private var mapModel :          MapModel?
     private var _boatControllers = ArrayList<BoatController>()
     private var _townControllers = ArrayList<TownController>()
     private var _trackBoat = false
@@ -66,14 +67,12 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
     private var _boatCourse = ArrayList<TownController>()
     private var _buildType: String? = null
     private var _buildParts = ArrayList<User.BoatPart>()
-    private var _selectedTint = Color.BLACK
     private var _density : Float = 0.0f
     private lateinit var _cargoButton: ImageButton
     private lateinit var _sailButton: ImageButton
     private lateinit var _cancelButton: ImageButton
     private lateinit var _scene: MapView
     private lateinit var _scrollView: MapScrollView
-    lateinit var wallet: WalletFragment
     private lateinit var _toolTip: TextView
     private val _cargoClickListener = View.OnClickListener {
         if (fragmentManager?.primaryNavigationFragment?.tag != "jobs") {
@@ -97,7 +96,7 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
                 } else {
                     return Mode.track
                 }
-            } else if (_toolTip.visibility == VISIBLE) {
+            } else if (_buildType != null) {
                 if (_buildParts.size > 1) {
                     return Mode.build
                 } else {
@@ -273,7 +272,7 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
         super.onViewStateRestored(savedInstanceState)
-        var jobFrag = fragmentManager?.findFragmentByTag("job") as? JobFragment
+        val jobFrag = fragmentManager?.findFragmentByTag("job") as? JobFragment
         if (jobFrag != null) {
             jobFrag.boatController = _selectedBoat
         }
@@ -283,12 +282,12 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
         super.onSaveInstanceState(outState)
         val scroll_pos = _scrollView.currentPosition()
         outState.putIntegerArrayList("scenePos", arrayListOf(scroll_pos.x, scroll_pos.y))
-        var boat = _selectedBoat
+        val boat = _selectedBoat
         if (boat != null) {
             outState.putLong("selectedBoat", boat.model.id)
         }
         outState.putInt("mode",mode.ordinal)
-        var path = arrayListOf<Long>()
+        val path = arrayListOf<Long>()
         for (town in _boatCourse) {
             path.add(town.model.id)
         }
@@ -308,22 +307,12 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
 
     override fun onResume() {
         super.onResume()
-        if (this::_scene.isInitialized) {
-            _scene.startThread()
-        }
         if (mode == Mode.track) {
             startTracking(_selectedBoat!!)
         }
         if (mode == Mode.track || mode == Mode.nontrack) {
             _scene.clearPlot()
             plotCourseForBoat(_selectedBoat!!)
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        if (this::_scene.isInitialized) {
-            _scene.stopThread()
         }
     }
 
@@ -522,13 +511,15 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
             plotRoutesForTown(townCtrl, (this._selectedBoat!!.model.endurance).toFloat() * 0.5f)
             town.state = TownController.State.selected
         } else if (mode == Mode.build || mode == Mode.buy) {
-            val boat = BoatModel(_buildType!!, BoatModel.makeName(), town.model)
-            if (mode == Mode.build) {
-                User.instance.purchaseBoatWithParts(boat, _buildParts)
-            } else {
-                User.instance.purchaseBoatWithMoney(boat, _buildParts)
+            if (town.state == TownController.State.unselected) {
+                val boat = BoatModel(_buildType!!, BoatModel.makeName(), town.model)
+                if (mode == Mode.build) {
+                    User.instance.purchaseBoatWithParts(boat, _buildParts)
+                } else {
+                    User.instance.purchaseBoatWithMoney(boat, _buildParts)
+                }
+                reset()
             }
-            reset()
         } else {
             reset()
             (activity as MapActivity).swapFragment(null, town)
@@ -561,7 +552,6 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
             _buildType = fragment.selectedPart?.boat
             _buildParts = arrayListOf(fragment.selectedPart!!)
         }
-        buildBoat()
     }
 
     fun buildBoat() {
@@ -649,6 +639,7 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
         _cargoButton.visibility = View.INVISIBLE
         _cancelButton.visibility = View.INVISIBLE
         _sailButton.visibility = View.INVISIBLE
+        _buildType = null
         _selectedBoat = null
         _boatCourse.clear()
         _buildParts.clear()

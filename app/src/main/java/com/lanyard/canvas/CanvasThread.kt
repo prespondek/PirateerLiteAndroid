@@ -33,6 +33,7 @@ class CanvasThread(private val surfaceHolder: SurfaceHolder, private val gameVie
         val targetTime = (1000 / targetFPS).toLong()
 
         while (running) {
+
             startTime = System.nanoTime()
             canvas = this.surfaceHolder.lockCanvas()
             if (canvas != null) {

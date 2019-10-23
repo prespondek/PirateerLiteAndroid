@@ -24,6 +24,7 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
 
+
 open class CanvasView(context: Context, attributes: AttributeSet? = null, defStyleAttr: Int = 0) : SurfaceView(context, attributes, defStyleAttr), SurfaceHolder.Callback {
     var scene : CanvasScene? = null
     set(value) {

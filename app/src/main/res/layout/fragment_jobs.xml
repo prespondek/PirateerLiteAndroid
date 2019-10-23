@@ -39,7 +39,8 @@
                     <TextView
                             android:text="@string/jobs_cargo"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content" android:id="@+id/textView2" android:textSize="36sp"
+                            android:layout_height="wrap_content" android:id="@+id/textView2"
+                            android:textSize="@dimen/menu_header"
                             android:textStyle="bold" android:typeface="normal"
                             android:textAppearance="@style/TextAppearance.AppCompat.Large" android:layout_weight="1"/>
                     <LinearLayout
@@ -64,7 +65,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content" android:id="@+id/goldLabel"
                                     android:layout_weight="1"
-                                    android:layout_gravity="center"/>
+                                    android:layout_gravity="center" android:textSize="@dimen/stat_font"/>
                             <ImageView
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent" app:srcCompat="@drawable/silver_piece"
@@ -74,7 +75,7 @@
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content" android:id="@+id/silverLabel"
                                     android:layout_weight="1"
-                                    android:layout_gravity="center"/>
+                                    android:layout_gravity="center" android:textSize="@dimen/stat_font"/>
                         </LinearLayout>
                         <FrameLayout
                                 android:layout_width="match_parent"

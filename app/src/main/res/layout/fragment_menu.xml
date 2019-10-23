@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                             xmlns:app="http://schemas.android.com/apk/res-auto"
-                                             xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-                                             android:layout_height="match_parent" android:id="@+id/menuLayout" android:orientation="vertical">
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent" android:id="@+id/menuLayout" android:orientation="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -80,7 +80,8 @@
                             android:text="1"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent" android:id="@+id/textView5" android:layout_weight="1"
-                            android:gravity="center_vertical" android:textSize="24sp" android:textStyle="bold"
+                            android:gravity="center_vertical" android:textSize="@dimen/bank_text"
+                            android:textStyle="bold"
                             android:textColor="@android:color/white" android:shadowColor="#000000"
                             android:shadowDx="0" android:shadowDy="0" android:shadowRadius="8"/>
                 </LinearLayout>
@@ -103,7 +104,8 @@
                             android:text="TextView"
                             android:layout_width="wrap_content"
                             android:layout_height="match_parent" android:id="@+id/exchangeLabel"
-                            android:layout_weight="1" android:gravity="center_vertical" android:textSize="24sp"
+                            android:layout_weight="1" android:gravity="center_vertical"
+                            android:textSize="@dimen/bank_text"
                             android:textStyle="bold" android:textColor="@android:color/white" android:shadowRadius="8"
                             android:shadowDx="0" android:shadowDy="0" android:shadowColor="#000000"/>
                 </LinearLayout>
@@ -118,9 +120,9 @@
     <TextView
             android:text="@string/rank"
             android:layout_width="match_parent"
-            android:layout_height="0dp" android:id="@+id/textView3" android:layout_weight="0.05"
-            android:textSize="36sp" app:autoSizeMaxTextSize="100sp" app:autoSizeMinTextSize="2sp"
-            app:autoSizeStepGranularity="2sp" app:autoSizeTextType="uniform" android:textStyle="bold"
+            android:layout_height="wrap_content" android:id="@+id/textView3"
+            android:textSize="@dimen/menu_header"
+            android:textStyle="bold"
             android:textColor="@android:color/black" android:paddingLeft="8dp"/>
     <LinearLayout
             android:orientation="horizontal"
@@ -140,8 +142,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp" android:id="@+id/rankLabel" android:layout_weight="0.5"
                     android:layout_gravity="center" android:gravity="center" android:textStyle="bold"
-                    android:textSize="18sp" app:autoSizeMinTextSize="2sp" app:autoSizeMaxTextSize="18sp"
-                    app:autoSizeStepGranularity="2sp" app:autoSizeTextType="uniform"/>
+                    android:textSize="@dimen/rank_text"
+            />
         </LinearLayout>
         <LinearLayout
                 android:orientation="vertical"
@@ -154,12 +156,13 @@
                 <TextView
                         android:text="@string/totalxp"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:id="@+id/textView6" android:layout_weight="1"/>
+                        android:layout_height="wrap_content" android:id="@+id/textView6" android:layout_weight="1"
+                        android:textSize="@dimen/stat_font"/>
                 <TextView
                         android:text="TextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:id="@+id/totalXPLabel" android:layout_weight="1"
-                        android:textAlignment="textEnd"/>
+                        android:textAlignment="textEnd" android:textSize="@dimen/stat_font"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -168,12 +171,13 @@
                 <TextView
                         android:text="@string/nextLevel"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:id="@+id/totalXpLabel" android:layout_weight="1"/>
+                        android:layout_height="wrap_content" android:id="@+id/totalXpLabel" android:layout_weight="1"
+                        android:textSize="@dimen/stat_font"/>
                 <TextView
                         android:text="TextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:id="@+id/nextXPLabel" android:layout_weight="1"
-                        android:textAlignment="textEnd"/>
+                        android:textAlignment="textEnd" android:textSize="@dimen/stat_font"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -182,7 +186,8 @@
                 <TextView
                         android:text="@string/gold"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:id="@+id/textView15" android:layout_weight="1"/>
+                        android:layout_height="wrap_content" android:id="@+id/textView15" android:layout_weight="1"
+                        android:textSize="@dimen/stat_font"/>
                 <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" app:srcCompat="@drawable/gold_piece"
@@ -191,7 +196,7 @@
                         android:text="TextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:id="@+id/goldLabel" android:layout_weight="1"
-                        android:textAlignment="textEnd"/>
+                        android:textAlignment="textEnd" android:textSize="@dimen/stat_font"/>
             </LinearLayout>
             <LinearLayout
                     android:orientation="horizontal"
@@ -200,7 +205,8 @@
                 <TextView
                         android:text="@string/silver"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" android:id="@+id/textView17" android:layout_weight="1"/>
+                        android:layout_height="wrap_content" android:id="@+id/textView17" android:layout_weight="1"
+                        android:textSize="@dimen/stat_font"/>
                 <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" app:srcCompat="@drawable/silver_piece"
@@ -209,7 +215,7 @@
                         android:text="TextView"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" android:id="@+id/silverLabel" android:layout_weight="1"
-                        android:textAlignment="textEnd"/>
+                        android:textAlignment="textEnd" android:textSize="@dimen/stat_font"/>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

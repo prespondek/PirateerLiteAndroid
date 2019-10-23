@@ -96,11 +96,11 @@ class BitmapStream {
     fun flush (timestamp: Long) : Boolean {
         if (_timestamp + timer <= timestamp) {
             if (_highBitmap != null) {
-                //println("flushing " + _generator.name)
+                println("flushing " + _generator.name)
             }
             _highBitmap = null
             if (_future != null) {
-                //println("cancelling " + _generator.name)
+                println("cancelling " + _generator.name)
                 _future?.cancel(true)
             }
             _future = null

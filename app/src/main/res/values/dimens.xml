@@ -9,4 +9,13 @@
     <dimen name="boat_range_stroke_size">1dp</dimen>
     <dimen name="money_label_size">18dp</dimen>
     <dimen name="money_label_stroke">1dp</dimen>
+    <dimen name="menu_cell_title">18sp</dimen>
+    <dimen name="stat_font">16sp</dimen>
+    <dimen name="cell_text_grey">16sp</dimen>
+    <dimen name="menu_header">36sp</dimen>
+    <dimen name="rank_text">26sp</dimen>
+    <dimen name="bank_text">26sp</dimen>
+    <dimen name="wallet_text">16sp</dimen>
+    <dimen name="description">18sp</dimen>
+    <dimen name="stat_font_small">12sp</dimen>
 </resources>
