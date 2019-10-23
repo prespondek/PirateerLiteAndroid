@@ -105,8 +105,6 @@ class MapActivity : AppCompatActivity() {
 
     fun swapFragment(id: Int?, tag: Any? = null): androidx.fragment.app.Fragment {
         val transaction = supportFragmentManager.beginTransaction()
-        //transaction.setReorderingAllowed(true)
-        //transaction.setCustomAnimations( R.anim.abc_popup_enter, R.anim.abc_popup_exit )
         val map = supportFragmentManager.findFragmentByTag("map")!! as MapFragment
         val prevFrag = supportFragmentManager.primaryNavigationFragment ?: throw NullPointerException()
         if (prevFrag.tag == "map") {
@@ -270,8 +268,6 @@ class MapActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
-        //val intent = Intent(applicationContext, PauseActivity::class.java)
-        //startActivity(intent)
         Audio.instance.pause()
         super.onPause()
     }

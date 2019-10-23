@@ -32,7 +32,7 @@ import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.singletons.User
 
 
-class BoatInfoFragment : AppFragment() {
+class BoatInfoFragment : AppFragment(), User.UserListener {
     var boatType: String? = null
     var parts = ArrayList<User.BoatPart>()
 
@@ -63,11 +63,9 @@ class BoatInfoFragment : AppFragment() {
         val cargoSizeLabel = view.findViewById<TextView>(R.id.boatInfoCargo)
         val boatInfo = view.findViewById<TextView>(R.id.boatInfoDescription)
         val harbourSizeLabel = view.findViewById<ImageView>(R.id.boatInfoTown)
-        val hullLabel = view.findViewById<TextView>(R.id.boatInfoHull)
-        val partsLabel = view.findViewById<TextView>(R.id.boatInfoRigging)
-        val sailsLabel = view.findViewById<TextView>(R.id.boatInfoSails)
-        val cannonsLabel = view.findViewById<TextView>(R.id.boatInfoCannons)
         val button = view.findViewById<TextView>(R.id.boatInfoBuildButton)
+
+        User.instance.addListerner(this)
 
         if (savedInstanceState != null) {
             boatType = savedInstanceState.getString("boatType")
@@ -117,6 +115,16 @@ class BoatInfoFragment : AppFragment() {
                     context!!.resources.getIdentifier("town_c3_unselected", "drawable", context!!.packageName)
                 )
         }
+        update(view)
+        return view
+    }
+
+    fun update(view: View?) {
+        val button = view?.findViewById<TextView>(R.id.boatInfoBuildButton)
+        val hullLabel = view?.findViewById<TextView>(R.id.boatInfoHull)
+        val partsLabel = view?.findViewById<TextView>(R.id.boatInfoRigging)
+        val sailsLabel = view?.findViewById<TextView>(R.id.boatInfoSails)
+        val cannonsLabel = view?.findViewById<TextView>(R.id.boatInfoCannons)
 
         val arr = arrayOf(hullLabel, partsLabel, sailsLabel, cannonsLabel)
         var parts = boatValue(BoatModel.BoatIndex.part_amount) as List<Int>
@@ -139,15 +147,17 @@ class BoatInfoFragment : AppFragment() {
             }
         }
         if (canBuild != true) {
-            button.isEnabled = false
+            button?.isEnabled = false
         }
-
-
-        return view
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString("boatType", boatType)
+    }
+
+    override fun boatAdded(boat: BoatModel) {
+        super.boatAdded(boat)
+        update(view)
     }
 }
