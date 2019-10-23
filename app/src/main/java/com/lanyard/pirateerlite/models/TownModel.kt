@@ -21,16 +21,11 @@ import com.lanyard.pirateerlite.data.StorageJobData
 import com.lanyard.pirateerlite.data.TownData
 import com.lanyard.pirateerlite.data.TownJobData
 import com.lanyard.pirateerlite.singletons.Game
-import com.lanyard.pirateerlite.singletons.User
-import java.io.Serializable
-import java.util.*
-import kotlin.collections.ArrayList
 import com.lanyard.pirateerlite.singletons.Map
-import kotlinx.coroutines.*
+import com.lanyard.pirateerlite.singletons.User
+import kotlinx.coroutines.runBlocking
 
-open class WorldNode {
-
-}
+open class WorldNode
 
 class TownModel (data: TownData): WorldNode(), User.UserListener {
 
@@ -144,9 +139,9 @@ class TownModel (data: TownData): WorldNode(), User.UserListener {
     val boats : ArrayList<BoatModel>
         get() { return _boats }
 
-    fun setStorage (jobs: ArrayList<JobModel?>) {
-        if (jobs.size <= _storage.size) {
-            _storage = jobs
+    fun setStorage(jobs: Iterable<JobModel?>) {
+        if (jobs.count() <= _storage.size) {
+            _storage.addAll(jobs)
             saveStorage()
         } else {
             assert(false)

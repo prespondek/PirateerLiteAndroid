@@ -17,16 +17,18 @@
 package com.lanyard.pirateerlite.fragments
 
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.DisplayMetrics
-import android.view.*
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.widget.*
-import androidx.core.app.ShareCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.TextView
 import com.lanyard.helpers.GridLayoutManagerAutofit
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.controllers.BoatController
@@ -94,7 +96,7 @@ class JobFragment : AppFragment() , Game.GameListener {
             override fun onClick(view: View) {
                 val jobview = view.findViewById<JobView>(R.id.jobView)
                 if (jobview != null) {
-                    jobTouch(jobview as JobView)
+                    jobTouch(jobview)
                 }
             }
         }
@@ -105,9 +107,9 @@ class JobFragment : AppFragment() , Game.GameListener {
                 JOBCELL_HEADER -> {
                     val jobLabel = p0.view.findViewById<TextView>(R.id.jobLabel)
                     if (p1 == 0) {
-                        jobLabel.setText(context!!.resources.getText(R.string.jobs_jobs))
+                        jobLabel.text = context!!.resources.getText(R.string.jobs_jobs)
                     } else {
-                        jobLabel.setText(context!!.resources.getText(R.string.jobs_storage))
+                        jobLabel.text = context!!.resources.getText(R.string.jobs_storage)
                     }
                 }
                 JOBCELL_JOB -> {
@@ -208,10 +210,6 @@ class JobFragment : AppFragment() , Game.GameListener {
         _jobs = null
         townModel = null
         boatController = null
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
     }
 
 
@@ -338,12 +336,14 @@ class JobFragment : AppFragment() , Game.GameListener {
             idx = _storage.indexOfFirst { it == null }
             if (idx != -1) {
                 _storage[idx] = job
+                townModel?.storage!![idx] = job
                 val holder = _jobView.findViewHolderForLayoutPosition(idx + 2 + _jobs!!.size)
                 if (holder != null) {
                     val cell = holder.itemView.findViewById<JobView>(R.id.jobView)
                     cell.job = job
                 }
                 clear = true
+                townModel?.saveStorage()
             }
         }
         Audio.instance.queueSound(R.raw.button_select)
@@ -368,7 +368,9 @@ class JobFragment : AppFragment() , Game.GameListener {
             val idx = _storage.indexOfFirst { view.job === it }
             view.job = null
             if (idx != -1) {
+                townModel?.storage!![idx] = null
                 _storage[idx] = null
+                townModel?.saveStorage()
             }
         } else {
         }
@@ -400,7 +402,7 @@ class JobFragment : AppFragment() , Game.GameListener {
         _goldLabel = view.findViewById<TextView>(R.id.goldLabel)
         _silverLabel = view.findViewById<TextView>(R.id.silverLabel)
         _cargoPanel = view.findViewById<FrameLayout>(R.id.cargoPanel)
-        val swipe = view.findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.jobRefresh);
+        val swipe = view.findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.jobRefresh)
         swipe.setOnRefreshListener {
             reloadJobs()
             swipe.isRefreshing = false

@@ -55,6 +55,7 @@ class BoatInfoFragment : AppFragment(), User.UserListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         val view = inflater.inflate(R.layout.fragment_boatinfo, container, false)
         val boatNameLabel = view.findViewById<TextView>(R.id.boatInfoLable)
         val rangeLabel = view.findViewById<TextView>(R.id.boatInfoRange)
