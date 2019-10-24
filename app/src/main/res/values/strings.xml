@@ -74,4 +74,10 @@
     </string>
     <string name="partsLabel">%d/%d
     </string>
+    <string name="notifBoatArrivedTitle"><xliff:g id="boat" example="Boat">%s</xliff:g>has arrived
+    </string>
+    <string name="notifBoatArrivedDescription">A boat has arrived and is ready for new orders</string>
+    <string name="boatArriveChannelName">Boat Arrivals</string>
+    <string name="boatArriveChannelDesc">Notify me when boat arrive in port</string>
+    <string name="channelId">arrivalsChannel</string>
 </resources>

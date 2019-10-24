@@ -16,10 +16,14 @@
 
 package com.lanyard.pirateerlite
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
 import android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
 import android.content.res.Configuration.*
+import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import androidx.fragment.app.FragmentActivity
@@ -49,6 +53,7 @@ class SplashActivity : FragmentActivity() {
             requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
         }
 
+        createNotificationChannel()
         mapConfig = Map.loadConfig(this)
 
         if (savedInstanceState == null) {
@@ -86,7 +91,22 @@ class SplashActivity : FragmentActivity() {
         })
     }
 
-
+    private fun createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = getString(R.string.boatArriveChannelName)
+            val descriptionText = getString(R.string.boatArriveChannelDesc)
+            val importance = NotificationManager.IMPORTANCE_DEFAULT
+            val channel = NotificationChannel(getString(R.string.channelId), name, importance).apply {
+                description = descriptionText
+            }
+            // Register the channel with the system
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
 
     fun onPrimaryDataFetch() {
         var metrics = DisplayMetrics()

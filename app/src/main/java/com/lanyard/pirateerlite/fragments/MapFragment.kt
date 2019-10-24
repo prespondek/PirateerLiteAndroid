@@ -578,28 +578,6 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
             controller.updateView()
             Audio.instance.queueSound(R.raw.ship_bell)
             Game.instance.boatSailed(boat.model)
-            /*UNUserNotificationCenter.current().getPendingNotificationRequests { (notifications:[UNNotificationRequest]) in
-                var pendingnotify = false
-                let date = Date(timeIntervalSince1970:boat.model.arrivalTime)
-                for notify in notifications {
-                    if notify.identifier == "BoatArrival" {
-                        let old_trigger = notify.trigger as! UNCalendarNotificationTrigger
-                        if old_trigger.nextTriggerDate()! > date {
-                        pendingnotify = true
-                        break
-                    }
-                    }
-                }
-                if pendingnotify == false {
-                    let content = UNMutableNotificationContent()
-                    content.title = "Voyage complete"
-                    content.body = String(format: "All boats are moored at their destination.")
-                    content.sound = UNNotificationSound(named: UNNotificationSoundName("ship_bell"))
-                    let trigger = UNCalendarNotificationTrigger(dateMatching: Calendar.current.dateComponents([.year,.month,.day,.hour,.minute,.second,], from: date ),
-                    repeats: false)
-                    UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "BoatArrival", content: content, trigger: trigger), withCompletionHandler: nil)
-                }
-            }*/
             reset()
             boatSelected(boat, false)
         }

@@ -29,9 +29,11 @@ import androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.lanyard.canvas.BitmapCache
+import com.lanyard.helpers.NotificationReceiver
 import com.lanyard.pirateerlite.controllers.TownController
 import com.lanyard.pirateerlite.fragments.*
 import com.lanyard.pirateerlite.singletons.Audio
+import com.lanyard.pirateerlite.singletons.User
 import kotlinx.android.synthetic.main.activity_map.*
 
 
@@ -101,7 +103,26 @@ class MapActivity : AppCompatActivity() {
         }
     }
 
+    fun postNotifications() {
+        val user = User.instance
+        for (boat in user.boats) {
+            if (boat.isMoored == false) {
+                val notif = NotificationReceiver.NotificationData(
+                    R.drawable.ic_nav_boats,
+                    boat.id.toInt(),
+                    getString(R.string.channelId),
+                    getString(R.string.notifBoatArrivedTitle, boat.name),
+                    getString(R.string.notifBoatArrivedDescription),
+                    boat.arrivalTime
+                )
+                NotificationReceiver().scheduleNotification(this, notif)
+            }
+        }
+    }
 
+    fun clearNotifications() {
+        NotificationReceiver().clearNotifications(this)
+    }
 
     fun swapFragment(id: Int?, tag: Any? = null): androidx.fragment.app.Fragment {
         val transaction = supportFragmentManager.beginTransaction()
@@ -269,11 +290,15 @@ class MapActivity : AppCompatActivity() {
 
     override fun onPause() {
         Audio.instance.pause()
+        postNotifications()
         super.onPause()
     }
 
     override fun onResume() {
         super.onResume()
+        clearNotifications()
         Audio.instance.resume()
     }
+
+
 }
