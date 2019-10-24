@@ -41,8 +41,8 @@ interface UserDao {
 data class UserData (
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0,
-    var marketDate: Date = Date(),
-    var jobDate: Date = Date(),
+    var marketDate: Date = Date(0),
+    var jobDate: Date = Date(0),
     var startDate: Date = Date(),
     var distance: Double = 0.0,
     var voyages: Int = 0,
@@ -52,6 +52,7 @@ data class UserData (
     var boatSlots: Int = 4,
     var time: Long = 0,
     var boatsSold: Int = 0,
+    var market: ArrayList<User.BoatPart> = arrayListOf(),
     var parts: ArrayList<User.BoatPart> = arrayListOf(
         User.BoatPart("skiff",User.MarketItem.sails),
         User.BoatPart("skiff",User.MarketItem.rigging),

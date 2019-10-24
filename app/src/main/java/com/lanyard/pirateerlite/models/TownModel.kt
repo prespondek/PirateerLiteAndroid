@@ -182,8 +182,6 @@ class TownModel (data: TownData): WorldNode(), User.UserListener {
         } else {
             _data.startSilver += job.value
         }
-        save()
-        saveJobs()
     }
 
     fun save() = runBlocking {
@@ -220,10 +218,11 @@ class TownModel (data: TownData): WorldNode(), User.UserListener {
                 jobTowns.remove(roll)
                 _jobs.add(job)
             }
-            _data.jobsTimeStamp = User.instance.jobDate
-            saveJobs()
-            delegate?.jobsUpdated()
         }
+        _data.jobsTimeStamp = User.instance.jobDate
+        delegate?.jobsUpdated()
+        save()
+        saveJobs()
     }
 
     private fun clearJobs() {

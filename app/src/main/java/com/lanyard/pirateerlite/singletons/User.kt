@@ -19,26 +19,24 @@ package com.lanyard.pirateerlite.singletons
 import android.content.Context
 import android.os.Parcel
 import android.os.Parcelable
-import com.lanyard.pirateerlite.models.BoatModel
-import java.util.*
-import kotlin.collections.HashMap
 import com.google.gson.Gson
 import com.google.gson.internal.LinkedTreeMap
-import com.google.gson.stream.JsonReader
 import com.google.gson.reflect.TypeToken
+import com.google.gson.stream.JsonReader
 import com.lanyard.pirateerlite.data.BoatData
 import com.lanyard.pirateerlite.data.StatsData
+import com.lanyard.pirateerlite.data.UserData
+import com.lanyard.pirateerlite.models.BoatModel
+import kotlinx.coroutines.runBlocking
 import java.io.InputStreamReader
 import java.lang.Math.random
 import java.lang.ref.WeakReference
+import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.log2
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
-import com.lanyard.pirateerlite.data.UserData
-import kotlinx.coroutines.runBlocking
-import java.lang.NullPointerException
 
 
 class User private constructor(userData: UserData, statData: Array<StatsData>, boatData: Array<BoatData>) {
@@ -48,10 +46,14 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
         private lateinit var userConfig: HashMap<String, Any>
 
         val boatStatInfo : Array<BoatStatInfo<*>> = arrayOf(
-            BoatStatInfo("maxDistance", {boat-> boat.totalDistance}, {boat-> String.format("%.0fkm", boat.totalDistance / 10)}),
-            BoatStatInfo("SPM", {boat-> boat.SPM}, {boat-> String.format("%.1f", boat.SPM * 10)}),
-            BoatStatInfo("maxProfit",  {boat-> boat.totalSilver}),
-            BoatStatInfo("maxVoyages", {boat-> boat.totalVoyages}))
+            BoatStatInfo(
+                "maxDistance",
+                { boat -> boat.totalDistance },
+                { boat -> String.format("%.0fkm", boat.totalDistance / 10) }),
+            BoatStatInfo("SPM", { boat -> boat.SPM }, { boat -> String.format("%.1f", boat.SPM * 10) }),
+            BoatStatInfo("maxProfit", { boat -> boat.totalSilver }),
+            BoatStatInfo("maxVoyages", { boat -> boat.totalVoyages })
+        )
 
         fun initialize(context: Context, userData: UserData, statData: Array<StatsData>, boatData: Array<BoatData>) {
             if (_user == null) {
@@ -198,7 +200,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
         }
     }
 
-    private var _market: ArrayList<BoatPart>
+    //private var _market: ArrayList<BoatPart>
     private var _stats: MutableList<StatsData>
     private var _data : UserData
     private var _boatModels: ArrayList<BoatModel>
@@ -207,10 +209,9 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
     init {
         this._data = userData
         this._stats = statData.toMutableList()
-        this._market = ArrayList<BoatPart>()
+        //this._market = ArrayList<BoatPart>()
         val map = Map.instance
         _boatModels = ArrayList<BoatModel>()
-        this.updateMarket()
         for (boat in boatData) {
             _boatModels.add(BoatModel(boat))
         }
@@ -400,18 +401,23 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
 
     val marketDate: Date
         get() {
-            var diff = Date().time - _data.marketDate.time
-            diff /= marketInterval
-            _data.marketDate = Date(_data.marketDate.time + diff * User.marketInterval)
-            return _data.marketDate
+            _data.apply {
+                var diff = Date().time - marketDate.time
+                diff /= marketInterval
+                return Date(marketDate.time + diff * marketInterval)
+            }
         }
 
     val jobDate: Date
         get() {
-            var diff = Date().time - _data.jobDate.time
-            diff /= jobInterval
-            _data.jobDate = Date(_data.jobDate.time + diff * User.jobInterval)
-            return _data.jobDate
+            _data.apply {
+                var diff = Date().time - jobDate.time
+                if (diff < 0) {
+                    jobDate = Date((Date().time + (diff.toDouble() % jobInterval.toDouble()) * jobInterval).toLong())
+                }
+                diff /= jobInterval
+                return Date(jobDate.time + diff * jobInterval)
+            }
         }
 
     val market: ArrayList<BoatPart>
@@ -419,9 +425,8 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             val date = marketDate
             if (_data.marketDate != date) {
                 updateMarket()
-                _data.marketDate = date
             }
-            return _market
+            return _data.market
         }
 
     fun removeBoat(boat: BoatModel) {
@@ -458,7 +463,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
     fun purchaseBoatWithMoney(boat: BoatModel, parts: List<BoatPart>) {
         addMoney(gold - (BoatModel.boatConfig(boat.type, BoatModel.BoatIndex.boat_cost) as Int), 0)
         for (part in parts) {
-            this._market.remove(this._market.last { it == part })
+            this._data.market.remove(this._data.market.last { it == part })
         }
         addBoat(boat)
     }
@@ -472,7 +477,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
     }
 
     private fun updateMarket() {
-        _market.clear()
+        _data.market.clear()
         for (key in BoatModel.boatKeys) {
             val level = BoatModel.boatConfig(key, BoatModel.BoatIndex.level) as String
             if (this.level < User.rankKeys.indexOfFirst { level == it }) {
@@ -489,9 +494,11 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
                         }
                     }
                     val part = BoatPart(key, MarketItem.withIndex(i))
-                    _market.add(part)
+                    _data.market.add(part)
                 }
             }
         }
+        _data.marketDate = Date()
+        save()
     }
 }

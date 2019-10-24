@@ -235,7 +235,7 @@ class JobFragment : AppFragment() , Game.GameListener {
             var secs = millisUntilFinished / 1000
             val mins = secs / 60
             secs -= mins * 60
-            label.text = String.format("New stock in %d.%d minutes", mins, secs)
+            label.text = String.format("New stock in %d.%s minutes", mins, secs.toString().padStart(2, '0'))
         } else {
             label.text = "New stock available"
         }
@@ -274,6 +274,7 @@ class JobFragment : AppFragment() , Game.GameListener {
         }
         _adapter.notifyItemRangeChanged(1, _jobs!!.size)
         updateCargoValue()
+        resetTimer()
     }
 
     fun updateJobs() {
@@ -343,12 +344,11 @@ class JobFragment : AppFragment() , Game.GameListener {
                     cell.job = job
                 }
                 clear = true
-                townModel?.saveStorage()
             }
         }
         Audio.instance.queueSound(R.raw.button_select)
         if (clear == true) {
-            var idx = boatController?.model?.cargo?.indexOfFirst { it === job }
+            val idx = boatController?.model?.cargo?.indexOfFirst { it === job }
             boatController?.model?.cargo?.set(idx!!, null)
         }
         updateCargoValue()
@@ -370,7 +370,6 @@ class JobFragment : AppFragment() , Game.GameListener {
             if (idx != -1) {
                 townModel?.storage!![idx] = null
                 _storage[idx] = null
-                townModel?.saveStorage()
             }
         } else {
         }

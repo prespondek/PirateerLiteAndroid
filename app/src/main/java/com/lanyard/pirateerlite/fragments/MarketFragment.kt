@@ -18,25 +18,16 @@ package com.lanyard.pirateerlite.fragments
 
 import android.os.Bundle
 import android.os.CountDownTimer
-import androidx.fragment.app.Fragment
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.singletons.User.UserListener
-import kotlinx.coroutines.*
-import java.lang.Runnable
 import java.util.*
-import kotlin.math.ceil
-import kotlin.math.floor
 import kotlin.math.max
 
 class MarketFragment : AppFragment() , UserListener {
@@ -60,7 +51,7 @@ class MarketFragment : AppFragment() , UserListener {
             layoutManager = androidx.recyclerview.widget.LinearLayoutManager(activity)
             adapter = _adapter
         }
-        var swipe = view.findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.marketRefresh);
+        var swipe = view.findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.marketRefresh)
         swipe.setOnRefreshListener {
             reloadMarket()
             swipe.isRefreshing = false
@@ -84,11 +75,6 @@ class MarketFragment : AppFragment() , UserListener {
 
     fun getRemainingMarketTime(): Long {
         return User.marketInterval - (Date().time - _marketTimeStamp.time)
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        //_marketThread.interrupt()
     }
 
     override fun goldUpdated(oldValue: Int, newValue: Int) {
@@ -138,7 +124,7 @@ class MarketFragment : AppFragment() , UserListener {
                 context!!.resources.getIdentifier(
                     partInfo[1],
                     "drawable",
-                    context!!.getPackageName()
+                    context!!.packageName
                 )
             )
             boatName.text = boatInfo[BoatModel.BoatIndex.title.index].toString() + " " + partInfo[0]
@@ -149,7 +135,7 @@ class MarketFragment : AppFragment() , UserListener {
                 context!!.resources.getIdentifier(
                     boatPart.boat + "_01",
                     "drawable",
-                    context!!.getPackageName()
+                    context!!.packageName
                 )
             )
             boatName.text = boatInfo[BoatModel.BoatIndex.title.index].toString()
@@ -179,13 +165,13 @@ class MarketFragment : AppFragment() , UserListener {
             var secs = millisUntilFinished / 1000
             val mins = secs / 60
             secs -= mins * 60
-            label.text = String.format("New stock in %d.%d minutes", mins, secs)
+            label.text = String.format("New stock in %d.%s minutes", mins, secs.toString().padStart(2, '0'))
         } else {
             label.text = "New stock available"
         }
     }
 
-    inner class MarketAdapter() : androidx.recyclerview.widget.RecyclerView.Adapter<MarketAdapter.MarketViewHolder>() {
+    inner class MarketAdapter : androidx.recyclerview.widget.RecyclerView.Adapter<MarketAdapter.MarketViewHolder>() {
         inner class MarketViewHolder(val view: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(view) {
             init {
                 view.setOnClickListener {
@@ -225,7 +211,7 @@ class MarketFragment : AppFragment() , UserListener {
         override fun onBindViewHolder(p0: MarketAdapter.MarketViewHolder, p1: Int) {
             if (p1 == 0) {
                 var headerLabel = p0.view.findViewById<TextView>(R.id.jobLabel)
-                headerLabel.setText(context!!.resources.getText(R.string.market))
+                headerLabel.text = context!!.resources.getText(R.string.market)
                 updateMarketTimer(getRemainingMarketTime())
             } else {
                 updateCell(p0, p1)
