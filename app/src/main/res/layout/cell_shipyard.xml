@@ -1,24 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:orientation="horizontal"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content" android:padding="4dp">
-    <ImageView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" app:srcCompat="@drawable/rank_small_1" android:id="@+id/syRank"
-            android:layout_weight="0.15" android:layout_gravity="center"/>
-    <ImageView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" app:srcCompat="@drawable/raft_01" android:id="@+id/syBoat"
-            android:layout_weight="0.2" android:layout_gravity="center" android:scaleType="fitCenter"/>
-    <TextView
-            android:text="TextView"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" android:id="@+id/syName" android:layout_weight="0.6"
-            android:layout_gravity="center" android:textSize="@dimen/cell_text_grey"/>
-    <ImageView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" app:srcCompat="@drawable/tick" android:id="@+id/syTick"
-            android:layout_weight="0.1"/>
-</LinearLayout>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                                   xmlns:app="http://schemas.android.com/apk/res-auto"
+                                                   android:orientation="vertical"
+                                                   android:layout_width="match_parent"
+                                                   android:layout_height="wrap_content"
+                                                   android:background="?android:attr/selectableItemBackground"
+                                                   android:animateLayoutChanges="true">
+    <LinearLayout
+            android:orientation="horizontal"
+            android:background="?android:attr/selectableItemBackground"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" android:padding="4dp" app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent">
+        <ImageView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" app:srcCompat="@drawable/rank_small_1" android:id="@+id/syRank"
+                android:layout_weight="0.15" android:layout_gravity="center"/>
+        <ImageView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" app:srcCompat="@drawable/raft_01" android:id="@+id/syBoat"
+                android:layout_weight="0.2" android:layout_gravity="center" android:scaleType="fitCenter"/>
+        <TextView
+                android:text="TextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" android:id="@+id/syName" android:layout_weight="0.6"
+                android:layout_gravity="center" android:textSize="@dimen/cell_text_grey"/>
+        <ImageView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" app:srcCompat="@drawable/tick" android:id="@+id/syTick"
+                android:layout_weight="0.1"/>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

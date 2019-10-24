@@ -16,25 +16,26 @@
 
 package com.lanyard.canvas
 
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.Rect
 import com.lanyard.helpers.intersects
 
-open class CanvasSprite : CanvasNode {
-    var texture : BitmapStream
+open class CanvasSprite(bitmap: BitmapStream) : CanvasNode() {
+    var texture: BitmapStream = bitmap
 
     init {
 
     }
 
-    constructor(bitmap : BitmapStream) : super() {
-        texture = bitmap
-        this.magnitude.set(texture.width,texture.height)
+    init {
+        magnitude.set(texture.width, texture.height)
     }
 
     override fun draw(canvas: Canvas, transform: CanvasNodeTransformData, view: Rect, timestamp: Long) {
-        var bounds = bounds(transform)
+        val bounds = bounds(transform)
         if (view.intersects(bounds)) {
-            var paint = Paint()
+            val paint = Paint()
             paint.alpha = (transform.opacity * opacity * 255).toInt()
             canvas.drawBitmap(texture.getBitmap(timestamp), null, bounds, paint)
         }
