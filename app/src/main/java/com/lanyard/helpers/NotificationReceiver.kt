@@ -18,17 +18,14 @@
 package com.lanyard.helpers
 
 import android.app.AlarmManager
+import android.app.Notification
 import android.app.PendingIntent
-import android.app.TaskStackBuilder
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.lanyard.pirateerlite.MapActivity
 import java.util.*
-
 
 open class NotificationReceiver : BroadcastReceiver() {
 
@@ -38,61 +35,24 @@ open class NotificationReceiver : BroadcastReceiver() {
         private var notificationCount = 0
     }
 
-    data class NotificationData(
-        val icon: Int,
-        val id: Int,
-        val channel: String,
-        val title: String,
-        val description: String,
-        val time: Long
-    )
-
     override fun onReceive(context: Context, intent: Intent) {
         Log.v(TAG, "Scheduled Alarm Recived at: " + System.currentTimeMillis())
-        val notification = NotificationData(
-            intent.getIntExtra("icon", 0),
-            intent.getIntExtra("id", 1),
-            intent.getStringExtra("channel"),
-            intent.getStringExtra("title"),
-            intent.getStringExtra("description"),
-            intent.getLongExtra("time", 0)
-        )
-
-        val resultIntent = Intent(context, MapActivity::class.java)
-        val resultPendingIntent: PendingIntent? = TaskStackBuilder.create(context).run {
-            addNextIntentWithParentStack(resultIntent)
-            getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
-        }
-        val builder = NotificationCompat.Builder(context, notification.channel)
-            .setSmallIcon(notification.icon)
-            .setContentTitle(notification.title)
-            .setContentText(notification.description)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setContentIntent(resultPendingIntent)
-            .setAutoCancel(true)
-
-        builder.setContentIntent(resultPendingIntent)
-        NotificationManagerCompat.from(context).notify(notification.id, builder.build())
+        val notification = intent.getParcelableExtra<Notification>("notification")
+        val id = intent.getIntExtra("id", 0)
+        NotificationManagerCompat.from(context).notify(id, notification)
     }
 
-    fun scheduleNotification(context: Context, notification: NotificationData) {
+    fun scheduleNotification(context: Context, id: Int, notification: Notification, time: Date) {
         val settings = context.getSharedPreferences(PREFS_NAME, 0)
         val editor = settings.edit()
-
         notificationCount++
         editor.putInt("NotificationCount", notificationCount)
         editor.commit()
 
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = notification.time
-
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, NotificationReceiver::class.java)
-        intent.putExtra("icon", notification.icon)
-        intent.putExtra("channel", notification.channel)
-        intent.putExtra("title", notification.title)
-        intent.putExtra("description", notification.description)
-        intent.putExtra("time", notification.time)
+        intent.putExtra("notification", notification)
+        intent.putExtra("id", id)
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,
@@ -100,14 +60,13 @@ open class NotificationReceiver : BroadcastReceiver() {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT
         )
-        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
+        alarmManager.set(AlarmManager.RTC_WAKEUP, time.time, pendingIntent)
     }
 
     fun clearNotifications(context: Context) {
         val settings = context.getSharedPreferences(PREFS_NAME, 0)
         notificationCount = settings.getInt("NotificationCount", 0)
         if (notificationCount == 0) return
-
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, NotificationReceiver::class.java)
         for (i in 1..notificationCount) {

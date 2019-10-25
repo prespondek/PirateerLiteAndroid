@@ -16,6 +16,8 @@
 
 package com.lanyard.pirateerlite
 
+import android.app.PendingIntent
+import android.app.TaskStackBuilder
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
@@ -24,6 +26,7 @@ import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -35,6 +38,7 @@ import com.lanyard.pirateerlite.fragments.*
 import com.lanyard.pirateerlite.singletons.Audio
 import com.lanyard.pirateerlite.singletons.User
 import kotlinx.android.synthetic.main.activity_map.*
+import java.util.*
 
 
 class MapActivity : AppCompatActivity() {
@@ -107,15 +111,24 @@ class MapActivity : AppCompatActivity() {
         val user = User.instance
         for (boat in user.boats) {
             if (boat.isMoored == false) {
-                val notif = NotificationReceiver.NotificationData(
-                    R.drawable.ic_nav_boats,
+                val resultIntent = Intent(this, MapActivity::class.java)
+                val resultPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
+                    addNextIntentWithParentStack(resultIntent)
+                    getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+                }
+                val builder = NotificationCompat.Builder(this, getString(R.string.channelId))
+                    .setSmallIcon(R.drawable.ic_nav_boats)
+                    .setContentTitle(getString(R.string.notifBoatArrivedTitle, boat.name))
+                    .setContentText(getString(R.string.notifBoatArrivedDescription))
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                    .setContentIntent(resultPendingIntent)
+                    .setAutoCancel(true)
+                NotificationReceiver().scheduleNotification(
+                    this,
                     boat.id.toInt(),
-                    getString(R.string.channelId),
-                    getString(R.string.notifBoatArrivedTitle, boat.name),
-                    getString(R.string.notifBoatArrivedDescription),
-                    boat.arrivalTime
+                    builder.build(),
+                    Date(boat.arrivalTime)
                 )
-                NotificationReceiver().scheduleNotification(this, notif)
             }
         }
     }
