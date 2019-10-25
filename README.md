@@ -51,11 +51,11 @@ Please note that assets have been stripped so you can compile the project but it
   
 ## CanvasKit:
 #### https://github.com/prespondek/PirateerLiteAndroid/tree/master/app/src/main/java/com/lanyard/canvas
-I utilised Apple's SpriteKit for the IOS version, but no such thing exists on Android. I couldn't find a suitable kotlin alternative so ended up writing my own using surface view. It behaves similar to SpriteKit or Cocos2D, but uses the android canvas rather than opengl. I have ported some of the basic actions and nodes to CanvasKit. 
+I utilised Apple's SpriteKit for the IOS version, but no such thing exists on Android. I couldn't find a suitable kotlin alternative so ended up writing my own using surface view. It behaves similar to SpriteKit or Cocos2D, but uses the android canvas rather than opengl. I have ported some of the basic actions and nodes to CanvasKit. SurfaceView does not use hardware acceleration so the performance is not great on some devices. I'm currently looking at converting it to a GLSurfaceView.
   
 ## Comments:
 
-In hindsight I should have built the Android version first. Porting the IOS code to Android was a good deal more difficult than I expected mainly due to the activity lifecycle. Kotlin is also deceptively similar to swift but is actually different enough to make porting swift code by hand annoying. 
+In hindsight I should have built this Android version first. Porting the IOS code to Android was a good deal more difficult than I expected mainly due to the activity lifecycle. Kotlin is also deceptively similar to swift but is actually different enough to make porting swift code by hand annoying. Also, wrangling the fragment backstack is a nightmare if you have an irregular UI flow. In future I would recommend not using it at all and just overriding onBackPressed.   
 
 ## License
 
