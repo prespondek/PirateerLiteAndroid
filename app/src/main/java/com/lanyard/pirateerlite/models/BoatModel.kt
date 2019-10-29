@@ -206,7 +206,6 @@ class BoatModel {
     fun save() {
         runBlocking {
             Game.instance.db.boatDao().update(_data)
-            Game.instance.db.boatJobDao().deleteByBoatId(id)
             Game.instance.db.boatJobDao().insert(_cargo.mapNotNull {
                 if (it != null) {
                     BoatJobData(0, id, it.data)

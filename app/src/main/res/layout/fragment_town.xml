@@ -21,7 +21,8 @@
         <LinearLayout
                 android:orientation="horizontal"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" android:layout_weight="0.9" android:padding="4dp">
+                android:layout_height="match_parent" android:layout_weight="0.9" android:padding="4dp"
+                android:baselineAligned="false">
             <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" android:layout_weight="1" android:paddingEnd="8dp">
@@ -36,7 +37,8 @@
                     <ImageView
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:id="@+id/townPortrait" android:layout_gravity="center" android:adjustViewBounds="true"/>
+                            android:id="@+id/townPortrait" android:layout_gravity="center"
+                            android:adjustViewBounds="true"/>
                 </androidx.cardview.widget.CardView>
             </androidx.constraintlayout.widget.ConstraintLayout>
             <LinearLayout

@@ -43,6 +43,12 @@ class BitmapCache private constructor() {
         streamCache = LinkedHashMap<String, BitmapStream>()
     }
 
+    fun trim() {
+        for (bimp in streamCache) {
+            bimp.component2().flush()
+        }
+    }
+
 
     fun addBitmap(context: Context, filename: String, config: Bitmap.Config) : BitmapStream? {
         var file = getBitmap(filename)
@@ -92,7 +98,7 @@ class BitmapCache private constructor() {
             var itr = streamCache.iterator()
             while (itr.hasNext()) {
                 var stream = itr.next().value
-                stream.flush(timestamp)
+                stream.exire(timestamp)
                 /*if (!stream.flush(timestamp)) {
                     break
                 }*/

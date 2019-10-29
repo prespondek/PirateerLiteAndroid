@@ -80,4 +80,10 @@
     <string name="boatArriveChannelName">Boat Arrivals</string>
     <string name="boatArriveChannelDesc">Notify me when boat arrive in port</string>
     <string name="channelId">arrivalsChannel</string>
+    <string name="silverDesc">Silver coin</string>
+    <string name="goldDesc">Gold coin</string>
+    <string name="rankDesc">Rank coin</string>
+    <string name="levelUpTitle">"Level Up"</string>
+    <string name="levelUpMessage">"Newer boats are available for you to build. Shipyard and market have been updated."
+    </string>
 </resources>

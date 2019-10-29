@@ -66,6 +66,9 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             //_user?._data = data
         }
 
+        val isInitialized: Boolean
+            get() = _user != null
+
         val instance: User
             get() {
                 check(_user != null) { "initialize User first" }
@@ -98,7 +101,6 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             }
     }
 
-    // Dumb shit because kotlin requires secondary constructors be called inline with the primary
     class  BoatStatInfo <out T : Number> {
         val statName : String
         val statData : (BoatModel) -> T
@@ -148,6 +150,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
         fun goldUpdated     (oldValue: Int, newValue: Int) {}
         fun silverUpdated   (oldValue: Int, newValue: Int) {}
         fun xpUpdated       (oldValue: Int, newValue: Int) {}
+        fun levelUpdated(oldValue: Int, newValue: Int) {}
         fun boatAdded       (boat: BoatModel) {}
         fun boatRemoved     (boat: BoatModel) {}
         fun statsUpdated    () {}
@@ -252,11 +255,10 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
                 container.get()?.xpUpdated(oldvalue, silver)
             }
             if (levelForXp(oldvalue) != levelForXp(_data.xp)) {
-                /*val alert = UIAlertController("Level Up", "Newer boats are available for you to build. Shipyard and market have been updated." , UIAlertController.Style.alert)
-                alert.addAction(UIAlertAction("Continue", .default, null))
-                AlertQueue.shared.pushAlert(alert, onPresent: {
-                    AudioManager.sharedInstance.playSound(sound: "level_up")
-                })*/
+                cleanObservers()
+                for (container in _listeners) {
+                    container.get()?.levelUpdated(levelForXp(oldvalue), levelForXp(_data.xp))
+                }
             }
         }
 

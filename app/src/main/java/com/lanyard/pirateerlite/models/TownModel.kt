@@ -203,7 +203,7 @@ class TownModel (data: TownData): WorldNode(), User.UserListener {
         var unlockedTowns = ArrayList<TownModel>()
         Map.instance.towns.filterTo(unlockedTowns,{ it.level > 0 })
         unlockedTowns.removeAll { it === this }
-        var numJobs = TownModel.townUpgrade[level][0]
+        var numJobs = TownModel.townUpgrade[level][1]
         var jobTowns = ArrayList<TownModel>(unlockedTowns)
         unlockedTowns.forEach {
             for (x in 0 until it.level) {

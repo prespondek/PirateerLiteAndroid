@@ -20,6 +20,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.DisplayMetrics
+import android.util.Log
 import android.util.Size
 import java.util.concurrent.Future
 
@@ -80,6 +81,7 @@ class BitmapStream {
     private var _timestamp : Long
     var timer : Long
     private var _future : Future<*>? = null
+    val TAG = "BitmapStream"
 
     fun getBitmap(timestamp: Long) : Bitmap {
         _timestamp = timestamp
@@ -93,20 +95,25 @@ class BitmapStream {
         return bimp
     }
 
-    fun flush (timestamp: Long) : Boolean {
+    fun exire(timestamp: Long): Boolean {
         if (_timestamp + timer <= timestamp) {
             if (_highBitmap != null) {
-                println("flushing " + _generator.name)
+                flush()
             }
             _highBitmap = null
             if (_future != null) {
-                println("cancelling " + _generator.name)
+                Log.i(TAG, "cancelling " + _generator.name)
                 _future?.cancel(true)
             }
             _future = null
             return true
         }
         return false
+    }
+
+    fun flush() {
+        Log.i(TAG, "flushing " + _generator.name)
+        _highBitmap = null
     }
 
     val width : Int get () { return _fullSize.width }

@@ -49,6 +49,10 @@ class Map {
             val reader = JsonReader(InputStreamReader (context.assets.open("map_model.json")))
             return gson.fromJson<HashMap<String, Any>>(reader, object : TypeToken<HashMap<String, Any>>() {}.type)
         }
+
+        val isInitialized: Boolean
+            get() = _map != null
+
         val instance: Map
             get() {
                 if (_map != null) {
@@ -85,7 +89,7 @@ throw ExceptionInInitializerError()
             }
         }
         assert(pos != null)
-        return Point(pos)!!
+        return Point(pos)
     }
 
     fun getRoute(start: TownModel, end: TownModel): List<Edge<WorldNode>> {

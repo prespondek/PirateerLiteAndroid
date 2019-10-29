@@ -18,22 +18,32 @@ package com.lanyard.pirateerlite.views
 
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.AnimationUtils
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.lanyard.pirateerlite.R
-import com.lanyard.pirateerlite.controllers.JobController
 import com.lanyard.pirateerlite.models.JobModel
 
 class JobView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : androidx.cardview.widget.CardView(context, attrs, defStyleAttr) {
+
+    fun setJobDrawable(icon: Drawable, anim: Boolean) {
+        val jobImage = findViewById<ImageView>(R.id.jobImage)
+        if (anim) {
+            var fadeInAnimation = AnimationUtils.loadAnimation(context, R.anim.fadein)
+            jobImage.startAnimation(fadeInAnimation)
+        }
+        jobImage.setImageDrawable(icon)
+    }
+
     var job : JobModel? = null
         set(value) {
             field = value
             val destinationLabel =  findViewById<TextView>      (R.id.townName)
-            val jobImage =          findViewById<ImageView>     (R.id.jobImage)
             val costLabel =         findViewById<TextView>      (R.id.moneyAmount)
             val bonusLabel =        findViewById<TextView>      (R.id.bonusLabel)
             val currencyIcon =      findViewById<ImageView>     (R.id.moneyType)
@@ -42,10 +52,9 @@ class JobView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             val bgFrame =           findViewById<FrameLayout>   (R.id.bgFrame)
 
             if (value != null) {
-                val element = JobController.jobData.first { it[0] == field!!.type }
-
-                val res = context.resources.getIdentifier(element[1], "drawable", context.packageName)
-                jobImage.setImageDrawable(context.resources.getDrawable(res,null))
+                //val element = JobController.jobData.first { it[0] == field!!.type }
+                //val res = context.resources.getIdentifier(element[1], "drawable", context.packageName)
+                //jobImage.setImageDrawable(context.resources.getDrawable(res,null))
                 destinationLabel.text = field!!.destination.name
                 costLabel.text = field!!.value.toString()
                 if (field!!.isGold) {

@@ -1,6 +1,5 @@
 package com.lanyard.pirateerlite.fragments
 
-import android.view.View.GONE
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils.loadAnimation
 import com.lanyard.pirateerlite.R
@@ -15,7 +14,7 @@ open class AppFragment : androidx.fragment.app.Fragment() {
         var anim = super.onCreateAnimation(transit, enter, nextAnim)
         if (blockAnimation) {
             anim = null
-            view?.visibility = GONE
+            //view?.visibility = GONE
         } else if (enter) {
             anim = loadAnimation(context, R.anim.abc_popup_enter)
         } else {

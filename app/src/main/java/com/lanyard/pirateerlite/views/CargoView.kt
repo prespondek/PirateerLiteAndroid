@@ -18,29 +18,34 @@ package com.lanyard.pirateerlite.views
 
 import android.app.Activity
 import android.content.Context
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
+import android.content.Context.LAYOUT_INFLATER_SERVICE
+import android.transition.ChangeBounds
+import android.transition.Transition
+import android.transition.TransitionManager
 import android.util.AttributeSet
 import android.util.DisplayMetrics
-import com.lanyard.pirateerlite.R
-import com.lanyard.pirateerlite.controllers.BoatController
-import com.lanyard.pirateerlite.models.JobModel
-import android.content.Context.LAYOUT_INFLATER_SERVICE
-import androidx.core.view.GestureDetectorCompat
-import android.transition.*
-import com.lanyard.helpers.popLast
-import android.view.*
+import android.view.GestureDetector
+import android.view.LayoutInflater
+import android.view.MotionEvent
+import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.view.GestureDetectorCompat
+import com.lanyard.helpers.popLast
+import com.lanyard.pirateerlite.R
+import com.lanyard.pirateerlite.controllers.BoatController
 import com.lanyard.pirateerlite.models.BoatModel
+import com.lanyard.pirateerlite.models.JobModel
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.singletons.Audio
 
 
 class CargoView : ConstraintLayout, Transition.TransitionListener {
-    constructor(context: Context) : super(context) {}
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {}
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {}
+    constructor(context: Context) : super(context)
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     interface CargoListener {
         fun jobPressed(job: JobModel) : Boolean { return false }
@@ -81,7 +86,7 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
         transition.duration = 300
         transition.addListener(this)
         _stage += 1
-        var params = ConstraintSet()
+        val params = ConstraintSet()
         params.clone(this)
         params.clear(_views.last().id, ConstraintSet.START)
         params.connect(_views.last().id, ConstraintSet.END, id, ConstraintSet.END, _views.last().width / 6 * _views.size)
@@ -102,21 +107,39 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
 
     override fun onTransitionResume(transition: Transition) {}
 
-    fun addJob(job: JobModel) {
-        if (_views.indexOfLast { it.job === job } == -1) {
-            val idx = _views.indexOfLast { it.job === null }
-            _views[idx].job = job
-            _boat.cargo[_index[idx]] = job
-            if (updateCells()) {
-                Audio.instance.queueSound(R.raw.cargo_bonus)
-            }
-        }
+    fun addJob(job: JobModel?): JobView? {
+        return setJob(job, true)
     }
+
+    fun setJob(job: JobModel?): JobView? {
+        return setJob(job, false)
+    }
+
+    private fun setJob(job: JobModel?, add: Boolean): JobView? {
+        if (job != null && getJobIndex(job) == -1) {
+            val idx = getJobIndex(null)
+            val jobview = _views[idx]
+            jobview.job = job
+            if (add == true) {
+                _boat.cargo[_index[idx]] = job
+                if (updateCells()) {
+                    Audio.instance.queueSound(R.raw.cargo_bonus)
+                }
+            }
+            return jobview
+        }
+        return null
+    }
+
+    fun getJobIndex(job: JobModel?): Int {
+        return _views.indexOfLast { it.job === job }
+    }
+
 
     fun updateCells(): Boolean {
         var bonus = false
         for (view in _views) {
-            var button = view.findViewById<FrameLayout>(R.id.bgFrame)
+            val button = view.findViewById<FrameLayout>(R.id.bgFrame)
             button.setOnTouchListener(null)
             val views = _views.filter { it.job != null && it.job?.destination === view.job?.destination }
             if (views.size == _views.size) {
@@ -128,14 +151,14 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
                 view.bonus(false)
             }
         }
-        var button = _views.last().findViewById<FrameLayout>(R.id.bgFrame)
+        val button = _views.last().findViewById<FrameLayout>(R.id.bgFrame)
         button.setOnTouchListener { v, event -> !_detector.onTouchEvent(event) }
         return bonus
     }
 
 
     fun swipeStarted() {
-        var button = _views.last().findViewById<FrameLayout>(R.id.bgFrame)
+        val button = _views.last().findViewById<FrameLayout>(R.id.bgFrame)
         button.setOnTouchListener (null)
 
         val transition = ChangeBounds()
@@ -143,7 +166,7 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
         transition.duration = 500
         transition.addListener(this)
 
-        var params = ConstraintSet()
+        val params = ConstraintSet()
         params.clone(this)
         params.connect(_views.last().id, ConstraintSet.START, id, ConstraintSet.START, 0)
         params.clear(_views.last().id, ConstraintSet.END)
@@ -202,7 +225,7 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
     fun setup(activity: Activity, height: Float, boat: BoatController): Array<JobView> {
         _detector = GestureDetectorCompat(context, CargoGestureListener())
         _boat = boat.model
-        var metrics = DisplayMetrics()
+        val metrics = DisplayMetrics()
         activity.windowManager.defaultDisplay.getMetrics(metrics)
 
         _views = ArrayList<JobView>()
@@ -214,9 +237,9 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
             val cell = inflater.inflate(R.layout.cell_job_cell, this, false) as JobView
             width = cell.layoutParams.width
             cell.id = View.generateViewId()
-            cell.job = _boat.cargo[i]
             addView(cell)
-            var params = ConstraintSet()
+            cell.job = null
+            val params = ConstraintSet()
             params.clone(this)
             params.connect(cell.id, ConstraintSet.BOTTOM, id, ConstraintSet.BOTTOM, 0)
             params.connect(cell.id, ConstraintSet.TOP, id, ConstraintSet.TOP, 0)

@@ -21,7 +21,6 @@ import android.media.AudioAttributes
 import android.media.SoundPool
 import android.util.SparseArray
 import kotlinx.coroutines.*
-import java.lang.NullPointerException
 import java.lang.ref.WeakReference
 import java.util.Collections.synchronizedMap
 
@@ -48,6 +47,8 @@ open class Audio private constructor(context: Context) : SoundPool.OnLoadComplet
             }
         }
     }
+
+    var stopped: Boolean = false
 
     class MediaTicket(var state: MediaInfo, var looping: Boolean)
     class MediaInfo(var res: Int, var loaded: Boolean)
@@ -98,9 +99,11 @@ open class Audio private constructor(context: Context) : SoundPool.OnLoadComplet
 
     fun pause() {
         soundPool.autoPause()
+        stopped = true
     }
 
     fun resume() {
+        stopped = false
         soundPool.autoResume()
     }
 
@@ -114,6 +117,7 @@ open class Audio private constructor(context: Context) : SoundPool.OnLoadComplet
     }
 
     fun queueSound(file: String, looping: Boolean = false) {
+        if (stopped) return
         val idx = context.get()?.resources?.getIdentifier(file, "raw", context.get()?.packageName)
         if (idx != null) {
             queueSound(idx, looping)
@@ -121,6 +125,7 @@ open class Audio private constructor(context: Context) : SoundPool.OnLoadComplet
     }
 
     fun queueSound(res: Int, looping: Boolean = false) {
+        if (stopped) return
         var idx = loadSound(res)
         val ticket = audioTickets[res]
         if (ticket == null) {

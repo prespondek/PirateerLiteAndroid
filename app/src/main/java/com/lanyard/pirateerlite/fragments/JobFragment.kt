@@ -29,9 +29,11 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
 import com.lanyard.helpers.GridLayoutManagerAutofit
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.controllers.BoatController
+import com.lanyard.pirateerlite.controllers.JobController
 import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.models.JobModel
 import com.lanyard.pirateerlite.models.TownModel
@@ -77,7 +79,7 @@ class JobFragment : AppFragment() , Game.GameListener {
     }
 
 
-    inner class JobAdapter( val jobs: ArrayList<JobModel?> ) :
+    inner class JobAdapter(val jobs: ArrayList<JobModel?>) :
         androidx.recyclerview.widget.RecyclerView.Adapter<JobFragment.JobAdapter.JobViewHolder>() {
 
         fun setJobs(jobs: Iterable<JobModel?>) {
@@ -103,35 +105,37 @@ class JobFragment : AppFragment() , Game.GameListener {
 
 
         override fun onBindViewHolder(p0: JobViewHolder, p1: Int) {
+            var job: JobModel? = null
+            var jobview: JobView? = null
             when (getItemViewType(p1)) {
                 JOBCELL_HEADER -> {
                     val jobLabel = p0.view.findViewById<TextView>(R.id.jobLabel)
                     if (p1 == 0) {
-                        jobLabel.text = context!!.resources.getText(R.string.jobs_jobs)
+                        jobLabel.text = resources.getText(R.string.jobs_jobs)
                     } else {
-                        jobLabel.text = context!!.resources.getText(R.string.jobs_storage)
+                        jobLabel.text = resources.getText(R.string.jobs_storage)
                     }
                 }
                 JOBCELL_JOB -> {
                     val idx = p1 - 1
-                    val jobview = p0.view.findViewById<JobView>(R.id.jobView)
-                    var job: JobModel? = null
+                    jobview = p0.view.findViewById<JobView>(R.id.jobView)
                     if (idx < jobs.size) {
                         job = jobs[idx]
                     }
                     jobview.job = job
                 }
                 JOBCELL_STORAGE -> {
-                    val jobview = p0.view.findViewById<JobView>(R.id.jobView)
+                    jobview = p0.view.findViewById<JobView>(R.id.jobView)
                     val idx = p1 - 2 - jobs.size
                     if (idx >= _storage.size) {
                         jobview.job = null
                     } else {
-                        val job = _storage[idx]
+                        job = _storage[idx]
                         jobview.job = job
                     }
                 }
             }
+            loadJobBimp(job, jobview)
         }
 
         fun clearJob(job: JobModel) {
@@ -149,16 +153,17 @@ class JobFragment : AppFragment() , Game.GameListener {
             notifyItemChanged(index + 1)
         }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): JobFragment.JobAdapter.JobViewHolder {
+        override fun onCreateViewHolder(vgroup: ViewGroup, viewType: Int): JobFragment.JobAdapter.JobViewHolder {
             val metrics = DisplayMetrics()
-            activity!!.windowManager.defaultDisplay.getMetrics(metrics)
+
+            activity?.windowManager?.defaultDisplay?.getMetrics(metrics)
             if (viewType == JOBCELL_HEADER) {
-                val cell = LayoutInflater.from(parent.context).inflate(R.layout.cell_job_header, parent, false)
+                val cell = LayoutInflater.from(vgroup.context).inflate(R.layout.cell_job_header, vgroup, false)
                 return JobViewHolder(cell)
             }
 
-            val frame = FrameLayout(parent.context)
-            val cell = LayoutInflater.from(parent.context).inflate(R.layout.cell_job_cell, frame, false)
+            val frame = FrameLayout(vgroup.context)
+            val cell = LayoutInflater.from(vgroup.context).inflate(R.layout.cell_job_cell, frame, false)
 
             frame.layoutParams =
                 LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, cell.layoutParams.height)
@@ -190,6 +195,24 @@ class JobFragment : AppFragment() , Game.GameListener {
             }
         }
     }
+
+    fun loadJobBimp(job: JobModel?, jobview: JobView?) {
+        val resources = context?.resources
+        if (resources != null && job != null && jobview != null) {
+            val element = JobController.jobData.first { it[0] == job.type }[1]
+            val res = resources.getIdentifier(element, "drawable", context?.packageName)
+            jobview.setJobDrawable(resources.getDrawable(res, null), false)
+            /*val drawable = _viewModel.getDrawable(element)
+            if (drawable.value != null) {
+                jobview.setJobDrawable(drawable.value!!,false)
+            } else {
+                drawable.observe(this, androidx.lifecycle.Observer {
+                    jobview.setJobDrawable(it, true)
+                })
+            }*/
+        }
+    }
+
 
     private lateinit var _cargoPanel: FrameLayout
     private lateinit var _goldLabel: TextView
@@ -300,6 +323,12 @@ class JobFragment : AppFragment() , Game.GameListener {
             }
             _adapter = JobAdapter(table_jobs)
             _cargo = _cargoView.setup(this.activity!!, _size, boatController!!)
+            for (cargo in boatController!!.model.cargo) {
+                if (cargo != null) {
+                    val jobview = _cargoView.setJob(cargo)
+                    loadJobBimp(cargo, jobview)
+                }
+            }
             _cargoView.cargoListener = object : CargoView.CargoListener {
                 override fun jobPressed(view: JobModel) : Boolean {
                     return cargoTouch(view)
@@ -322,29 +351,28 @@ class JobFragment : AppFragment() , Game.GameListener {
 
     }
 
+
     fun cargoTouch(job: JobModel) : Boolean {
         var idx = _jobs!!.indexOfFirst { it === job }
         var clear = false
+        var holder: RecyclerView.ViewHolder? = null
         if (idx != -1) {
             _adapter.addJob(job, idx)
-            val holder = _jobView.findViewHolderForLayoutPosition(idx + 1)
-            if (holder != null) {
-                val cell = holder.itemView.findViewById<JobView>(R.id.jobView)
-                cell.job = job
-            }
+            holder = _jobView.findViewHolderForLayoutPosition(idx + 1)
             clear = true
         } else {
             idx = _storage.indexOfFirst { it == null }
             if (idx != -1) {
                 _storage[idx] = job
                 townModel?.storage!![idx] = job
-                val holder = _jobView.findViewHolderForLayoutPosition(idx + 2 + _jobs!!.size)
-                if (holder != null) {
-                    val cell = holder.itemView.findViewById<JobView>(R.id.jobView)
-                    cell.job = job
-                }
+                holder = _jobView.findViewHolderForLayoutPosition(idx + 2 + _jobs!!.size)
                 clear = true
             }
+        }
+        if (holder != null) {
+            val jobview = holder.itemView.findViewById<JobView>(R.id.jobView)
+            jobview.job = job
+            loadJobBimp(job, jobview)
         }
         Audio.instance.queueSound(R.raw.button_select)
         if (clear == true) {
@@ -362,7 +390,8 @@ class JobFragment : AppFragment() , Game.GameListener {
         }
 
         if (boatController!!.model.cargo.filter { it != null }.size < boatController!!.model.cargoSize) {
-            _cargoView.addJob(view.job!!)
+            val jobview = _cargoView.addJob(view.job!!)
+            loadJobBimp(view.job, jobview)
             _adapter.clearJob(view.job!!)
             Audio.instance.queueSound(R.raw.button_select)
             val idx = _storage.indexOfFirst { view.job === it }
@@ -394,6 +423,7 @@ class JobFragment : AppFragment() , Game.GameListener {
         val metrics = DisplayMetrics()
         activity!!.windowManager.defaultDisplay.getMetrics(metrics)
         val viewManager = GridLayoutManagerAutofit(container!!.context, (120 * metrics.density).toInt())
+        //_viewModel = ViewModelProviders.of(this).get(JobViewModel::class.java)
         _jobTimeStamp = User.instance.jobDate
         val view = inflater.inflate(R.layout.fragment_jobs, container, false)
         _jobView = view.findViewById<androidx.recyclerview.widget.RecyclerView>(R.id.jobTable)

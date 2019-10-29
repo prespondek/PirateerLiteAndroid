@@ -13,28 +13,30 @@
     >
         <ImageView
                 android:layout_width="8dp"
+                android:contentDescription="@string/rankDesc"
                 android:layout_height="match_parent" app:srcCompat="@drawable/rank_small_1" android:id="@+id/xpIcon"
                 android:layout_weight="1"/>
         <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content" android:id="@+id/xpText" android:layout_weight="3"
                 android:background="@drawable/tool_tip_bg"
-                android:text="0"
                 android:layout_gravity="center" android:layout_margin="4dp"
                 android:paddingLeft="4dp" android:paddingRight="4dp" android:paddingStart="4dp"
                 android:paddingEnd="4dp" android:textAlignment="gravity" android:textSize="@dimen/wallet_text"/>
         <ImageView
                 android:layout_width="8dp"
+                android:contentDescription="@string/goldDesc"
                 android:layout_height="match_parent" app:srcCompat="@drawable/gold_piece" android:id="@+id/goldIcon"
                 android:layout_weight="1"/>
         <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content" android:id="@+id/goldText" android:layout_weight="3"
                 android:background="@drawable/tool_tip_bg"
-                android:layout_margin="4dp" android:textAlignment="gravity" android:text="0"
+                android:layout_margin="4dp" android:textAlignment="gravity"
                 android:layout_gravity="center" android:paddingLeft="4dp" android:paddingStart="4dp"
                 android:paddingEnd="4dp" android:paddingRight="4dp" android:textSize="@dimen/wallet_text"/>
         <ImageView
+                android:contentDescription="@string/silverDesc"
                 android:layout_width="8dp"
                 android:layout_height="match_parent" app:srcCompat="@drawable/silver_piece" android:id="@+id/silverIcon"
                 android:layout_weight="1"/>
@@ -42,7 +44,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content" android:id="@+id/silverText" android:layout_weight="3"
                 android:background="@drawable/tool_tip_bg"
-                android:layout_margin="4dp" android:textAlignment="gravity" android:text="0"
+                android:layout_margin="4dp" android:textAlignment="gravity"
                 android:paddingLeft="4dp" android:paddingRight="4dp"
                 android:paddingStart="4dp" android:paddingEnd="4dp" android:textSize="@dimen/wallet_text"/>
     </LinearLayout>

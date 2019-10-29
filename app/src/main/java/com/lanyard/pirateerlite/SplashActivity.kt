@@ -53,6 +53,10 @@ class SplashActivity : FragmentActivity() {
             requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
         }
 
+        if (Map.isInitialized && User.isInitialized) {
+            startMapActivity()
+        }
+
         createNotificationChannel()
         mapConfig = Map.loadConfig(this)
 
@@ -119,7 +123,7 @@ class SplashActivity : FragmentActivity() {
         var countDown = {
             count -= 1
             if (count == 0) {
-                onSecondaryDataFetch()
+                startMapActivity()
             }
         }
 
@@ -159,7 +163,7 @@ class SplashActivity : FragmentActivity() {
 
     }
 
-    fun onSecondaryDataFetch() {
+    fun startMapActivity() {
         val intent = Intent(applicationContext, MapActivity::class.java)
         startActivity(intent)
         finish()
