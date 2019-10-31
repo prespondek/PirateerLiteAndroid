@@ -54,7 +54,7 @@ class BitmapCache private constructor() {
         var file = getBitmap(filename)
         if (file == null) {
             file = addBitmap(BitmapStream.BitmapGenerator.make(context, filename,config))
-            println("bitmap added: " + filename)
+            //println("bitmap added: " + filename)
         }
         return file
     }
@@ -63,7 +63,7 @@ class BitmapCache private constructor() {
         var file = getBitmap(resource.toString())
         if (file == null) {
             file = addBitmap(BitmapStream.BitmapGenerator.make(context, resource,config))
-            println("bitmap added: " + filename)
+            //println("bitmap added: " + filename)
         }
         return file
     }

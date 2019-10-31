@@ -1,154 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical" android:padding="8dp">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical" android:padding="8dp">
+    <LinearLayout android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="vertical" android:padding="8dp">
 
-    <TextView
-            android:text="TextView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/boatInfoLable"
-            android:textSize="@dimen/menu_header" android:typeface="sans"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large" android:textStyle="bold"
-            android:textAlignment="textStart"/>
-    <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <ImageView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content" app:srcCompat="@drawable/raft_portrait"
-                android:id="@+id/boatInfoImage" android:layout_weight="0.5" android:adjustViewBounds="true"/>
+        <TextView
+                android:text="TextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" android:id="@+id/boatInfoLable"
+                android:textSize="@dimen/menu_header" android:typeface="sans"
+                android:textAppearance="@style/TextAppearance.AppCompat.Large" android:textStyle="bold"
+                android:textAlignment="textStart"/>
         <LinearLayout
-                android:orientation="vertical"
-                android:layout_width="0dp"
-                android:layout_height="match_parent" android:layout_weight="0.5">
-
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" app:srcCompat="@drawable/raft_portrait"
+                    android:id="@+id/boatInfoImage" android:layout_weight="0.5" android:adjustViewBounds="true"/>
             <LinearLayout
                     android:orientation="vertical"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" android:layout_weight="1" android:padding="4dp">
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent" android:layout_weight="0.5">
+
                 <LinearLayout
-                        android:orientation="horizontal"
+                        android:orientation="vertical"
                         android:layout_width="match_parent"
-                        android:layout_height="0dp" android:layout_weight="1" android:gravity="center">
-                    <TextView
-                            android:text="@string/range"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" android:id="@+id/textView19"
-                            android:layout_weight="1" android:textSize="@dimen/stat_font"/>
-                    <TextView
-                            android:text="TextView"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" android:id="@+id/boatInfoRange"
-                            android:layout_weight="1"
-                            android:textAlignment="textEnd" android:textSize="@dimen/stat_font"/>
+                        android:layout_height="match_parent" android:layout_weight="1" android:padding="4dp">
+                    <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp" android:layout_weight="1" android:gravity="center">
+                        <TextView
+                                android:text="@string/range"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:id="@+id/textView19"
+                                android:layout_weight="1" android:textSize="@dimen/stat_font"/>
+                        <TextView
+                                android:text="TextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:id="@+id/boatInfoRange"
+                                android:layout_weight="1"
+                                android:textAlignment="textEnd" android:textSize="@dimen/stat_font"/>
+                    </LinearLayout>
+                    <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp" android:layout_weight="1" android:gravity="center">
+                        <TextView
+                                android:text="@string/cargosize"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:id="@+id/textView21"
+                                android:layout_weight="1" android:textSize="@dimen/stat_font"/>
+                        <TextView
+                                android:text="TextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:id="@+id/boatInfoCargo"
+                                android:layout_weight="1"
+                                android:textAlignment="textEnd" android:textSize="@dimen/stat_font"/>
+                    </LinearLayout>
+                    <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp" android:layout_weight="1" android:gravity="center">
+                        <TextView
+                                android:text="@string/speed"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:id="@+id/textView23"
+                                android:layout_weight="1" android:textSize="@dimen/stat_font"/>
+                        <TextView
+                                android:text="TextView"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:id="@+id/boatInfoSpeed"
+                                android:layout_weight="1"
+                                android:textAlignment="textEnd" android:textSize="@dimen/stat_font"/>
+                    </LinearLayout>
+                    <LinearLayout
+                            android:orientation="horizontal"
+                            android:layout_width="match_parent"
+                            android:layout_height="0dp" android:layout_weight="1" android:gravity="center">
+                        <TextView
+                                android:text="@string/harboursize"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" android:id="@+id/totalSPM"
+                                android:layout_weight="1" android:textSize="@dimen/stat_font"/>
+                        <ImageView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" app:srcCompat="@drawable/town_c1_unselected"
+                                android:id="@+id/boatInfoTown" android:layout_weight="1" android:adjustViewBounds="true"/>
+                    </LinearLayout>
                 </LinearLayout>
-                <LinearLayout
-                        android:orientation="horizontal"
+                <Button
+                        android:text="@string/build"
                         android:layout_width="match_parent"
-                        android:layout_height="0dp" android:layout_weight="1" android:gravity="center">
-                    <TextView
-                            android:text="@string/cargosize"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" android:id="@+id/textView21"
-                            android:layout_weight="1" android:textSize="@dimen/stat_font"/>
-                    <TextView
-                            android:text="TextView"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" android:id="@+id/boatInfoCargo"
-                            android:layout_weight="1"
-                            android:textAlignment="textEnd" android:textSize="@dimen/stat_font"/>
-                </LinearLayout>
-                <LinearLayout
-                        android:orientation="horizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp" android:layout_weight="1" android:gravity="center">
-                    <TextView
-                            android:text="@string/speed"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" android:id="@+id/textView23"
-                            android:layout_weight="1" android:textSize="@dimen/stat_font"/>
-                    <TextView
-                            android:text="TextView"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" android:id="@+id/boatInfoSpeed"
-                            android:layout_weight="1"
-                            android:textAlignment="textEnd" android:textSize="@dimen/stat_font"/>
-                </LinearLayout>
-                <LinearLayout
-                        android:orientation="horizontal"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp" android:layout_weight="1" android:gravity="center">
-                    <TextView
-                            android:text="@string/harboursize"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" android:id="@+id/totalSPM"
-                            android:layout_weight="1" android:textSize="@dimen/stat_font"/>
-                    <ImageView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" app:srcCompat="@drawable/town_c1_unselected"
-                            android:id="@+id/boatInfoTown" android:layout_weight="1" android:adjustViewBounds="true"/>
-                </LinearLayout>
+                        android:layout_height="wrap_content" android:id="@+id/boatInfoBuildButton"/>
             </LinearLayout>
-            <Button
-                    android:text="@string/build"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" android:id="@+id/boatInfoBuildButton"/>
         </LinearLayout>
-    </LinearLayout>
-    <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-        <ImageView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content" app:srcCompat="@drawable/part_hull" android:id="@+id/imageView10"
-                android:layout_weight="0.125" android:adjustViewBounds="true"/>
-        <TextView
-                android:text="0/0"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content" android:id="@+id/boatInfoHull" android:layout_weight="0.125"
-                android:layout_gravity="center" app:autoSizeMaxTextSize="100sp" app:autoSizeMinTextSize="2sp"
-                app:autoSizeStepGranularity="2sp" app:autoSizeTextType="uniform" android:lines="1"
-                android:gravity="center" android:textSize="@dimen/stat_font"/>
-        <ImageView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content" app:srcCompat="@drawable/part_cannons"
-                android:id="@+id/imageView11" android:layout_weight="0.125" android:adjustViewBounds="true"/>
-        <TextView
-                android:text="0/0"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content" android:id="@+id/boatInfoCannons" android:layout_weight="0.125"
-                android:layout_gravity="center" android:lines="1" app:autoSizeMaxTextSize="100sp"
-                app:autoSizeMinTextSize="2sp" app:autoSizeStepGranularity="2sp" app:autoSizeTextType="uniform"
-                android:gravity="center" android:textSize="@dimen/stat_font"/>
-        <ImageView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content" app:srcCompat="@drawable/part_rigging"
-                android:id="@+id/topEarningImage" android:layout_weight="0.125" android:adjustViewBounds="true"/>
-        <TextView
-                android:text="0/0"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content" android:id="@+id/boatInfoRigging" android:layout_weight="0.125"
-                android:layout_gravity="center" android:lines="1" app:autoSizeMaxTextSize="100sp"
-                app:autoSizeMinTextSize="2sp" app:autoSizeStepGranularity="2sp" app:autoSizeTextType="uniform"
-                android:gravity="center" android:textSize="@dimen/stat_font"/>
-        <ImageView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content" app:srcCompat="@drawable/part_sails" android:id="@+id/spmImage"
-                android:layout_weight="0.125" android:adjustViewBounds="true"/>
-        <TextView
-                android:text="0/0"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content" android:id="@+id/boatInfoSails" android:layout_weight="0.125"
-                android:layout_gravity="center" android:lines="1" app:autoSizeMaxTextSize="100sp"
-                app:autoSizeMinTextSize="2sp" app:autoSizeStepGranularity="2sp" app:autoSizeTextType="uniform"
-                android:gravity="center" android:textSize="@dimen/stat_font"/>
-    </LinearLayout>
-    <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+            <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" app:srcCompat="@drawable/part_hull" android:id="@+id/imageView10"
+                    android:layout_weight="0.125" android:adjustViewBounds="true"/>
+            <TextView
+                    android:text="0/0"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:id="@+id/boatInfoHull" android:layout_weight="0.125"
+                    android:layout_gravity="center" app:autoSizeMaxTextSize="100sp" app:autoSizeMinTextSize="2sp"
+                    app:autoSizeStepGranularity="2sp" app:autoSizeTextType="uniform" android:lines="1"
+                    android:gravity="center" android:textSize="@dimen/stat_font"/>
+            <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" app:srcCompat="@drawable/part_cannons"
+                    android:id="@+id/imageView11" android:layout_weight="0.125" android:adjustViewBounds="true"/>
+            <TextView
+                    android:text="0/0"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:id="@+id/boatInfoCannons" android:layout_weight="0.125"
+                    android:layout_gravity="center" android:lines="1" app:autoSizeMaxTextSize="100sp"
+                    app:autoSizeMinTextSize="2sp" app:autoSizeStepGranularity="2sp" app:autoSizeTextType="uniform"
+                    android:gravity="center" android:textSize="@dimen/stat_font"/>
+            <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" app:srcCompat="@drawable/part_rigging"
+                    android:id="@+id/topEarningImage" android:layout_weight="0.125" android:adjustViewBounds="true"/>
+            <TextView
+                    android:text="0/0"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:id="@+id/boatInfoRigging" android:layout_weight="0.125"
+                    android:layout_gravity="center" android:lines="1" app:autoSizeMaxTextSize="100sp"
+                    app:autoSizeMinTextSize="2sp" app:autoSizeStepGranularity="2sp" app:autoSizeTextType="uniform"
+                    android:gravity="center" android:textSize="@dimen/stat_font"/>
+            <ImageView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" app:srcCompat="@drawable/part_sails" android:id="@+id/spmImage"
+                    android:layout_weight="0.125" android:adjustViewBounds="true"/>
+            <TextView
+                    android:text="0/0"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content" android:id="@+id/boatInfoSails" android:layout_weight="0.125"
+                    android:layout_gravity="center" android:lines="1" app:autoSizeMaxTextSize="100sp"
+                    app:autoSizeMinTextSize="2sp" app:autoSizeStepGranularity="2sp" app:autoSizeTextType="uniform"
+                    android:gravity="center" android:textSize="@dimen/stat_font"/>
+        </LinearLayout>
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                       android:orientation="vertical">
             <TextView
@@ -157,5 +157,5 @@
                     android:layout_height="wrap_content" android:id="@+id/boatInfoDescription"
                     android:textSize="@dimen/description"/>
         </LinearLayout>
-    </ScrollView>
 </LinearLayout>
+</ScrollView>

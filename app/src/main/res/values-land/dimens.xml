@@ -1,5 +1,5 @@
 <resources>
-    <dimen name="menu_cell_title">18sp</dimen>
+    <dimen name="menu_cell_title">20sp</dimen>
     <dimen name="stat_font">16sp</dimen>
     <dimen name="stat_font_small">12sp</dimen>
     <dimen name="menu_header">30sp</dimen>

@@ -17,19 +17,18 @@
 package com.lanyard.pirateerlite.models
 
 import android.content.Context
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.Observer
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
-import com.lanyard.pirateerlite.data.*
-import com.lanyard.pirateerlite.singletons.Game
+import com.lanyard.pirateerlite.data.BoatData
+import com.lanyard.pirateerlite.data.GameDatabase
+import com.lanyard.pirateerlite.data.TownData
+import com.lanyard.pirateerlite.data.UserData
 import kotlinx.coroutines.runBlocking
 import java.util.*
 import java.util.concurrent.Executors
-import kotlin.collections.ArrayList
 
 abstract class GameModel(context: Context, mapConfig: HashMap<String, Any>) {
     private val dbCreated: MutableLiveData<Boolean>
@@ -44,11 +43,11 @@ abstract class GameModel(context: Context, mapConfig: HashMap<String, Any>) {
         override fun onCreate(sqldb: SupportSQLiteDatabase) {
             super.onCreate(sqldb)
             createDb = true
-            Executors.newSingleThreadExecutor().execute() {
+            Executors.newSingleThreadExecutor().execute {
                 runBlocking {
                     db.userDao().insert(UserData())
                     var townConfig = mapConfig["TownInfo"] as ArrayList<ArrayList<Any>>
-                    println(townConfig.size)
+                    //println(townConfig.size)
                     for (i in 0 until townConfig.size) {
                         var townInfo = townConfig[i]
                         var name = townInfo[0] as String
