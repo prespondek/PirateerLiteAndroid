@@ -45,10 +45,10 @@ import kotlin.math.max
 class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
     CanvasView(context, attrs, defStyleAttr) {
     private var _root = CanvasNode()
+
     var position: Point
         get() = _root.position
         set(value) {
-            //println("position set:" + _root.position)
             _root.position.set(value)
         }
     var padding = Size(0, 0)
@@ -143,7 +143,6 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             for (frame in framenames) {
                 val bimp = BitmapCache.instance.addBitmap(context, frame + ".png", Bitmap.Config.ARGB_4444)
                     ?: throw NullPointerException()
-                bimp.timer = frameTime.toLong() * framenames.size + 100
                 bimpl.add(bimp)
             }
             val sprite = CanvasSprite(bimpl[0])
@@ -180,11 +179,13 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             if (town == null || town.allegiance == TownModel.Allegiance.none) {
                 continue
             }
+
             val flag = flags[idx]
             val bimpl = mutableListOf<BitmapStream>()
             for (frame in framenames) {
                 bimpl.add(BitmapCache.instance.getBitmap(town.allegiance.toString() + frame + ".png")!!)
             }
+
             val sprite = CanvasSprite(bimpl[0])
             val action = CanvasActionAnimate(bimpl, 100)
             sprite.position.set(((flag[0] + 8) * density).toInt(), ((-flag[1] - 32) * density).toInt())

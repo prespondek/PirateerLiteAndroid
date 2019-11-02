@@ -109,7 +109,7 @@ class MarketFragment : AppFragment() , UserListener {
     private fun updateCell(p0: MarketAdapter.MarketViewHolder, p1: Int) {
         if (p1 == 0 || _parts.isEmpty()) return
 
-        var moneyIcon = p0.view.findViewById<ImageView>(R.id.partMoney)
+        //var moneyIcon = p0.view.findViewById<ImageView>(R.id.partMoney)
         var moneyLabel = p0.view.findViewById<TextView>(R.id.partCost)
         var boatName = p0.view.findViewById<TextView>(R.id.partName)
         var boatImage = p0.view.findViewById<ImageView>(R.id.partIcon)

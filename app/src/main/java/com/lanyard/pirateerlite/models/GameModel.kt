@@ -47,7 +47,6 @@ abstract class GameModel(context: Context, mapConfig: HashMap<String, Any>) {
                 runBlocking {
                     db.userDao().insert(UserData())
                     var townConfig = mapConfig["TownInfo"] as ArrayList<ArrayList<Any>>
-                    //println(townConfig.size)
                     for (i in 0 until townConfig.size) {
                         var townInfo = townConfig[i]
                         var name = townInfo[0] as String

@@ -200,25 +200,32 @@ class TownModel (data: TownData): WorldNode(), User.UserListener {
 
     private fun refreshJobs () {
         clearJobs()
-        var unlockedTowns = ArrayList<TownModel>()
+        val unlockedTowns = ArrayList<TownModel>()
         Map.instance.towns.filterTo(unlockedTowns,{ it.level > 0 })
         unlockedTowns.removeAll { it === this }
-        var numJobs = TownModel.townUpgrade[level][1]
-        var jobTowns = ArrayList<TownModel>(unlockedTowns)
+        var numJobs = TownModel.townUpgrade[level][0]
+        val jobTowns = ArrayList<TownModel>(unlockedTowns)
+
         unlockedTowns.forEach {
             for (x in 0 until it.level) {
                 jobTowns.add(it)
             }
         }
-        unlockedTowns.forEach {
-            for (x in 0 until numJobs) {
-                if (jobTowns.isEmpty()) { break }
-                val roll = jobTowns.random()
-                val job = JobModel(this,roll)
-                jobTowns.remove(roll)
-                _jobs.add(job)
-            }
+
+        if (numJobs > unlockedTowns.size) {
+            numJobs = unlockedTowns.size
         }
+
+        for (x in 0 until numJobs) {
+            if (jobTowns.isEmpty()) {
+                break
+            }
+            val roll = jobTowns.random()
+            val job = JobModel(this, roll)
+            jobTowns.remove(roll)
+            _jobs.add(job)
+        }
+
         _data.jobsTimeStamp = User.instance.jobDate
         delegate?.jobsUpdated()
         save()

@@ -32,7 +32,7 @@
                     android:layout_marginEnd="8dp" android:layout_marginBottom="4dp"
                     app:layout_constraintBottom_toBottomOf="@+id/imageView"
                     android:textSize="@dimen/menu_cell_title" android:textColor="@android:color/white"
-                    app:autoSizeMaxTextSize="32sp" app:autoSizeMinTextSize="8sp" app:autoSizeStepGranularity="2sp"
+                    app:autoSizeMaxTextSize="22sp" app:autoSizeMinTextSize="8sp" app:autoSizeStepGranularity="2sp"
                     android:layout_marginStart="8dp" android:layout_marginTop="4dp" android:gravity="center"
                     app:autoSizeTextType="uniform"/>
         </androidx.constraintlayout.widget.ConstraintLayout>

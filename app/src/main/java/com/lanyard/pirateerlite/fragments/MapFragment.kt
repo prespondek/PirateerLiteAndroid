@@ -78,10 +78,11 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
         if (fragmentManager?.primaryNavigationFragment?.tag != "jobs") {
             val frag = (activity as MapActivity).swapFragment(R.id.holdButton) as JobFragment
             frag.boatController = _selectedBoat!!
+            //_cargoButton.visibility = INVISIBLE
         }
     }
 
-    private var _touchListener = View.OnTouchListener { v, event ->
+    private var _touchListener = View.OnTouchListener { _, event ->
         stopTracking()
         false
     }
@@ -128,10 +129,9 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
         savedInstanceState: Bundle?
     ): View {
         if (savedInstanceState == null) {
-            BitmapCache.instance.addBitmap(this.context!!, "gold_piece", R.drawable.gold_piece, Bitmap.Config.ARGB_4444)
+            BitmapCache.instance.addBitmap(this.context!!, R.drawable.gold_piece, Bitmap.Config.ARGB_4444)
             BitmapCache.instance.addBitmap(
                 this.context!!,
-                "silver_piece",
                 R.drawable.silver_piece,
                 Bitmap.Config.ARGB_4444
             )
@@ -495,9 +495,10 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
             _boatCourse.add(town)
             if (_boatCourse.size == 1) {
                 townCtrl = townControllerForModel(_selectedBoat?.model?.town!!)
-                if (fragmentManager?.primaryNavigationFragment?.tag != "jobs") {
+                /*if (fragmentManager?.primaryNavigationFragment?.tag != "jobs") {
                     _cargoButton.visibility = View.VISIBLE
-                }
+                }*/
+                _cargoButton.visibility = View.VISIBLE
                 _sailButton.visibility = View.INVISIBLE
                 _cancelButton.visibility = View.VISIBLE
             } else {

@@ -25,9 +25,7 @@
             <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="0dp" android:id="@+id/menuFrame" android:layout_weight="1"
-                    android:layout_marginStart="1dp">
-
-            </FrameLayout>
+                    android:layout_marginStart="1dp"/>
             <fragment
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

@@ -22,7 +22,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="0dp" android:id="@+id/townName" android:layout_weight="0.3"
                     android:background="#7A7A7A" android:gravity="center" android:textColor="#FFFFFF"
-                    app:autoSizeMaxTextSize="200dp" app:autoSizeMinTextSize="2dp" app:autoSizeStepGranularity="2dp"
+                    app:autoSizeMaxTextSize="52dp" app:autoSizeMinTextSize="2dp" app:autoSizeStepGranularity="2dp"
                     app:autoSizeTextType="uniform" android:paddingLeft="4dp" android:paddingRight="4dp"
                     android:paddingTop="8dp" android:paddingBottom="8dp"/>
             <FrameLayout

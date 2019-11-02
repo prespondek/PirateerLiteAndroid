@@ -26,6 +26,7 @@ import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Looper
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
@@ -33,7 +34,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentManager.POP_BACK_STACK_INCLUSIVE
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.lanyard.canvas.BitmapCache
 import com.lanyard.helpers.NotificationReceiver
@@ -48,6 +48,7 @@ import java.util.*
 class MapActivity : AppCompatActivity(), User.UserListener {
     val TAG = "MapActivity"
     var ignoreBackStack = false
+    var startLandscape = true
     init {
     }
 
@@ -63,8 +64,14 @@ class MapActivity : AppCompatActivity(), User.UserListener {
     }
 
     override fun levelUpdated(oldValue: Int, newValue: Int) {
-        val leveldialog = LevelUpDialogFragment()
-        leveldialog.show(supportFragmentManager, "levelup")
+        if (supportFragmentManager.findFragmentByTag("levelUp") == null) {
+            try {
+                val leveldialog = LevelUpDialogFragment()
+                leveldialog.show(supportFragmentManager, "levelup")
+            } catch (e: IllegalStateException) {
+                Log.e("MapActivity", e.toString())
+            }
+        }
     }
 
     fun buttonTag(id: Int): String {
@@ -88,16 +95,16 @@ class MapActivity : AppCompatActivity(), User.UserListener {
         val manager = supportFragmentManager
         var fragTag = manager.primaryNavigationFragment?.tag
         var popped = false
+        var tag = buttonTag(it.itemId)
         if (manager.backStackEntryCount > 0) {
             ignoreBackStack = true
-            var tag = buttonTag(it.itemId)
             if (tag == "map") {
                 popped = manager.popBackStackImmediate(null, POP_BACK_STACK_INCLUSIVE)
             } else {
                 popped = manager.popBackStackImmediate(tag, 0)
             }
         }
-        if (popped == false) {
+        if (popped == false || manager.primaryNavigationFragment?.tag != tag) {
             ignoreBackStack = true
             swapFragment(it.itemId)
         }
@@ -109,10 +116,12 @@ class MapActivity : AppCompatActivity(), User.UserListener {
             ignoreBackStack = false
             return@OnBackStackChangedListener
         }
+
         val map = supportFragmentManager.findFragmentByTag("map") as MapFragment
         val frag = supportFragmentManager.primaryNavigationFragment
         val buttonId = arrayListOf(R.id.navigation_map, R.id.navigation_boats, R.id.navigation_menu)
         val fragTag = arrayListOf("map", "boats", "menu")
+
         if (resources.getBoolean(R.bool.landscape)) {
             buttonId.removeAt(0)
             fragTag.removeAt(0)
@@ -138,14 +147,25 @@ class MapActivity : AppCompatActivity(), User.UserListener {
         }
     }
 
-    // skip over job fragment when the back button is pressed
     override fun onBackPressed() {
         val manager = supportFragmentManager
+
+        // skip over job fragment when the back button is pressed. This fragment can have bad data when you sell the boat.
         if (manager.backStackEntryCount > 1) {
             val frag = manager.getBackStackEntryAt(manager.backStackEntryCount - 2).name
             if (frag == "jobs") {
                 manager.popBackStackImmediate()
             }
+        }
+
+        // backstack wrangling. If you start portrait, then change to landscape the initial portrait transaction plays
+        // if back button is pressed on the last backstack element.
+        if (manager.backStackEntryCount == 1 &&
+            startLandscape == false &&
+            resources.getBoolean(R.bool.landscape) == true
+        ) {
+            finish()
+            return
         }
         super.onBackPressed()
     }
@@ -301,7 +321,9 @@ class MapActivity : AppCompatActivity(), User.UserListener {
         val transaction = supportFragmentManager.beginTransaction()
         transaction.setReorderingAllowed(true)
         var frag: androidx.fragment.app.Fragment? = null
+        var currLevel = 0
         if (savedInstanceState == null) {
+            startLandscape = resources.getBoolean(R.bool.landscape)
             val map = MapFragment()
             transaction.add(R.id.mapFrame, map, "map")
             if (resources.getBoolean(R.bool.landscape) == true) {
@@ -311,11 +333,15 @@ class MapActivity : AppCompatActivity(), User.UserListener {
             } else {
                 frag = map
             }
+            currLevel = User.instance.level
         } else {
+            startLandscape = savedInstanceState.getBoolean("startLandscape")
+
+            currLevel = savedInstanceState.getInt("currLevel")
+
             val map = supportFragmentManager.findFragmentByTag("map") as MapFragment
             frag = supportFragmentManager.primaryNavigationFragment
             filterNavigationByFragment(frag?.tag)
-
             if (resources.getBoolean(R.bool.landscape) == true) {
                 transaction.show(map)
                 if (frag == null || frag.tag == "map") {
@@ -333,21 +359,22 @@ class MapActivity : AppCompatActivity(), User.UserListener {
         }
         transaction.setPrimaryNavigationFragment(frag)
         transaction.commit()
-        transaction.runOnCommit {
-            LocalBroadcastManager.getInstance(this).sendBroadcast(Intent("surfaceCreated"))
-
+        if (currLevel != User.instance.level) {
+            levelUpdated(currLevel, User.instance.level)
         }
         navigation.setOnNavigationItemSelectedListener(_onNavigationItemSelectedListener)
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
         super.onSaveInstanceState(outState)
+        outState?.putInt("currLevel", User.instance.level)
         val map = supportFragmentManager.findFragmentByTag("map") as MapFragment
         if (map.mode == MapFragment.Mode.build || map.mode == MapFragment.Mode.buy) {
             outState?.putBoolean("mapVisible",true)
         } else {
             outState?.putBoolean("mapVisible",false)
         }
+        outState?.putBoolean("startLandscape", startLandscape)
     }
 
     override fun onNewIntent(intent: Intent?) {

@@ -18,10 +18,12 @@ package com.lanyard.canvas
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.util.Log
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
 
 class BitmapCache private constructor() {
+    val TAG = "BitmapCache"
     val streamCache: LinkedHashMap<String, BitmapStream>
     val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
     val cacheSize = maxMemory / 2
@@ -54,16 +56,16 @@ class BitmapCache private constructor() {
         var file = getBitmap(filename)
         if (file == null) {
             file = addBitmap(BitmapStream.BitmapGenerator.make(context, filename,config))
-            //println("bitmap added: " + filename)
+            Log.v(TAG, "bitmap added: " + filename)
         }
         return file
     }
 
-    fun addBitmap(context: Context, filename: String, resource: Int, config: Bitmap.Config) : BitmapStream? {
+    fun addBitmap(context: Context, resource: Int, config: Bitmap.Config): BitmapStream? {
         var file = getBitmap(resource.toString())
         if (file == null) {
             file = addBitmap(BitmapStream.BitmapGenerator.make(context, resource,config))
-            //println("bitmap added: " + filename)
+            Log.v(TAG, "bitmap added: " + context.resources.getResourceEntryName(resource))
         }
         return file
     }

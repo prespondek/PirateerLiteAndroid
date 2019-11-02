@@ -49,12 +49,9 @@ abstract class CanvasActionInterval (duration: Long, interval: Long) : CanvasAct
     private var test = Date()
 
     override fun isValid() : Boolean {
-        if (_timer < duration) {
-            return true
-        } else {
-            return false
-        }
+        return _timer < duration
     }
+
     open fun reset() {
         _timer = 0
         _interval_timer = 0
@@ -80,7 +77,7 @@ abstract class CanvasActionInterval (duration: Long, interval: Long) : CanvasAct
         }
     }
 
-    abstract open internal fun step ( node: CanvasNode, dt: Float )
+    internal abstract fun step(node: CanvasNode, dt: Float)
 }
 
 class CanvasActionRepeat (action: CanvasActionInterval) : CanvasAction()
@@ -106,6 +103,7 @@ class CanvasActionSequence (vararg actions: CanvasAction) : CanvasActionInterval
 {
     private var _actions : ArrayList<CanvasAction>
     private var _action_idx : Int = 0
+
     init {
         this._actions = ArrayList<CanvasAction>()
         for (action in actions) {
@@ -165,6 +163,7 @@ class CanvasActionAnimate (frames: List<BitmapStream>, interval: Int): CanvasAct
         _timer = 0
         index = 0
     }
+
     override fun update( node: CanvasNode, dt: Long ) {
         var sprite = node as? CanvasSprite
         assert(sprite != null)
@@ -185,14 +184,20 @@ class CanvasActionAnimate (frames: List<BitmapStream>, interval: Int): CanvasAct
             changeFrame(sprite!!, index)
         }
     }
+
     fun changeFrame ( node: CanvasSprite, frame: Int ) {
+        for (bimp in bitmaps) {
+            bimp.touch(node.texture.timestamp)
+        }
         node.texture = bitmaps[frame]
     }
 }
 
 class CanvasActionCutom (duration: Long, interval: Long, action: (node: CanvasNode, dt: Float) -> Unit): CanvasActionInterval(duration,interval) {
     var action: (node: CanvasNode, dt: Float) -> Unit
-    constructor(duration: Long, action: (node: CanvasNode, dt: Float) -> Unit) : this(duration, 0, action) {}
+
+    constructor(duration: Long, action: (node: CanvasNode, dt: Float) -> Unit) : this(duration, 0, action)
+
     init {
         this.action = action
     }
@@ -208,7 +213,7 @@ class CanvasActionWait(duration: Long) : CanvasActionInterval(duration, 0)
     }
 }
 
-abstract class CanvasActionInstant() : CanvasAction()
+abstract class CanvasActionInstant : CanvasAction()
 {
     private var done: Boolean = false
     override fun isValid(): Boolean {
@@ -223,7 +228,7 @@ abstract class CanvasActionInstant() : CanvasAction()
     abstract fun triggered ( node: CanvasNode )
 }
 
-class CanvasActionRemoveFromParent() : CanvasActionInstant()
+class CanvasActionRemoveFromParent : CanvasActionInstant()
 {
     override fun triggered(node: CanvasNode) {
         node.parent = null
@@ -310,6 +315,3 @@ open class CanvasActionFadeTo(duration: Long, opacity: Float) : CanvasActionInte
 }
 
 class CanvasActionFadeOut(duration: Long) : CanvasActionFadeTo(duration,0.0f)
-{
-
-}

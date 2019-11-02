@@ -61,7 +61,7 @@ class BoatListFragment : AppFragment(), Game.GameListener {
                 val cell = (fragmentManager?.findFragmentByTag("boats") as BoatListFragment).swipeCallback
                 val builder = AlertDialog.Builder(it)
                 builder.setMessage("Sell boat for " + boat.value * User.exchangeRate + " silver?")
-                    .setPositiveButton(com.lanyard.pirateerlite.R.string.yes, { dialog, id ->
+                    .setPositiveButton(com.lanyard.pirateerlite.R.string.yes, { dialog, _ ->
                         user.addMoney(0, boat.value * User.exchangeRate)
                         user.removeBoat(boat)
                         user.save()

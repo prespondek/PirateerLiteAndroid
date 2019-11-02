@@ -44,7 +44,7 @@ class BitmapStream {
         override fun run() {
             _highBitmap = inflate()
             _future = null
-            //println("adding " + _generator.name)
+            Log.v(TAG, "adding " + _generator.name)
         }
     }
 
@@ -78,13 +78,14 @@ class BitmapStream {
     private var _fullSize : Size = Size(0,0)
     private var _scale : Int = 1
     private var _generator : BitmapGenerator
-    private var _timestamp : Long
-    var timer : Long
+    var timestamp: Long = 0L
+        private set
+    private var _timer: Long
     private var _future : Future<*>? = null
     val TAG = "BitmapStream"
 
     fun getBitmap(timestamp: Long) : Bitmap {
-        _timestamp = timestamp
+        touch(timestamp)
         var bimp = _highBitmap
         if (bimp == null) {
             if (_future == null) {
@@ -95,14 +96,18 @@ class BitmapStream {
         return bimp
     }
 
+    fun touch(timestamp: Long) {
+        this.timestamp = timestamp
+    }
+
     fun exire(timestamp: Long): Boolean {
-        if (_timestamp + timer <= timestamp) {
+        if (this.timestamp + _timer <= timestamp) {
             if (_highBitmap != null) {
                 flush()
             }
             _highBitmap = null
             if (_future != null) {
-                Log.i(TAG, "cancelling " + _generator.name)
+                Log.v(TAG, "cancelling " + _generator.name)
                 _future?.cancel(true)
             }
             _future = null
@@ -112,7 +117,7 @@ class BitmapStream {
     }
 
     fun flush() {
-        Log.i(TAG, "flushing " + _generator.name)
+        Log.v(TAG, "flushing " + _generator.name)
         _highBitmap = null
     }
 
@@ -121,8 +126,8 @@ class BitmapStream {
     val height : Int get () { return _fullSize.height }
 
 init {
-    _timestamp = System.currentTimeMillis()
-    timer = defaultTime
+    this.timestamp = System.currentTimeMillis()
+    _timer = defaultTime
 }
     constructor(context: Context, res: Int, options: Bitmap.Config) : this(BitmapGenerator.make(context, res, options))
     constructor(context: Context, file: String, options: Bitmap.Config) : this(BitmapGenerator.make(context, file, options))
@@ -133,14 +138,14 @@ init {
 
     private fun loadBitmap ()
     {
-        var bitmapOptions = BitmapFactory.Options()
+        val bitmapOptions = BitmapFactory.Options()
         bitmapOptions.inPreferredConfig = _generator.options
         bitmapOptions.inDensity = DisplayMetrics.DENSITY_DEFAULT
         bitmapOptions.inTargetDensity = densityDpi
         bitmapOptions.inScaled = true
         bitmapOptions.inJustDecodeBounds = true
 
-        var bimp = _generator.generate(bitmapOptions)
+        _generator.generate(bitmapOptions)
         _fullSize = Size((bitmapOptions.outWidth * density).toInt(),
             (bitmapOptions.outHeight * density).toInt())
 
