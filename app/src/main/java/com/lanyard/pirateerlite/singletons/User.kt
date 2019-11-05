@@ -457,13 +457,13 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
 
     fun purchaseBoatWithParts(boat: BoatModel, parts: List<BoatPart>) {
         for (part in parts) {
-            this.parts.remove(this.parts.last { it == part })
+            _data.parts.remove(this.parts.firstOrNull { it == part })
         }
         addBoat(boat)
     }
 
     fun purchaseBoatWithMoney(boat: BoatModel, parts: List<BoatPart>) {
-        addMoney(gold - (BoatModel.boatConfig(boat.type, BoatModel.BoatIndex.boat_cost) as Int), 0)
+        addMoney(gold - (BoatModel.boatConfig(boat.type, BoatModel.BoatIndex.boat_cost) as Double).toInt(), 0)
         for (part in parts) {
             this._data.market.remove(this._data.market.last { it == part })
         }

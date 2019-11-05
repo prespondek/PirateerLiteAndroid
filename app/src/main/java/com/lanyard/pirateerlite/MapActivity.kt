@@ -175,8 +175,9 @@ class MapActivity : AppCompatActivity(), User.UserListener {
         for (boat in user.boats) {
             if (boat.isMoored == false) {
 
-                val resultIntent = Intent(this, MapActivity::class.java)
+                val resultIntent = Intent(this, SplashActivity::class.java)
                 resultIntent.putExtra("boatid", boat.id)
+                //resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 val resultPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
                     addNextIntentWithParentStack(resultIntent)
                     getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
@@ -311,6 +312,7 @@ class MapActivity : AppCompatActivity(), User.UserListener {
         supportFragmentManager.addOnBackStackChangedListener(_onBackStackChangedListener)
         navigation.menu.setGroupCheckable(0, true, true)
         val arr = arrayOf("nav_plot.png", "nav_plotted.png")
+
         for (n in arr) {
             BitmapCache.instance.addBitmap(applicationContext, n, Bitmap.Config.ARGB_4444)
         }
@@ -318,13 +320,16 @@ class MapActivity : AppCompatActivity(), User.UserListener {
             navigation.menu.removeItem(R.id.navigation_map)
         }
 
+        val boatid = intent.getLongExtra("boatid", 0)
+
         val transaction = supportFragmentManager.beginTransaction()
         transaction.setReorderingAllowed(true)
         var frag: androidx.fragment.app.Fragment? = null
         var currLevel = 0
+        val map: MapFragment
         if (savedInstanceState == null) {
             startLandscape = resources.getBoolean(R.bool.landscape)
-            val map = MapFragment()
+            map = MapFragment()
             transaction.add(R.id.mapFrame, map, "map")
             if (resources.getBoolean(R.bool.landscape) == true) {
                 frag = BoatListFragment()
@@ -339,7 +344,7 @@ class MapActivity : AppCompatActivity(), User.UserListener {
 
             currLevel = savedInstanceState.getInt("currLevel")
 
-            val map = supportFragmentManager.findFragmentByTag("map") as MapFragment
+            map = supportFragmentManager.findFragmentByTag("map") as MapFragment
             frag = supportFragmentManager.primaryNavigationFragment
             filterNavigationByFragment(frag?.tag)
             if (resources.getBoolean(R.bool.landscape) == true) {
@@ -357,6 +362,16 @@ class MapActivity : AppCompatActivity(), User.UserListener {
                 }
             }
         }
+
+        if (boatid != 0L) {
+            var args = map.arguments
+            if (args == null) {
+                args = Bundle()
+                map.arguments = args
+            }
+            args.putLong("selectedBoat", boatid)
+        }
+
         transaction.setPrimaryNavigationFragment(frag)
         transaction.commit()
         if (currLevel != User.instance.level) {
@@ -375,21 +390,6 @@ class MapActivity : AppCompatActivity(), User.UserListener {
             outState?.putBoolean("mapVisible",false)
         }
         outState?.putBoolean("startLandscape", startLandscape)
-    }
-
-    override fun onNewIntent(intent: Intent?) {
-        super.onNewIntent(intent)
-
-        val boatId = intent?.getLongExtra("boatid", 0)
-        val map = supportFragmentManager.findFragmentByTag("map") as MapFragment
-        if (boatId != null) {
-            val boat = map.boatControllerForId(boatId)
-            if (boat != null) {
-                map.boatSelected(boat)
-            }
-        }
-
-        navigation.selectedItemId = R.id.navigation_map
     }
 
     override fun onTrimMemory(level: Int) {

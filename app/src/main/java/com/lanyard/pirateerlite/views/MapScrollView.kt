@@ -20,24 +20,11 @@ import android.content.Context
 import android.graphics.Point
 import android.util.AttributeSet
 import com.lanyard.canvas.CanvasNode
-import com.lanyard.helpers.plus
-import com.lanyard.helpers.unaryMinus
 import com.lanyard.library.SuperScrollView
 
 class MapScrollView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) : SuperScrollView(context, attrs, defStyleAttr)
 {
-    var target : Point? = null
     var scene : MapView? = null
-    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        super.onLayout(changed, l, t, r, b)
-        var curr_target = target
-        if (curr_target != null && scene != null) {
-            var pos = screenPosition(curr_target)
-            scrollTo(pos.x,pos.y)
-            scene!!.position = -Point(pos.x, pos.y) + scene!!.padding
-            target = null
-        }
-    }
 
     fun boatTracker(node: CanvasNode, dt: Float): Unit {
         focusNode(node, false)
@@ -45,7 +32,11 @@ class MapScrollView @JvmOverloads constructor(context: Context, attrs: Attribute
 
     fun focusNode(node: CanvasNode, smooth: Boolean) {
         val pos = node.position
-        val screen_pos = screenPosition(pos)
+        focusPosition(pos, smooth)
+    }
+
+    fun focusPosition(position: Point, smooth: Boolean) {
+        val screen_pos = screenPosition(position)
         if (smooth) {
             this.smoothScrollTo(screen_pos.x, screen_pos.y)
         } else {

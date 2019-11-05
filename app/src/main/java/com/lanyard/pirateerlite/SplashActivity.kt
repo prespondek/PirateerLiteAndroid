@@ -164,9 +164,12 @@ class SplashActivity : FragmentActivity() {
     }
 
     fun startMapActivity() {
+        var boatid = intent.getLongExtra("boatid", 0)
         val intent = Intent(applicationContext, MapActivity::class.java)
+        intent.putExtra("boatid", boatid)
         startActivity(intent)
         finish()
-        overridePendingTransition(R.anim.fadein, R.anim.fadeout)
+        //overridePendingTransition(R.anim.fadein, R.anim.fadeout)
     }
+
 }

@@ -112,6 +112,7 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
             data["TileIndex"] as ArrayList<String>,
             data["TileFile"] as ArrayList<String>
         )
+        layoutParams
         BitmapCache.instance.addBitmap(context, "job_marker.png", Bitmap.Config.ARGB_4444)
         makeAnimations(context, data)
         makeFlags(context, data)

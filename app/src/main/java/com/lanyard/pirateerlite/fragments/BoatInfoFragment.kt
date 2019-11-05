@@ -76,12 +76,14 @@ class BoatInfoFragment : AppFragment(), User.UserListener {
             if (User.instance.numBoats < User.instance.boatSlots) {
                 var map : MapFragment? = null
                 map = fragmentManager?.findFragmentByTag("map") as MapFragment
+                map.stopTracking()
+                map.reset()
                 map.transferBoatBuild(this)
                 if (resources.getBoolean(R.bool.landscape) != true) {
                     (activity as MapActivity).swapFragment(R.id.navigation_map) as MapFragment
                 }
                 map.buildBoat()
-                button.isClickable = false
+                button.isEnabled = false
             } else {
                 var dialog = BoatInfoDialogFragment()
                 dialog.show(fragmentManager, "expand")
@@ -120,15 +122,22 @@ class BoatInfoFragment : AppFragment(), User.UserListener {
         return view
     }
 
-    fun update(view: View?) {
-        val button = view?.findViewById<TextView>(R.id.boatInfoBuildButton)
-        val hullLabel = view?.findViewById<TextView>(R.id.boatInfoHull)
-        val partsLabel = view?.findViewById<TextView>(R.id.boatInfoRigging)
-        val sailsLabel = view?.findViewById<TextView>(R.id.boatInfoSails)
-        val cannonsLabel = view?.findViewById<TextView>(R.id.boatInfoCannons)
+    fun update() {
+        update(view)
+    }
+
+    private fun update(view: View?) {
+        if (view == null) {
+            return
+        }
+        val button = view.findViewById<TextView>(R.id.boatInfoBuildButton)
+        val hullLabel = view.findViewById<TextView>(R.id.boatInfoHull)
+        val partsLabel = view.findViewById<TextView>(R.id.boatInfoRigging)
+        val sailsLabel = view.findViewById<TextView>(R.id.boatInfoSails)
+        val cannonsLabel = view.findViewById<TextView>(R.id.boatInfoCannons)
 
         val arr = arrayOf(hullLabel, partsLabel, sailsLabel, cannonsLabel)
-        var parts = boatValue(BoatModel.BoatIndex.part_amount) as List<Int>
+        val parts = boatValue(BoatModel.BoatIndex.part_amount) as List<Int>
         var canBuild = true
         for (i in 0 until parts.size) {
             val currPart = User.BoatPart(boatType!!, User.MarketItem.withIndex(i))
@@ -138,8 +147,8 @@ class BoatInfoFragment : AppFragment(), User.UserListener {
             val targetParts = parts[i]
             label?.text = getString(R.string.partsLabel, numParts, targetParts)
             if (numParts >= targetParts) {
-                for (i in 0 until targetParts) {
-                    this.parts.add(tparts[i])
+                for (j in 0 until targetParts) {
+                    this.parts.add(tparts[j])
                 }
                 label?.setTextColor(Color.parseColor("#ff00ff00"))
             } else {
@@ -147,9 +156,7 @@ class BoatInfoFragment : AppFragment(), User.UserListener {
                 canBuild = false
             }
         }
-        if (canBuild != true) {
-            button?.isEnabled = false
-        }
+        button?.isEnabled = canBuild
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
