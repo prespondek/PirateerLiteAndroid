@@ -27,6 +27,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.controllers.TownController
@@ -34,7 +35,7 @@ import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.singletons.User
 import kotlinx.android.synthetic.main.activity_map.*
 
-class TownFragment : AppFragment()  {
+class TownFragment : Fragment() {
     lateinit var townController: TownController
 
     inner class TownListAdapter :

@@ -125,6 +125,8 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
                 if (updateCells()) {
                     Audio.instance.queueSound(R.raw.cargo_bonus)
                 }
+            } else {
+                updateCells()
             }
             return jobview
         }

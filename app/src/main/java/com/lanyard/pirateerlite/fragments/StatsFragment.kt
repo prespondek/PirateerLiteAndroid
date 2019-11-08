@@ -17,22 +17,21 @@
 package com.lanyard.pirateerlite.fragments
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import com.lanyard.pirateerlite.R
-import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.models.TownModel
-import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.singletons.Map
+import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.singletons.User.UserListener
 import java.util.*
 import kotlin.math.max
 
-class StatsFragment : AppFragment() , UserListener {
+class StatsFragment : Fragment(), UserListener {
 
     fun update(view: View?) {
         if ( view == null ) { return }
@@ -75,7 +74,7 @@ class StatsFragment : AppFragment() , UserListener {
             context!!.resources.getIdentifier(
                 rankInfo[0].toString(),
                 "drawable",
-                context!!.getPackageName()
+                context!!.packageName
             )
         )
         nextXpLabel.text =      (user.xpForLevel(user.level + 1) - user.xp).toString()
@@ -140,7 +139,7 @@ class StatsFragment : AppFragment() , UserListener {
                     context!!.resources.getIdentifier(
                         stat.first.boatData.type + "_01",
                         "drawable",
-                        context!!.getPackageName()
+                        context!!.packageName
                     )
                 )
                 view.image.visibility = View.VISIBLE

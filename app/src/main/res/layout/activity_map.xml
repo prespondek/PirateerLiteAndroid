@@ -16,7 +16,7 @@
             android:gravity="center">
         <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="0dp" android:layout_weight="1">
+                android:layout_height="0dp" android:layout_weight="1" android:id="@+id/map_container">
 
             <FrameLayout
                     android:layout_height="match_parent"
@@ -33,6 +33,13 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent" app:layout_constraintTop_toTopOf="parent"
             />
+            <include android:layout_width="0dp" android:layout_height="48dp"
+                     layout="@layout/notify_consumable"
+                     android:animateLayoutChanges="true"
+                     android:visibility="invisible"
+                     app:layout_constraintStart_toStartOf="@id/mapFrame"
+                     app:layout_constraintEnd_toEndOf="@id/mapFrame" android:id="@+id/event_notify"
+                     app:layout_constraintBottom_toTopOf="parent"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
         <fragment
                 android:layout_width="match_parent"

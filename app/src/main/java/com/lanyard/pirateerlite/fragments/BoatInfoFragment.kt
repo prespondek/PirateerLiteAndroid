@@ -25,6 +25,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.Fragment
 import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.models.BoatModel
@@ -32,7 +33,7 @@ import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.singletons.User
 
 
-class BoatInfoFragment : AppFragment(), User.UserListener {
+class BoatInfoFragment : Fragment(), User.UserListener {
     var boatType: String? = null
     var parts = ArrayList<User.BoatPart>()
 
@@ -73,20 +74,23 @@ class BoatInfoFragment : AppFragment(), User.UserListener {
         }
 
         button.setOnClickListener {
-            if (User.instance.numBoats < User.instance.boatSlots) {
-                var map : MapFragment? = null
-                map = fragmentManager?.findFragmentByTag("map") as MapFragment
-                map.stopTracking()
-                map.reset()
-                map.transferBoatBuild(this)
-                if (resources.getBoolean(R.bool.landscape) != true) {
-                    (activity as MapActivity).swapFragment(R.id.navigation_map) as MapFragment
+            var manager = fragmentManager
+            if (manager != null) {
+                if (User.instance.numBoats < User.instance.boatSlots) {
+                    var map: MapFragment? = null
+                    map = manager.findFragmentByTag("map") as MapFragment
+                    map.stopTracking()
+                    map.reset()
+                    map.transferBoatBuild(this)
+                    if (resources.getBoolean(R.bool.landscape) != true) {
+                        (activity as MapActivity).swapFragment(R.id.navigation_map) as MapFragment
+                    }
+                    map.buildBoat()
+                    button.isEnabled = false
+                } else {
+                    var dialog = BoatInfoDialogFragment()
+                    dialog.show(manager, "expand")
                 }
-                map.buildBoat()
-                button.isEnabled = false
-            } else {
-                var dialog = BoatInfoDialogFragment()
-                dialog.show(fragmentManager, "expand")
             }
         }
 

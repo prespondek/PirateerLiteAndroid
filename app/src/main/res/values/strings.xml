@@ -84,6 +84,8 @@
     <string name="goldDesc">Gold coin</string>
     <string name="rankDesc">Rank coin</string>
     <string name="levelUpTitle">"Level Up"</string>
+    <string name="marketNotification">NEW STOCK AVAILABLE AT THE MARKET</string>
+    <string name="jobsNotification">NEW JOBS ARE AVAILABLE</string>
     <string name="levelUpMessage">"Newer boats are available for you to build. Shipyard and market have been updated."
     </string>
 </resources>

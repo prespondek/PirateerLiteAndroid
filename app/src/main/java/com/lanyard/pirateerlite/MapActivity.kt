@@ -18,7 +18,6 @@ package com.lanyard.pirateerlite
 
 import android.app.Dialog
 import android.app.PendingIntent
-import android.app.TaskStackBuilder
 import android.content.ComponentCallbacks2
 import android.content.Intent
 import android.content.pm.ActivityInfo
@@ -49,6 +48,7 @@ class MapActivity : AppCompatActivity(), User.UserListener {
     val TAG = "MapActivity"
     var ignoreBackStack = false
     var startLandscape = true
+
     init {
     }
 
@@ -175,20 +175,21 @@ class MapActivity : AppCompatActivity(), User.UserListener {
         for (boat in user.boats) {
             if (boat.isMoored == false) {
 
-                val resultIntent = Intent(this, SplashActivity::class.java)
-                resultIntent.putExtra("boatid", boat.id)
-                //resultIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-                val resultPendingIntent: PendingIntent? = TaskStackBuilder.create(this).run {
-                    addNextIntentWithParentStack(resultIntent)
-                    getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+                val notifyIntent = Intent(this, SplashActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 }
+
+                notifyIntent.putExtra("boatid", boat.id)
+                val notifyPendingIntent = PendingIntent.getActivity(
+                    this, boat.id.toInt(), notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT
+                )
 
                 val builder = NotificationCompat.Builder(this, getString(R.string.channelId))
                     .setSmallIcon(R.drawable.ic_nav_boats)
                     .setContentTitle(getString(R.string.notifBoatArrivedTitle, boat.name))
                     .setContentText(getString(R.string.notifBoatArrivedDescription))
                     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setContentIntent(resultPendingIntent)
+                    .setContentIntent(notifyPendingIntent)
                     .setSound(Uri.parse("android.resource://com.lanyard.pirateerlite/" + R.raw.ship_bell))
                     .setAutoCancel(true)
 
@@ -380,16 +381,17 @@ class MapActivity : AppCompatActivity(), User.UserListener {
         navigation.setOnNavigationItemSelectedListener(_onNavigationItemSelectedListener)
     }
 
-    override fun onSaveInstanceState(outState: Bundle?) {
+
+    override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState?.putInt("currLevel", User.instance.level)
+        outState.putInt("currLevel", User.instance.level)
         val map = supportFragmentManager.findFragmentByTag("map") as MapFragment
         if (map.mode == MapFragment.Mode.build || map.mode == MapFragment.Mode.buy) {
-            outState?.putBoolean("mapVisible",true)
+            outState.putBoolean("mapVisible", true)
         } else {
-            outState?.putBoolean("mapVisible",false)
+            outState.putBoolean("mapVisible", false)
         }
-        outState?.putBoolean("startLandscape", startLandscape)
+        outState.putBoolean("startLandscape", startLandscape)
     }
 
     override fun onTrimMemory(level: Int) {
@@ -425,6 +427,4 @@ class MapActivity : AppCompatActivity(), User.UserListener {
         clearNotifications()
         Audio.instance.resume()
     }
-
-
 }

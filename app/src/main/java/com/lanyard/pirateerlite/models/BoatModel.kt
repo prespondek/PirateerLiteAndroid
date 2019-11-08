@@ -28,7 +28,8 @@ import com.lanyard.pirateerlite.data.BoatJobData
 import com.lanyard.pirateerlite.singletons.Game
 import com.lanyard.pirateerlite.singletons.Map
 import com.lanyard.pirateerlite.singletons.User
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.InputStreamReader
 import java.util.*
 import kotlin.collections.ArrayList
@@ -203,8 +204,7 @@ class BoatModel {
         _course.addAll(towns)
     }
 
-    fun save() {
-        runBlocking {
+    fun save() = GlobalScope.launch {
             Game.instance.db.boatDao().update(_data)
             Game.instance.db.boatJobDao().insert(_cargo.mapNotNull {
                 if (it != null) {
@@ -212,7 +212,7 @@ class BoatModel {
                 } else null
             })
         }
-    }
+
 
     fun setCargo(jobs: List<JobModel?>) {
         if (jobs.size <= _data.cargoSize) {
@@ -265,7 +265,7 @@ class BoatModel {
         var counter = 0
 
         fun rem(it: JobModel?): Boolean {
-            if (it != null && town === it.destination) {
+            if (it != null && town.id == it.destination.id) {
                 counter += 1
                 if (it.isGold) {
                     gold += it.value
@@ -296,12 +296,6 @@ class BoatModel {
         _data.totalSilver += silver.toInt()
         User.instance.xp += (silver * multipler).toInt()
         Game.instance.jobDelivered(this, town, gold.toInt(), silver.toInt(), quiet)
-        /*val info = Intent("jobDelivered")
-        info.putExtra("Town",town.name)
-        info.putExtra("Silver",silver)
-        info.putExtra("Gold",gold)
-        info.putExtra("Boat", this.id)
-        info.putExtra("Quiet", quiet)*/
 
         if (town === _course.last()) {
             _data.totalDistance = courseDistance
@@ -313,11 +307,7 @@ class BoatModel {
             _data.departureTime = 0
             _data.courseTime = 0
             _course.clear()
-            //AudioManager.sharedInstance.playSound(sound: "boat_arrive")
-            //NotificationCenter.default.post(name: NSNotification.Name.boatArrived, object: self, userInfo: ["Boat": self, "Town" : town])
             Game.instance.boatArrived(this, town)
-            //if (quiet == false) {
-            //}
         }
         User.instance.save()
         this.save()

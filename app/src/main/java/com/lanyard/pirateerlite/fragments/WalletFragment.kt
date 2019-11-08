@@ -22,11 +22,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.singletons.User.UserListener
 
-class WalletFragment : AppFragment() , UserListener
+class WalletFragment : Fragment(), UserListener
 {
     override fun onCreateView(
         inflater: LayoutInflater,

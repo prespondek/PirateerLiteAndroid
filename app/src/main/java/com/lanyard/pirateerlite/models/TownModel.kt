@@ -23,7 +23,8 @@ import com.lanyard.pirateerlite.data.TownJobData
 import com.lanyard.pirateerlite.singletons.Game
 import com.lanyard.pirateerlite.singletons.Map
 import com.lanyard.pirateerlite.singletons.User
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 open class WorldNode
 
@@ -184,16 +185,16 @@ class TownModel (data: TownData): WorldNode(), User.UserListener {
         }
     }
 
-    fun save() = runBlocking {
+    fun save() = GlobalScope.launch {
         Game.instance.db.townDao().update(_data)
     }
 
-    fun saveJobs() = runBlocking {
+    fun saveJobs() = GlobalScope.launch {
         Game.instance.db.townJobDao().deleteByTownId(id)
         Game.instance.db.townJobDao().insert(_jobs.map { TownJobData(0, id, _data.jobsTimeStamp, it.data) })
     }
 
-    fun saveStorage() = runBlocking {
+    fun saveStorage() = GlobalScope.launch {
         Game.instance.db.storageJobDao().deleteByTownId(id)
         Game.instance.db.storageJobDao().insert(_storage.mapNotNull{ if (it!=null) StorageJobData(0, id, it.data) else null })
     }
@@ -233,7 +234,7 @@ class TownModel (data: TownData): WorldNode(), User.UserListener {
     }
 
     private fun clearJobs() {
-        runBlocking {
+        GlobalScope.launch {
             Game.instance.db.townJobDao().deleteByTownId(id)
         }
         _jobs.clear()

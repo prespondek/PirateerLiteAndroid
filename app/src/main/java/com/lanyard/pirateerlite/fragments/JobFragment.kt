@@ -29,6 +29,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.lanyard.helpers.GridLayoutManagerAutofit
 import com.lanyard.pirateerlite.R
@@ -47,7 +48,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 
-class JobFragment : AppFragment() , Game.GameListener {
+class JobFragment : Fragment(), Game.GameListener {
 
     private val JOBCELL_HEADER = 0
     private val JOBCELL_JOB = 1
@@ -405,7 +406,7 @@ class JobFragment : AppFragment() , Game.GameListener {
         updateCargoValue()
     }
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
         Game.instance.addGameListener(this)
     }

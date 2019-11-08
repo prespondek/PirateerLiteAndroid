@@ -38,6 +38,7 @@ open class NotificationReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         Log.v(TAG, "Scheduled Alarm Recived at: " + System.currentTimeMillis())
         val notification = intent.getParcelableExtra<Notification>("notification")
+        notification
         val id = intent.getIntExtra("id", 0)
         NotificationManagerCompat.from(context).notify(id, notification)
     }

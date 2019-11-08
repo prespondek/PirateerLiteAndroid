@@ -27,7 +27,8 @@ import com.lanyard.pirateerlite.data.BoatData
 import com.lanyard.pirateerlite.data.StatsData
 import com.lanyard.pirateerlite.data.UserData
 import com.lanyard.pirateerlite.models.BoatModel
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.InputStreamReader
 import java.lang.Math.random
 import java.lang.ref.WeakReference
@@ -212,7 +213,6 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
     init {
         this._data = userData
         this._stats = statData.toMutableList()
-        //this._market = ArrayList<BoatPart>()
         val map = Map.instance
         _boatModels = ArrayList<BoatModel>()
         for (boat in boatData) {
@@ -272,7 +272,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
         get() = _data.boatSlots
         set (value) { _data.boatSlots = value }
 
-    fun save() = runBlocking {
+    fun save() = GlobalScope.launch {
         Game.instance.db.userDao().update(_data)
     }
 
@@ -335,7 +335,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             var statData = getStat(stat.statName, boat)
             if (statData != null && stat.statComp(boat,statData.second)) {
                 statData.first.boatData = boat.data
-                runBlocking {
+                GlobalScope.launch {
                     Game.instance.db.statsDao().update(statData.first)
                 }
             }
@@ -349,7 +349,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             if ( default != null ) {
                 statData = StatsData(stat, default.data)
                 _stats.add(statData)
-                runBlocking {
+                GlobalScope.launch {
                     Game.instance.db.statsDao().insert(statData)
                 }
             } else {
@@ -362,7 +362,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
 
     fun addBoat(boat: BoatModel) {
         _boatModels.add(boat)
-        runBlocking {
+        GlobalScope.launch {
             boat.data.id = Game.instance.db.boatDao().insert(boat.data)
         }
         cleanObservers()
@@ -436,7 +436,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             boat.town!!.removeBoat(boat)
         }
         _boatModels.removeAll { it === boat }
-        runBlocking {
+        GlobalScope.launch {
             Game.instance.db.boatDao().delete(boat.data)
         }
         /*for (idx in 0 until _boatModels.size) {

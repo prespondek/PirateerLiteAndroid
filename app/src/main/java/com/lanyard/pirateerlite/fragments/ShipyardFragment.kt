@@ -17,26 +17,22 @@
 package com.lanyard.pirateerlite.fragments
 
 import android.os.Bundle
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.singletons.User
-import kotlinx.android.synthetic.main.activity_map.*
 
-class ShipyardFragment : AppFragment()  {
-    inner class ShipyardAdapter() : androidx.recyclerview.widget.RecyclerView.Adapter<ShipyardFragment.ShipyardAdapter.ShipyardViewHolder>() {
+class ShipyardFragment : Fragment() {
+    inner class ShipyardAdapter :
+        androidx.recyclerview.widget.RecyclerView.Adapter<ShipyardFragment.ShipyardAdapter.ShipyardViewHolder>() {
 
         override fun onBindViewHolder(p0: ShipyardViewHolder, p1: Int) {
             var syRank = p0.view.findViewById<ImageView>(R.id.syRank)!!
@@ -47,8 +43,14 @@ class ShipyardFragment : AppFragment()  {
             val name = BoatModel.boatKeys[p1]
             val data = BoatModel.boatValues[name]!!
             val rank = data[15] as String
-            syRank.setImageResource(context!!.resources.getIdentifier(User.rankValues[rank]!![0] as String, "drawable", context!!.getPackageName()))
-            syBoat.setImageResource(context!!.resources.getIdentifier(name + "_01","drawable", context!!.getPackageName()))
+            syRank.setImageResource(
+                context!!.resources.getIdentifier(
+                    User.rankValues[rank]!![0] as String,
+                    "drawable",
+                    context!!.packageName
+                )
+            )
+            syBoat.setImageResource(context!!.resources.getIdentifier(name + "_01", "drawable", context!!.packageName))
             syName.text = data[13] as? String
             if (User.instance.level < User.rankKeys.indexOfFirst { it == rank }) {
                 p0.view.isClickable = false

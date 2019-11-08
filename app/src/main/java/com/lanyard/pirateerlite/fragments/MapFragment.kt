@@ -21,6 +21,8 @@ import android.graphics.Paint
 import android.graphics.Point
 import android.graphics.Typeface
 import android.os.Bundle
+import android.os.Handler
+import android.os.SystemClock
 import android.util.DisplayMetrics
 import android.view.LayoutInflater
 import android.view.View
@@ -32,8 +34,13 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProviders
+import androidx.transition.ChangeBounds
+import androidx.transition.Transition
+import androidx.transition.TransitionListenerAdapter
+import androidx.transition.TransitionManager
 import com.lanyard.canvas.*
 import com.lanyard.helpers.*
 import com.lanyard.library.Edge
@@ -56,8 +63,10 @@ import com.lanyard.pirateerlite.views.MapView
 import com.lanyard.pirateerlite.views.TownView
 import kotlinx.android.synthetic.main.activity_map.*
 import kotlinx.android.synthetic.main.fragment_map.*
+import java.util.*
+import kotlin.collections.ArrayList
 
-class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
+class MapFragment : Fragment(), Game.GameListener, User.UserListener {
 
     enum class Mode {
         plot, map, track, nontrack, build, buy
@@ -66,6 +75,7 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
     private var _boatControllers = ArrayList<BoatController>()
     private var _townControllers = ArrayList<TownController>()
     private var _density : Float = 0.0f
+    private var _timer = Handler()
 
     private var _selectedBoat: BoatController?
         get() {
@@ -190,7 +200,7 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
             BitmapCache.instance.addBitmap(this.context!!, R.drawable.gold_piece, Bitmap.Config.ARGB_4444)
             BitmapCache.instance.addBitmap(this.context!!, R.drawable.silver_piece, Bitmap.Config.ARGB_4444)
         }
-        // Inflate the layout for this fragment
+
         Game.instance.addGameListener(this)
         User.instance.addListerner(this)
         fragmentManager?.addOnBackStackChangedListener(_onBackStackChangedListener)
@@ -647,6 +657,77 @@ class MapFragment : AppFragment() , Game.GameListener, User.UserListener {
         _viewModel.buildParts = null
         _scene.clearPlot()
         _scene.clearJobMarkers()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        postTimers()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        _timer.removeCallbacksAndMessages(null)
+    }
+
+    fun moveNotifyBox(down: Boolean, text: Int?) {
+        val main = activity
+        if (main == null) return
+
+        val mapFrame = main.findViewById<ConstraintLayout>(R.id.mapcontainer)
+        val notify = main.findViewById<View>(R.id.event_notify)
+        val message = main.findViewById<TextView>(R.id.notify_text)
+
+        if (text != null) {
+            message.setText(text)
+        }
+        notify.visibility = View.VISIBLE
+
+        val constraint = ConstraintSet()
+        constraint.clone(mapFrame)
+
+        val transition = ChangeBounds()
+        transition.duration = 1000
+
+        val apt: TransitionListenerAdapter
+
+        if (down) {
+            apt = object : TransitionListenerAdapter() {
+                override fun onTransitionEnd(transition: Transition) {
+                    super.onTransitionEnd(transition)
+                    moveNotifyBox(false, null)
+                }
+            }
+
+            constraint.clear(R.id.event_notify, ConstraintSet.BOTTOM)
+            constraint.connect(R.id.event_notify, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
+            transition.addListener(apt)
+        } else {
+            apt = object : TransitionListenerAdapter() {
+                override fun onTransitionEnd(transition: Transition) {
+                    super.onTransitionEnd(transition)
+                    notify.visibility = View.INVISIBLE
+                }
+            }
+            transition.startDelay = 3000
+            constraint.clear(R.id.event_notify, ConstraintSet.TOP)
+            constraint.connect(R.id.event_notify, ConstraintSet.BOTTOM, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
+        }
+
+        transition.addListener(apt)
+        TransitionManager.beginDelayedTransition(mapFrame, transition)
+        constraint.applyTo(mapFrame)
+    }
+
+    fun postTimers() {
+        val time1 = Date().time - User.instance.marketDate.time
+        val time2 = Date().time - User.instance.jobDate.time
+        val uptime = SystemClock.uptimeMillis()
+        _timer.postAtTime({
+            moveNotifyBox(true, R.string.marketNotification)
+        }, time1 + uptime)
+        _timer.postAtTime({
+            moveNotifyBox(true, R.string.jobsNotification)
+        }, time2 + uptime)
     }
 
 }

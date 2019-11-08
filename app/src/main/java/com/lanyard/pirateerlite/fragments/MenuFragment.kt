@@ -17,23 +17,19 @@
 package com.lanyard.pirateerlite.fragments
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.cardview.widget.CardView
 import android.view.LayoutInflater
-import android.view.TextureView
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.Animation
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.R
-import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.singletons.User.UserListener
 import com.lanyard.pirateerlite.views.MenuCellView
 
-class MenuFragment : AppFragment(), UserListener {
+class MenuFragment : Fragment(), UserListener {
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -80,11 +76,7 @@ class MenuFragment : AppFragment(), UserListener {
         var goldLabel = view!!.findViewById<TextView>(R.id.goldLabel)
         var cell = view!!.findViewById<MenuCellView>(R.id.bankButton).findViewById<androidx.cardview.widget.CardView>(R.id.cv)
         goldLabel.text = newValue.toString()
-        if (newValue > 0) {
-            cell.isClickable = true
-        } else {
-            cell.isClickable = false
-        }
+        cell.isClickable = newValue > 0
     }
 
     override fun silverUpdated(oldValue: Int, newValue: Int) {
@@ -102,7 +94,7 @@ class MenuFragment : AppFragment(), UserListener {
         totalXPLabel.text = newValue.toString()
         nextXPLabel.text = (user.xpForLevel(user.level + 1) - user.xp ).toString()
         val level_image = User.rankValues[User.rankKeys[user.level]]!![0].toString()
-        rankImage.setImageResource(context!!.resources.getIdentifier(level_image,"drawable", context!!.getPackageName()))
+        rankImage.setImageResource(context!!.resources.getIdentifier(level_image, "drawable", context!!.packageName))
         rankLabel.text = User.rankValues[User.rankKeys[user.level]]!![1].toString()
     }
 

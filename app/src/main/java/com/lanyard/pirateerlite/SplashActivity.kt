@@ -169,7 +169,7 @@ class SplashActivity : FragmentActivity() {
         intent.putExtra("boatid", boatid)
         startActivity(intent)
         finish()
-        //overridePendingTransition(R.anim.fadein, R.anim.fadeout)
+        overridePendingTransition(android.R.anim.slide_in_left, android.R.anim.slide_out_right)
     }
 
 }

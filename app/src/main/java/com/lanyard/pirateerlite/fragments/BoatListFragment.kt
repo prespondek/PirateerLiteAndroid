@@ -33,6 +33,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.lanyard.pirateerlite.MapActivity
@@ -43,7 +44,7 @@ import com.lanyard.pirateerlite.singletons.Game
 import com.lanyard.pirateerlite.singletons.User
 import kotlinx.android.synthetic.main.activity_map.*
 
-class BoatListFragment : AppFragment(), Game.GameListener {
+class BoatListFragment : Fragment(), Game.GameListener {
     class BoatSellFragment(): androidx.fragment.app.DialogFragment() {
 
         constructor(position: Int) : this() {
@@ -138,9 +139,12 @@ class BoatListFragment : AppFragment(), Game.GameListener {
         }
 
         override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-            val position = viewHolder.adapterPosition
-            var dialog = BoatSellFragment(viewHolder.adapterPosition)
-            dialog.show(fragmentManager,"sell")
+            val manager = fragmentManager
+            if (manager != null) {
+                val position = viewHolder.adapterPosition
+                var dialog = BoatSellFragment(viewHolder.adapterPosition)
+                dialog.show(manager, "sell")
+            }
         }
 
         override fun isItemViewSwipeEnabled(): Boolean {
@@ -207,9 +211,8 @@ class BoatListFragment : AppFragment(), Game.GameListener {
             init {
                 view.setOnClickListener(View.OnClickListener {
                     var user = User.instance
-
+                    val map_activity = (activity as MapActivity)
                     if (this.layoutPosition < user.numBoats) {
-                        val map_activity = (activity as MapActivity)
                         val map = map_activity.supportFragmentManager.findFragmentByTag("map") as MapFragment
                         map.boatSelected(this.layoutPosition)
                         //map_activity.swapFragment(R.id.navigation_map)
@@ -217,7 +220,7 @@ class BoatListFragment : AppFragment(), Game.GameListener {
                     } else if (this.layoutPosition < user.boatSlots) {
                     } else {
                         var dialog = FleetDialogFragment()
-                        dialog.show(fragmentManager,"expand")
+                        dialog.show(map_activity.supportFragmentManager, "expand")
                     }
                 })
             }

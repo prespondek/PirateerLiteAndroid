@@ -26,9 +26,9 @@ import com.lanyard.pirateerlite.data.BoatData
 import com.lanyard.pirateerlite.data.GameDatabase
 import com.lanyard.pirateerlite.data.TownData
 import com.lanyard.pirateerlite.data.UserData
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
-import java.util.concurrent.Executors
 
 abstract class GameModel(context: Context, mapConfig: HashMap<String, Any>) {
     private val dbCreated: MutableLiveData<Boolean>
@@ -43,17 +43,16 @@ abstract class GameModel(context: Context, mapConfig: HashMap<String, Any>) {
         override fun onCreate(sqldb: SupportSQLiteDatabase) {
             super.onCreate(sqldb)
             createDb = true
-            Executors.newSingleThreadExecutor().execute {
-                runBlocking {
+            GlobalScope.launch {
                     db.userDao().insert(UserData())
-                    var townConfig = mapConfig["TownInfo"] as ArrayList<ArrayList<Any>>
+                val townConfig = mapConfig["TownInfo"] as ArrayList<ArrayList<Any>>
                     for (i in 0 until townConfig.size) {
-                        var townInfo = townConfig[i]
-                        var name = townInfo[0] as String
-                        var allegiance = TownModel.Allegiance.valueOf(townInfo[1] as String)
-                        var type = TownModel.TownType.valueOf(townInfo[2] as String)
-                        var description = townInfo[3] as String
-                        var harbour = TownModel.HarbourSize.valueOf(townInfo[4] as String)
+                        val townInfo = townConfig[i]
+                        val name = townInfo[0] as String
+                        val allegiance = TownModel.Allegiance.valueOf(townInfo[1] as String)
+                        val type = TownModel.TownType.valueOf(townInfo[2] as String)
+                        val description = townInfo[3] as String
+                        val harbour = TownModel.HarbourSize.valueOf(townInfo[4] as String)
                         var level = 0
                         if (i == 1 || i == 4 || i == 5) {
                             level = 1
@@ -79,7 +78,7 @@ abstract class GameModel(context: Context, mapConfig: HashMap<String, Any>) {
                     )
                     dbCreated.postValue(true)
                 }
-            }
+
         }
 
         override fun onOpen(sqldb: SupportSQLiteDatabase) {

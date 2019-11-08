@@ -23,6 +23,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.fragment.app.Fragment
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.singletons.User
@@ -30,7 +31,7 @@ import com.lanyard.pirateerlite.singletons.User.UserListener
 import java.util.*
 import kotlin.math.max
 
-class MarketFragment : AppFragment() , UserListener {
+class MarketFragment : Fragment(), UserListener {
     private lateinit var _parts: ArrayList<User.BoatPart>
     private lateinit var _marketTimeStamp: Date
     private lateinit var _marketView: androidx.recyclerview.widget.RecyclerView
