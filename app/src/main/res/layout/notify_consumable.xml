@@ -3,15 +3,24 @@
                                                    xmlns:app="http://schemas.android.com/apk/res-auto"
                                                    android:layout_width="match_parent"
                                                    android:layout_height="64dp"
-                                                   android:background="?attr/colorButtonNormal">
-
+                                                   android:background="?attr/colorButtonNormal"
+                                                   android:gravity="center">
     <TextView
             android:text="@string/marketNotification"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:id="@+id/notify_text"
+            android:layout_height="wrap_content" android:id="@+id/market_text"
             app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent" android:autoText="false" app:autoSizeTextType="uniform"
+            app:layout_constraintBottom_toBottomOf="parent" app:autoSizeTextType="uniform"
             app:autoSizeMinTextSize="12sp" app:autoSizeMaxTextSize="52sp" app:autoSizeStepGranularity="2sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold" android:visibility="invisible"/>
+    <TextView
+            android:text="@string/jobsNotification"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:id="@+id/job_text"
+            app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" app:autoSizeTextType="uniform"
+            app:autoSizeMinTextSize="12sp" app:autoSizeMaxTextSize="52sp" app:autoSizeStepGranularity="2sp"
+            android:textStyle="bold" android:visibility="invisible"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

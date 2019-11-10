@@ -63,8 +63,6 @@ import com.lanyard.pirateerlite.views.MapView
 import com.lanyard.pirateerlite.views.TownView
 import kotlinx.android.synthetic.main.activity_map.*
 import kotlinx.android.synthetic.main.fragment_map.*
-import java.util.*
-import kotlin.collections.ArrayList
 
 class MapFragment : Fragment(), Game.GameListener, User.UserListener {
 
@@ -74,8 +72,24 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
 
     private var _boatControllers = ArrayList<BoatController>()
     private var _townControllers = ArrayList<TownController>()
-    private var _density : Float = 0.0f
+    private var _density: Float = 0.0f
     private var _timer = Handler()
+    private var _animating: Boolean = false
+    private val _marketNotification = object : Runnable {
+        override fun run() {
+            val time = SystemClock.uptimeMillis() + User.instance.millisToMarketDate
+            _timer.postAtTime(this, time)
+            moveNotifyBox(true, R.id.market_text)
+        }
+    }
+    private val _jobNotification = object : Runnable {
+        override fun run() {
+            val time = SystemClock.uptimeMillis() + User.instance.millisToJobDate
+            _timer.postAtTime(this, time)
+            moveNotifyBox(true, R.id.job_text)
+        }
+    }
+
 
     private var _selectedBoat: BoatController?
         get() {
@@ -92,6 +106,7 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
     private lateinit var _scene: MapView
     private lateinit var _scrollView: MapScrollView
     private lateinit var _toolTip: TextView
+
 
     private val _cargoClickListener = View.OnClickListener {
         if (fragmentManager?.primaryNavigationFragment?.tag != "jobs") {
@@ -669,17 +684,19 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         _timer.removeCallbacksAndMessages(null)
     }
 
-    fun moveNotifyBox(down: Boolean, text: Int?) {
+    fun moveNotifyBox(down: Boolean, text: Int) {
+        if (_animating == true && down == true) {
+            return
+        }
+
         val main = activity
         if (main == null) return
 
         val mapFrame = main.findViewById<ConstraintLayout>(R.id.mapcontainer)
-        val notify = main.findViewById<View>(R.id.event_notify)
-        val message = main.findViewById<TextView>(R.id.notify_text)
+        val notify = main.findViewById<ConstraintLayout>(R.id.event_notify)
+        val message = main.findViewById<TextView>(text)
 
-        if (text != null) {
-            message.setText(text)
-        }
+        message.visibility = View.VISIBLE
         notify.visibility = View.VISIBLE
 
         val constraint = ConstraintSet()
@@ -694,10 +711,10 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
             apt = object : TransitionListenerAdapter() {
                 override fun onTransitionEnd(transition: Transition) {
                     super.onTransitionEnd(transition)
-                    moveNotifyBox(false, null)
+                    moveNotifyBox(false, text)
                 }
             }
-
+            _animating = true
             constraint.clear(R.id.event_notify, ConstraintSet.BOTTOM)
             constraint.connect(R.id.event_notify, ConstraintSet.TOP, ConstraintSet.PARENT_ID, ConstraintSet.TOP)
             transition.addListener(apt)
@@ -706,6 +723,8 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
                 override fun onTransitionEnd(transition: Transition) {
                     super.onTransitionEnd(transition)
                     notify.visibility = View.INVISIBLE
+                    message.visibility = View.INVISIBLE
+                    _animating = false
                 }
             }
             transition.startDelay = 3000
@@ -716,18 +735,13 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         transition.addListener(apt)
         TransitionManager.beginDelayedTransition(mapFrame, transition)
         constraint.applyTo(mapFrame)
+
     }
 
     fun postTimers() {
-        val time1 = Date().time - User.instance.marketDate.time
-        val time2 = Date().time - User.instance.jobDate.time
         val uptime = SystemClock.uptimeMillis()
-        _timer.postAtTime({
-            moveNotifyBox(true, R.string.marketNotification)
-        }, time1 + uptime)
-        _timer.postAtTime({
-            moveNotifyBox(true, R.string.jobsNotification)
-        }, time2 + uptime)
+        _timer.postAtTime(_marketNotification, User.instance.millisToMarketDate + uptime)
+        _timer.postAtTime(_jobNotification, User.instance.millisToJobDate + uptime)
     }
 
 }

@@ -344,12 +344,8 @@ class JobFragment : Fragment(), Game.GameListener {
             _jobs = boatController!!.model.cargo.toList()
             _adapter = JobAdapter(ArrayList(_jobs))
         }
-
         _jobView.adapter = _adapter
-
         resetTimer()
-
-
     }
 
 

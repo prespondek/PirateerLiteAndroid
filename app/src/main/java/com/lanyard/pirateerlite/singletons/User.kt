@@ -212,6 +212,11 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
 
     init {
         this._data = userData
+
+        if (this._data.marketDate.time == 0L) {
+            this._data.marketDate = Date(System.currentTimeMillis() - jobInterval)
+            this._data.marketDate = Date(System.currentTimeMillis() - marketInterval - marketInterval / 2)
+        }
         this._stats = statData.toMutableList()
         val map = Map.instance
         _boatModels = ArrayList<BoatModel>()
@@ -404,22 +409,29 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
     val marketDate: Date
         get() {
             _data.apply {
-                var diff = Date().time - marketDate.time
-                diff /= marketInterval
-                return Date(marketDate.time + diff * marketInterval)
+                var diff = (Date().time - marketDate.time).toDouble()
+                diff = kotlin.math.floor(diff / marketInterval)
+                return Date(marketDate.time + (diff * marketInterval).toLong())
             }
+        }
+
+    val millisToMarketDate: Long
+        get() {
+            return marketInterval - (Date().time - marketDate.time)
         }
 
     val jobDate: Date
         get() {
             _data.apply {
-                var diff = Date().time - jobDate.time
-                if (diff < 0) {
-                    jobDate = Date((Date().time + (diff.toDouble() % jobInterval.toDouble()) * jobInterval).toLong())
-                }
-                diff /= jobInterval
-                return Date(jobDate.time + diff * jobInterval)
+                var diff = (Date().time - jobDate.time).toDouble()
+                diff = kotlin.math.floor(diff / jobInterval)
+                return Date(jobDate.time + (diff * jobInterval).toLong())
             }
+        }
+
+    val millisToJobDate: Long
+        get() {
+            return jobInterval - (Date().time - jobDate.time)
         }
 
     val market: ArrayList<BoatPart>
@@ -500,7 +512,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
                 }
             }
         }
-        _data.marketDate = Date()
+        _data.marketDate = marketDate
         save()
     }
 }

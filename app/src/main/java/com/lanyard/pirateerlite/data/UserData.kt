@@ -41,8 +41,8 @@ interface UserDao {
 data class UserData (
     @PrimaryKey(autoGenerate = true)
     var id: Long = 0,
-    var marketDate: Date = Date(System.currentTimeMillis()),
-    var jobDate: Date = Date(System.currentTimeMillis() - 120000),
+    var marketDate: Date = Date(0),
+    var jobDate: Date = Date(0),
     var startDate: Date = Date(),
     var distance: Double = 0.0,
     var voyages: Int = 0,

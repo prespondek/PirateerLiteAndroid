@@ -35,7 +35,6 @@
             />
             <include android:layout_width="0dp" android:layout_height="48dp"
                      layout="@layout/notify_consumable"
-                     android:animateLayoutChanges="true"
                      android:visibility="invisible"
                      app:layout_constraintStart_toStartOf="@id/mapFrame"
                      app:layout_constraintEnd_toEndOf="@id/mapFrame" android:id="@+id/event_notify"
