@@ -62,6 +62,9 @@ class MarketFragment : Fragment(), UserListener {
     }
 
     fun resetTimer() {
+        if (this::_marketTimer.isInitialized) {
+            _marketTimer.cancel()
+        }
         _marketTimer = object : CountDownTimer(getRemainingMarketTime(), 1000) {
             override fun onFinish() {
                 updateMarketTimer(0)
