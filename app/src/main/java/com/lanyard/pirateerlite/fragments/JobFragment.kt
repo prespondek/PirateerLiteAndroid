@@ -56,7 +56,7 @@ class JobFragment : Fragment(), Game.GameListener {
 
     private lateinit var _cargoView: CargoView
     private lateinit var _cargo: Array<JobView>
-    private lateinit var _jobView: androidx.recyclerview.widget.RecyclerView
+    private lateinit var _jobView: RecyclerView
     private lateinit var _adapter: JobAdapter
     private lateinit var _jobTimeStamp: Date
     private lateinit var _jobTimer: CountDownTimer
@@ -67,6 +67,9 @@ class JobFragment : Fragment(), Game.GameListener {
     }
 
     fun resetTimer() {
+        if (this::_jobTimer.isInitialized == true) {
+            _jobTimer.cancel()
+        }
         _jobTimer = object : CountDownTimer(getRemainingJobTime(), 1000) {
             override fun onFinish() {
                 updateJobTimer(0)
@@ -203,14 +206,6 @@ class JobFragment : Fragment(), Game.GameListener {
             val element = JobController.jobData.first { it[0] == job.type }[1]
             val res = resources.getIdentifier(element, "drawable", context?.packageName)
             jobview.setJobDrawable(resources.getDrawable(res, null), false)
-            /*val drawable = _viewModel.getDrawable(element)
-            if (drawable.value != null) {
-                jobview.setJobDrawable(drawable.value!!,false)
-            } else {
-                drawable.observe(this, androidx.lifecycle.Observer {
-                    jobview.setJobDrawable(it, true)
-                })
-            }*/
         }
     }
 
@@ -247,21 +242,26 @@ class JobFragment : Fragment(), Game.GameListener {
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _jobTimer.cancel()
+    }
+
     private fun updateJobTimer(millisUntilFinished: Long) {
-        var holder = _jobView.findViewHolderForLayoutPosition(0)
+        val holder = _jobView.findViewHolderForLayoutPosition(0)
         if (holder == null) {
             return
         }
-        var label = holder.itemView.findViewById<TextView>(R.id.jobTimer)
+        val label = holder.itemView.findViewById<TextView>(R.id.jobTimer)
         if (townModel == null) {
             label.text = ""
         } else if (millisUntilFinished > 0) {
             var secs = millisUntilFinished / 1000
             val mins = secs / 60
             secs -= mins * 60
-            label.text = String.format("New stock in %d.%s minutes", mins, secs.toString().padStart(2, '0'))
+            label.text = resources.getString(R.string.newStockTimer, mins, secs.toString().padStart(2, '0'))
         } else {
-            label.text = "New stock available"
+            label.text = resources.getString(R.string.newStock)
         }
     }
 
@@ -291,9 +291,14 @@ class JobFragment : Fragment(), Game.GameListener {
     }
 
     fun reloadJobs() {
-        if (townModel!!.jobsDirty == true) {
+        val town = townModel
+        if (town == null) {
+            return
+        }
+
+        if (town.jobsDirty == true) {
             _jobTimeStamp = User.instance.jobDate
-            _jobs = townModel!!.jobs
+            _jobs = town.jobs
             _adapter.setJobs(_jobs!!)
         }
         _adapter.notifyItemRangeChanged(1, _jobs!!.size)

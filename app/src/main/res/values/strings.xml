@@ -88,4 +88,9 @@
     <string name="jobsNotification">NEW JOBS ARE AVAILABLE</string>
     <string name="levelUpMessage">"Newer boats are available for you to build. Shipyard and market have been updated."
     </string>
+    <string name="newStock">New stock available</string>
+    <string name="newStockTimer">New stock in <xliff:g id="mins" example="1">%d</xliff:g>.<xliff:g id="secs"
+                                                                                                   example="1">%s
+    </xliff:g> minutes
+    </string>
 </resources>

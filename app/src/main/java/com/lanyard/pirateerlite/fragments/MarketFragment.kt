@@ -102,7 +102,7 @@ class MarketFragment : Fragment(), UserListener {
         if (getRemainingMarketTime() <= 0L) {
             _parts = User.instance.market
             _marketTimeStamp = User.instance.marketDate
-            _adapter.notifyItemRangeChanged(1, _parts.size)
+            _adapter.notifyDataSetChanged()
             resetTimer()
         }
     }
