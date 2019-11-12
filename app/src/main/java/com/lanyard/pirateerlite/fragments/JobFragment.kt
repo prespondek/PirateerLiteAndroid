@@ -47,6 +47,20 @@ import com.lanyard.pirateerlite.views.JobView
 import java.util.*
 import kotlin.collections.ArrayList
 
+/**
+ * If a boat is selected and moored at a town this fragment handles loading and unloading cargo off a boat.
+ * If the boat is sailing it allows the user to see what is in the boats hold.
+ * If opened from the TownInfoFragment it show all jobs the town has.
+ * The top panel is the jobView which is a recyclerview that utilises a GridLayoutManager
+ * and has CardViews for the job cells. The bottom panel is a Custom view with a
+ * GestureRecogniser so the user can select a cargo slot by swiping the CardViews
+ *
+ * @author Peter Respondek
+ *
+ * @see JobView
+ * @see GridLayoutManagerAutofit
+ * @see CargoView
+ */
 
 class JobFragment : Fragment(), Game.GameListener {
 
@@ -275,17 +289,12 @@ class JobFragment : Fragment(), Game.GameListener {
 
     override fun boatArrived(boat: BoatModel, town: TownModel) {
         if (boat === boatController?.model) {
-            //NotificationCenter.default.removeObserver(self)
-            //viewDidLoad()
             updateJobs()
         }
     }
 
     override fun boatSailed(boat: BoatModel) {
         if (boat === boatController?.model) {
-            //NotificationCenter.default.removeObserver(self)
-            //viewDidLoad()
-
             updateJobs()
         }
     }

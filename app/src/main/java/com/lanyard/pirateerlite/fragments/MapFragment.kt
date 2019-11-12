@@ -45,6 +45,7 @@ import com.lanyard.canvas.*
 import com.lanyard.helpers.*
 import com.lanyard.library.Edge
 import com.lanyard.library.SuperScrollView
+import com.lanyard.library.Vertex
 import com.lanyard.pirateerlite.MapActivity
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.controllers.BoatController
@@ -64,6 +65,17 @@ import com.lanyard.pirateerlite.views.TownView
 import kotlinx.android.synthetic.main.activity_map.*
 import kotlinx.android.synthetic.main.fragment_map.*
 
+/**
+ * Governs the map UI. The map fragment contains a surfaceView which uses an empty scrollView to control viewport and
+ * handle user interface. Due a lengthy initialisation period this fragment is alive at all times and is
+ * show/hidden rather than recreated whenever the map is needed.
+ *
+ * @author Peter Respondek
+ *
+ * @see SuperScrollView
+ * @see MapView
+ */
+
 class MapFragment : Fragment(), Game.GameListener, User.UserListener {
 
     enum class Mode {
@@ -75,6 +87,8 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
     private var _density: Float = 0.0f
     private var _timer = Handler()
     private var _animating: Boolean = false
+
+
     private val _marketNotification = object : Runnable {
         override fun run() {
             val time = SystemClock.uptimeMillis() + User.instance.millisToMarketDate
@@ -90,6 +104,9 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         }
     }
 
+    /**
+     * Convenience property which converts selected boat view model to it's transient controller
+     */
 
     private var _selectedBoat: BoatController?
         get() {
@@ -120,9 +137,35 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         false
     }
 
-    // changing the scrollview position unless the view has done being laid out doesn't do a damn thing
+    /**
+     * Clears the map as you navigate away from it.
+     */
+
+    private val _onBackStackChangedListener = FragmentManager.OnBackStackChangedListener {
+        val frag = fragmentManager?.primaryNavigationFragment
+        if (frag != null && frag.tag != "map" && (mode == Mode.build || mode == Mode.buy)) {
+            reset()
+        }
+    }
+
+    /**
+     * As user scrolls the scrollview the mapview is offset in the opposite direction.
+     */
+
+    private val _onScrollChangedListener = object : SuperScrollView.OnScrollChangeListener {
+        override fun onScrollChange(v: SuperScrollView, scrollX: Int, scrollY: Int, oldScrollX: Int, oldScrollY: Int) {
+            _scene.position = -Point(scrollX, scrollY) + _scene.padding
+        }
+    }
+
+    /**
+     * The scrollview isn't actually measured by the time onCreateView is called so we have to wait until layout to
+     * do some final setup work. We need the view to be measured Mainly to scroll the view to the correct position.
+     */
+
     private val _viewListener = object : ViewTreeObserver.OnGlobalLayoutListener {
         override fun onGlobalLayout() {
+
             // layout gets called twice on config change, the first time views are not measured so skip it.
             if (_scrollView.width == 0) return
 
@@ -164,6 +207,17 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         }
     }
 
+    /**
+     * Convenience mode to determine what is the UI state of map.
+     *
+     * @see Mode.map Default mode, nothing is selected
+     * @see Mode.plot Boat is selected and not sailing
+     * @see Mode.track Boat is selected, sailing and Mapview is tracking
+     * @see Mode.nontrack Boat is selected, sailing and Mapview is not tracking
+     * @see Mode.build User has built a boat in BoatInfoFragment and will select a town to build it
+     * @see Mode.buy Currently the same a build
+     */
+
     val mode: Mode
         get () {
             val buildType = _viewModel.buildType
@@ -189,6 +243,9 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
             }
         }
 
+    /**
+     * When the conext gets trashed clear all the scheduled callbacks
+     */
     override fun onDestroyView() {
         super.onDestroyView()
         for (boat in _boatControllers) {
@@ -196,13 +253,10 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         }
     }
 
-
-    private val _onBackStackChangedListener = FragmentManager.OnBackStackChangedListener {
-        val frag = fragmentManager?.primaryNavigationFragment
-        if (frag != null && frag.tag != "map" && (mode == Mode.build || mode == Mode.buy)) {
-            reset()
-        }
-    }
+    /**
+     * Heavy lifting for map UI construction. Initialize temporary boat and town controllers which contain
+     * temporary view data.
+     */
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -245,73 +299,14 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         mapframe.minimumWidth = _scene.scene!!.size.width
         mapframe.minimumHeight = _scene.scene!!.size.height
 
-        _scrollView.setOnScrollChangeListener(object : SuperScrollView.OnScrollChangeListener {
-            override fun onScrollChange(
-                v: SuperScrollView,
-                scrollX: Int,
-                scrollY: Int,
-                oldScrollX: Int,
-                oldScrollY: Int
-            ) {
-                _scene.position = -Point(scrollX, scrollY) + _scene.padding
-            }
-        })
+        _scrollView.setOnScrollChangeListener(_onScrollChangedListener)
         _scrollView.setOnTouchListener(_touchListener)
 
         Audio.instance.queueSound(R.raw.bg_map, true)
         TownView.setup(this.context!!)
         TownController.setController(this)
         for (vert in Map.instance.graph.vertices) {
-            val town = vert.data as? TownModel
-            if (town == null) {
-                continue
-            }
-
-            val button = Button(activity)
-            button.id = View.generateViewId()
-            button.tag = town
-            buttonlayout.addView(button)
-
-            button.layoutParams.width = (64 * _density).toInt()
-            button.layoutParams.height = (64 * _density).toInt()
-            button.background = null
-
-            val params = ConstraintSet()
-            params.clone(buttonlayout)
-
-            val button_width = (32 * _density).toInt()
-            params.connect(
-                button.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID,
-                ConstraintSet.TOP, (vert.position.y + _scene.padding.height - button_width)
-            )
-            params.connect(
-                button.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID,
-                ConstraintSet.LEFT, (vert.position.x + _scene.padding.width - button_width)
-            )
-            params.constrainWidth(button.id, button_width * 2)
-            params.constrainHeight(button.id, button_width * 2)
-            params.applyTo(buttonlayout)
-
-            val sprite = TownView()
-            sprite.position.set(vert.position.x, vert.position.y)
-            sprite.zOrder = 2
-            _scene.addChild(sprite)
-
-            val label = CanvasLabel(town.name, null)
-            label.position.set(
-                vert.position.x,
-                vert.position.y - context!!.resources.getDimensionPixelSize(R.dimen.town_label_offset)
-            )
-            label.fontSize = context!!.resources.getDimensionPixelSize(R.dimen.town_label_size).toFloat()
-            label.fontStyle = Paint.Style.FILL_AND_STROKE
-            label.strokeWidth = context!!.resources.getDimensionPixelSize(R.dimen.town_label_stroke).toFloat()
-            label.zOrder = 2
-            label.typeface = Typeface.DEFAULT_BOLD
-            _scene.addChild(label)
-
-            val townCtrl = TownController(town, button, sprite)
-            _townControllers.add(townCtrl)
-            townCtrl.state = TownController.State.unselected
+            setupTown(vert)
         }
 
         BoatController.setController(this)
@@ -329,6 +324,65 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         }
 
         return view
+    }
+
+    /**
+     * Setup a town to be displayed on the map. Add town button to scrollview and town sprite and label to mapview.
+     *
+     * @param vert vertex contructed from map JSON file.
+     */
+
+    fun setupTown(vert: Vertex<WorldNode>) {
+        val town = vert.data as? TownModel
+        if (town == null) {
+            return
+        }
+
+        val button = Button(activity)
+        button.id = View.generateViewId()
+        button.tag = town
+        buttonlayout.addView(button)
+
+        button.layoutParams.width = (64 * _density).toInt()
+        button.layoutParams.height = (64 * _density).toInt()
+        button.background = null
+
+        val params = ConstraintSet()
+        params.clone(buttonlayout)
+
+        val button_width = (32 * _density).toInt()
+        params.connect(
+            button.id, ConstraintSet.TOP, ConstraintSet.PARENT_ID,
+            ConstraintSet.TOP, (vert.position.y + _scene.padding.height - button_width)
+        )
+        params.connect(
+            button.id, ConstraintSet.LEFT, ConstraintSet.PARENT_ID,
+            ConstraintSet.LEFT, (vert.position.x + _scene.padding.width - button_width)
+        )
+        params.constrainWidth(button.id, button_width * 2)
+        params.constrainHeight(button.id, button_width * 2)
+        params.applyTo(buttonlayout)
+
+        val sprite = TownView()
+        sprite.position.set(vert.position.x, vert.position.y)
+        sprite.zOrder = 2
+        _scene.addChild(sprite)
+
+        val label = CanvasLabel(town.name, null)
+        label.position.set(
+            vert.position.x,
+            vert.position.y - context!!.resources.getDimensionPixelSize(R.dimen.town_label_offset)
+        )
+        label.fontSize = context!!.resources.getDimensionPixelSize(R.dimen.town_label_size).toFloat()
+        label.fontStyle = Paint.Style.FILL_AND_STROKE
+        label.strokeWidth = context!!.resources.getDimensionPixelSize(R.dimen.town_label_stroke).toFloat()
+        label.zOrder = 2
+        label.typeface = Typeface.DEFAULT_BOLD
+        _scene.addChild(label)
+
+        val townCtrl = TownController(town, button, sprite)
+        _townControllers.add(townCtrl)
+        townCtrl.state = TownController.State.unselected
     }
 
     override fun onViewStateRestored(savedInstanceState: Bundle?) {
@@ -351,6 +405,12 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         _viewModel.position = _scrollView.currentPosition()
     }
 
+    /**
+     * Called by Game when a boat's cargo has changed. If the selected boat cargo has changed
+     * refresh map job markers
+     *
+     * @see Game.GameListener
+     */
     override fun boatJobsChanged(boat: BoatModel) {
         super.boatJobsChanged(boat)
         if (boat ===  _selectedBoat?.model) {
@@ -359,14 +419,29 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         }
     }
 
+    /**
+     * Get boat controller based on unique model id
+     *
+     * @param idx unique ID
+     */
     fun boatControllerForId(idx: Long) : BoatController? {
         return _boatControllers.find { it.model.id == idx }
     }
 
+    /**
+     * Get town controller based on unique model id
+     *
+     * @param idx unique ID
+     */
     fun townControllerForId(idx: Long) : TownController? {
         return _townControllers.find { it.model.id == idx }
     }
 
+    /**
+     * Add a new boat controller to the map. Sets up all the UI elements associated with that.
+     *
+     * @param boat boatmodel containing all needed data
+     */
     fun addBoat(boat: BoatModel): BoatController {
         val view = BoatView(boat.type)
         val boatController = BoatController(boat, view)
@@ -385,11 +460,21 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         return boatController
     }
 
+    /**
+     * Get town controller based on town model
+     *
+     * @param model town model
+     */
     fun townControllerForModel(model: TownModel): TownController {
         val townController = _townControllers.first { it.model === model }
         return townController
     }
 
+    /**
+     * Plot the course of the boat on map UI
+     *
+     * @param boat controller of boat to be plotted
+     */
     fun plotCourseForBoat(boat: BoatController) {
         val course = boat.model.course
         for (i in 1 until course.size) {
@@ -401,10 +486,17 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         _scene.plotCourseForBoat(boat)
     }
 
-    fun plotRoutesForTown(townCtrl: TownController, distance: Float) {
+    /**
+     * Plot the routes between towns within the specified distance.
+     *
+     * @param town epicenter where routes will be calculated from
+     * @param distance only consider towns within this range
+     */
 
-        townCtrl.state = TownController.State.selected
-        val startPos = Map.instance.townPosition(townCtrl.model)
+    fun plotRoutesForTown(town: TownController, distance: Float) {
+
+        town.state = TownController.State.selected
+        val startPos = Map.instance.townPosition(town.model)
         val paths = mutableListOf<List<Edge<WorldNode>>>()
         for (controller in _townControllers) {
             if (_viewModel.boatCourse.contains(controller.model)) {
@@ -420,10 +512,16 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
             if (controller.state != TownController.State.unselected) {
                 continue
             }
-            paths.add(Map.instance.getRoute(townCtrl.model, controller.model))
+            paths.add(Map.instance.getRoute(town.model, controller.model))
         }
-        _scene.plotRoutesForTown(townCtrl.model, paths, distance * _density)
+        _scene.plotRoutesForTown(town.model, paths, distance * _density)
     }
+
+    /**
+     * If town is upgraded while boat is selected
+     *
+     * @see TownFragment.upgradeButtonPressed()
+     */
 
     fun townUpgraded() {
         if (mode == Mode.plot) {
@@ -440,17 +538,55 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         }
     }
 
+    /**
+     * Called by Game when a boat's cargo has been delivered. Draw money info graphic on map.
+     *
+     * @param boat model of boat in question
+     * @param town model of town where cargo was delivered
+     * @param gold cargo gold value
+     * @param silver cargo silver value
+     * @param quiet if true UI elements won't appear
+     *
+     * @see Game.GameListener
+     */
+
     override fun jobDelivered(boat: BoatModel, town: TownModel, gold: Int, silver: Int, quiet: Boolean) {
         if (quiet == false) {
             _scene.showMoney(town, gold, silver)
         }
     }
 
+    /**
+     * Called by User when boat is added to user class
+     *
+     * @param boat model of boat to add
+     *
+     * @see User.UserListener
+     */
+
     override fun boatAdded(boat: BoatModel) {
         addBoat(boat)
     }
 
+    /**
+     * Called by User when boat is removed from user class
+     *
+     * @param boat model of boat to remove
+     *
+     * @see User.UserListener
+     */
+
     override fun boatRemoved(boat: BoatModel) {
+        removeBoat(boat)
+    }
+
+    /**
+     * Remove boat from map UI. Remove boat controller
+     *
+     * @param boat model of boat to remove
+     */
+
+    fun removeBoat(boat: BoatModel) {
         val boatController = boatControllerForModel(boat)
         _boatControllers.removeAll { it === boatController }
         boatController.view.sprite.parent = null
@@ -465,11 +601,10 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
 
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
-        if (hidden) {
-        } else {
-            if (_selectedBoat != null) {
-                _scene.plotJobMarkers(_selectedBoat!!.model)
-            }
+        val boat = _selectedBoat
+        if (hidden == false && boat != null) {
+            _scene.clearJobMarkers()
+            _scene.plotJobMarkers(boat.model)
         }
     }
 
@@ -478,7 +613,12 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         return boatController
     }
 
-
+    /**
+     * Center map view on town
+     *
+     * @param town model of town to focus on
+     * @param animate smooth animation or instant
+     */
     fun focusTown(town: TownModel, animate: Boolean = true) {
         val scene_pos = Map.instance.townPosition(town)
         val screen_pos = _scrollView.screenPosition(scene_pos)
@@ -610,6 +750,14 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         }
     }
 
+    /**
+     * When user builds a boat copy out fragments part data
+     *
+     * @param fragment boatinfofragment or market fragment
+     *
+     * @see BoatInfoFragment
+     * @see MarketFragment
+     */
     fun transferBoatBuild(fragment: Fragment) {
         if (fragment is BoatInfoFragment) {
             _viewModel.buildType = fragment.boatType
@@ -620,6 +768,9 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         }
     }
 
+    /**
+     * If fragment is in build/buy mode setup the UI. Only allow boat to be built as valid harbors.
+     */
     fun buildBoat() {
         _toolTip.visibility = View.VISIBLE
         _cancelButton.visibility = View.VISIBLE
@@ -637,6 +788,9 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         }
     }
 
+    /**
+     * Kick off point once the sail button is pressed. Ding the bell, plot your course, shiver me timbers and all that.
+     */
 
     fun sailButtonPressed() {
         _scene.clearPlot()
@@ -653,6 +807,11 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         }
     }
 
+    /**
+     * The cancel button is repurposed for a few different modes. In plot mode it will remove towns from you plot until
+     * no town remain. In build mode it will dump the boat parts. The end result of all these actions is reset will get
+     * called
+     */
 
     fun cancelButtonPressed() {
         if (mode == Mode.plot) {
@@ -678,11 +837,12 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
             }
             _viewModel.buildParts = null
             _viewModel.buildType = null
-            //tabBarController?.selectedIndex = 2
-            //tabBar(enabled: true)
         }
     }
 
+    /**
+     * Reset UI to it's initial state.
+     */
     fun reset() {
         _toolTip.visibility = View.INVISIBLE
         activity?.navigation?.visibility = View.VISIBLE
@@ -709,6 +869,13 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         super.onStop()
         _timer.removeCallbacksAndMessages(null)
     }
+
+    /**
+     * Move the notification drop down. Really only down should be called as transition will call up state.
+     *
+     * @see down move bar down or up
+     * @see text resource id of message to show
+     */
 
     fun moveNotifyBox(down: Boolean, text: Int) {
         if (_animating == true && down == true) {
@@ -763,6 +930,10 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         constraint.applyTo(mapFrame)
 
     }
+
+    /**
+     * start timers for market and job notifications dropdown
+     */
 
     fun postTimers() {
         val uptime = SystemClock.uptimeMillis()

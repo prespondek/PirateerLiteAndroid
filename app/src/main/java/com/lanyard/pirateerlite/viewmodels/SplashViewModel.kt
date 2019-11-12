@@ -22,14 +22,20 @@ import androidx.lifecycle.ViewModel
 import com.lanyard.pirateerlite.data.*
 import com.lanyard.pirateerlite.singletons.Game
 
+/**
+ * Holds the result of database requests the SplashActivity will need to setup the app.
+ *
+ * @author Peter Respondek
+ */
+
 class SplashViewModel : ViewModel(), Game.GameListener {
     init {
         Game.instance.addGameListener(this)
-
     }
 
     private var _dbReady = MutableLiveData<Boolean>()
     val dbReady : LiveData<Boolean> = _dbReady
+
     var userdata : LiveData<Array<UserData>>? = null
         private set
     var statdata : LiveData<Array<StatsData>>? = null
@@ -45,6 +51,9 @@ class SplashViewModel : ViewModel(), Game.GameListener {
     var storageJobData : LiveData<Array<StorageJobData>>? = null
         private set
 
+    /**
+     * After the game singleton is setup we can start making queries to the database.
+     */
     override fun onDatabaseCreated () {
         userdata = Game.instance.db.userDao().getUser()
         statdata = Game.instance.db.statsDao().getStats()
@@ -52,16 +61,28 @@ class SplashViewModel : ViewModel(), Game.GameListener {
         townData = Game.instance.db.townDao().getTowns()
         _dbReady.value = true
     }
+
+    /**
+     * Get all job data for the specified town IDs
+     */
     fun fetchTownJobs(town_ids: List<Long>) :  LiveData<Array<TownJobData>> {
         assert(_dbReady.value != null)
         townJobData = Game.instance.db.townJobDao().getTownsJobs(town_ids)
         return townJobData!!
     }
+
+    /**
+     * Get all job data for the specified boat IDs
+     */
     fun fetchBoatJobs(boat_ids: List<Long>) : LiveData<Array<BoatJobData>> {
         assert(_dbReady.value != null)
         boatJobData = Game.instance.db.boatJobDao().getBoatsJobs(boat_ids)
         return boatJobData!!
     }
+
+    /**
+     * Get jobs in storage for the specified town IDs
+     */
     fun fetchStorageJobs(town_ids: List<Long>) : LiveData<Array<StorageJobData>> {
         assert(_dbReady.value != null)
         storageJobData = Game.instance.db.storageJobDao().getStorageJobs(town_ids)

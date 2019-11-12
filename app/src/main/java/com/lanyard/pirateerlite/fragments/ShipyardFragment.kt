@@ -30,6 +30,12 @@ import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.singletons.User
 
+/**
+ * Contains a standard recycler view with a list of boats you can build.
+ *
+ * @author Peter Respondek
+ */
+
 class ShipyardFragment : Fragment() {
     inner class ShipyardAdapter :
         androidx.recyclerview.widget.RecyclerView.Adapter<ShipyardFragment.ShipyardAdapter.ShipyardViewHolder>() {

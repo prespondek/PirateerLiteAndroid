@@ -43,6 +43,9 @@ import com.lanyard.pirateerlite.singletons.User
 import kotlinx.android.synthetic.main.activity_map.*
 import java.util.*
 
+/**
+ * @author Peter Respondek
+ */
 
 class MapActivity : AppCompatActivity(), User.UserListener {
     val TAG = "MapActivity"

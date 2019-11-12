@@ -38,21 +38,31 @@ import com.lanyard.pirateerlite.singletons.Map
 import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.viewmodels.SplashViewModel
 
+/**
+ * Throws up the splash screen when the app is launched and fetches all the
+ * necessary data to construct the UI including database queries etc.
+ *
+ * @author Peter Respondek
+ */
 
 class SplashActivity : FragmentActivity() {
     var mapConfig : HashMap<String, Any>? = null
     private lateinit var _viewModel: SplashViewModel
 
-    init {
-    }
+    /**
+     * Make initial setup and call to our Room database. Naturally the viewmodel holds persistent Livedata
+     * which this activity works with. If the activity is trashed duplicate calls wont be made.
+     */
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // lock our view to portrait it the screen does not support it.
         if (resources.getBoolean(R.bool.portrait_only)) {
             requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
         }
 
+        // If the activity is started via a notification the app may already be started.
         if (Map.isInitialized && User.isInitialized) {
             startMapActivity()
         }
@@ -61,14 +71,14 @@ class SplashActivity : FragmentActivity() {
         mapConfig = Map.loadConfig(this)
 
         if (savedInstanceState == null) {
-            var screenSize = resources.configuration.screenLayout and SCREENLAYOUT_SIZE_MASK
+            val screenSize = resources.configuration.screenLayout and SCREENLAYOUT_SIZE_MASK
             if (screenSize == SCREENLAYOUT_SIZE_LARGE || screenSize == SCREENLAYOUT_SIZE_XLARGE) {
                 // width > height, better to use Landscape
                 requestedOrientation = SCREEN_ORIENTATION_UNSPECIFIED
             } else {
                 requestedOrientation = SCREEN_ORIENTATION_PORTRAIT
             }
-            var metrics = DisplayMetrics()
+            val metrics = DisplayMetrics()
             windowManager.defaultDisplay.getMetrics(metrics)
             BitmapStream.density = metrics.density
             BitmapStream.densityDpi = metrics.densityDpi
@@ -81,13 +91,13 @@ class SplashActivity : FragmentActivity() {
 
         _viewModel.dbReady.observe(this, Observer {
             var count = 4
-            var countDown = {
+            val countDown = {
                 count -= 1
                 if (count == 0) {
                     onPrimaryDataFetch()
                 }
             }
-            var observer = Observer<Any> { countDown() }
+            val observer = Observer<Any> { countDown() }
             _viewModel.userdata?.observe(this, observer)
             _viewModel.statdata?.observe(this, observer)
             _viewModel.boatData?.observe(this, observer)
@@ -95,9 +105,12 @@ class SplashActivity : FragmentActivity() {
         })
     }
 
+    /**
+     * Create the NotificationChannel, but only on API 26+ because
+     * the NotificationChannel class is new and not in the support library.
+     * This allows the user to turn off specific notifications.
+     */
     private fun createNotificationChannel() {
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.boatArriveChannelName)
             val descriptionText = getString(R.string.boatArriveChannelDesc)
@@ -112,24 +125,29 @@ class SplashActivity : FragmentActivity() {
         }
     }
 
-    fun onPrimaryDataFetch() {
-        var metrics = DisplayMetrics()
+    /**
+     * Once we have our initial data and prepopulated the database it if needed, we can make queries
+     * about town and boat jobs/cargo/storage and start user and game singletons.
+     */
+
+    private fun onPrimaryDataFetch() {
+        val metrics = DisplayMetrics()
         windowManager.defaultDisplay.getMetrics(metrics)
         Map.initialize(applicationContext,mapConfig!!,_viewModel.townData?.value!!, metrics.density)
         User.initialize(applicationContext,_viewModel.userdata?.value!![0], _viewModel.statdata?.value!!, _viewModel.boatData?.value!!)
         User.instance.addListerner(Game.instance)
 
         var count = 3
-        var countDown = {
+        val countDown = {
             count -= 1
             if (count == 0) {
                 startMapActivity()
             }
         }
 
-        var boatIds = mutableListOf<Long>()
+        val boatIds = mutableListOf<Long>()
         User.instance.boats.mapTo(boatIds,{ it.id })
-        var townIds = mutableListOf<Long>()
+        val townIds = mutableListOf<Long>()
         Map.instance.towns.mapTo(townIds,{ it.id })
 
         _viewModel.fetchBoatJobs(boatIds).observe(this, Observer {
@@ -163,8 +181,13 @@ class SplashActivity : FragmentActivity() {
 
     }
 
-    fun startMapActivity() {
-        var boatid = intent.getLongExtra("boatid", 0)
+    /**
+     * Start the map activity. If we started the activity via a local notification the intent
+     * contains data we need to focus the map on the selected boat. We pass that data through to the map intent.
+     */
+
+    private fun startMapActivity() {
+        val boatid = intent.getLongExtra("boatid", 0)
         val intent = Intent(applicationContext, MapActivity::class.java)
         intent.putExtra("boatid", boatid)
         startActivity(intent)

@@ -39,6 +39,12 @@ import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
+/**
+ * Big data singleton for all user data. Stores thing from all the boats the user owns to the last market timer update.
+ * Most of this data will be saved to the Room database.
+ *
+ * @author Peter Respondek
+ */
 
 class User private constructor(userData: UserData, statData: Array<StatsData>, boatData: Array<BoatData>) {
     companion object {
@@ -120,6 +126,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             this._statComp = statComp
             this._statString = statString
         }
+
         constructor(statName : String,
                     statData : (BoatModel) -> T) {
             this.statName = statName
@@ -188,7 +195,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
         }
 
         override fun equals(other: Any?): Boolean {
-            var rhs = other as? BoatPart
+            val rhs = other as? BoatPart
             if (rhs == null) return false
             return boat == rhs.boat && item == rhs.item
         }
@@ -253,7 +260,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
     var xp: Int
         get() = _data.xp
         set (value) {
-            var oldvalue = _data.xp
+            val oldvalue = _data.xp
             _data.xp = value
             cleanObservers()
             for (container in _listeners) {

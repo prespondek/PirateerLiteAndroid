@@ -232,6 +232,14 @@ class MapView @JvmOverloads constructor(context: Context, attrs: AttributeSet? =
         }
     }
 
+    /**
+     * Draw the routes between towns.
+     *
+     * @param town epicenter of routes
+     * @param paths list of graph paths to be drawn
+     * @param distance size of range circle
+     */
+
     fun plotRoutesForTown(town: TownModel, paths: MutableList<List<Edge<WorldNode>>>, distance: Float) {
         _selectionCircle?.parent = null
         val scene_pos = Map.instance.townPosition(town)
