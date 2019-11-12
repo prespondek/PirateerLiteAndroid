@@ -122,7 +122,8 @@ class StatsFragment : Fragment(), UserListener {
         }
 
         data class BoatStatView (val name: TextView, val value: TextView, val image: ImageView)
-        var boatViews = arrayOf<BoatStatView>(
+
+        val boatViews = arrayOf<BoatStatView>(
             BoatStatView(mostMileageName, mostMileageValue, mostMileageImage),
             BoatStatView(spmName, spmValue, spmImage),
             BoatStatView(topEarningName, topEarningValue, topEarningImage) ,

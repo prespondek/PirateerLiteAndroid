@@ -513,6 +513,12 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         boatSelected(boat)
     }
 
+    /**
+     * When a boat is selected and is sailing focus on it and track the boat.
+     *
+     * @param boat controller to track
+     */
+
     fun startTracking(boat: BoatController) {
         stopTracking()
         _viewModel.trackBoat = true
@@ -524,6 +530,15 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         )
         _selectedBoat!!.view.sprite.run(action, "track")
     }
+
+    /**
+     * Called when town is selected from MapView. Current mode will change behaviour.
+     * In plot mode if town is selected within range boat it will be added to boats plot.
+     * In build mode it will add the boat to the town harbor and remove parts.
+     * Otherwise bring display town information (townFragment).
+     *
+     * @param town controller for town
+     */
 
     fun townSelected(town: TownController) {
         if (mode == Mode.plot && town.state == TownController.State.unselected) {
@@ -567,6 +582,9 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         }
     }
 
+    /**
+     * Stop tracking if a boat is being tracked
+     */
 
     fun stopTracking() {
         if (_viewModel.trackBoat == true && this._selectedBoat != null) {
@@ -576,6 +594,14 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         _viewModel.trackBoat = false
     }
 
+    /**
+     * When the boat we have selected arrives we go through that same code path as if it was
+     * selected through the menu
+     * @see BoatController.arrived
+     *
+     * @param boat controller
+     */
+
     fun boatArrived(boat: BoatController) {
         val town = townControllerForModel(boat.model.town!!)
         town.updateView()
@@ -584,7 +610,7 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         }
     }
 
-    fun transferBoatBuild(fragment: androidx.fragment.app.Fragment) {
+    fun transferBoatBuild(fragment: Fragment) {
         if (fragment is BoatInfoFragment) {
             _viewModel.buildType = fragment.boatType
             _viewModel.buildParts = fragment.parts

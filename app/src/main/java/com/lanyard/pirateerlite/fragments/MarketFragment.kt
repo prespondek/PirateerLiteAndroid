@@ -36,7 +36,6 @@ class MarketFragment : Fragment(), UserListener {
     private lateinit var _marketTimeStamp: Date
     private lateinit var _marketView: androidx.recyclerview.widget.RecyclerView
     private lateinit var _adapter: MarketAdapter
-    //private lateinit var _marketThread :    Thread
     private lateinit var _marketTimer: CountDownTimer
     var selectedPart: User.BoatPart? = null
 
@@ -91,7 +90,7 @@ class MarketFragment : Fragment(), UserListener {
 
     private fun moneyUpdated() {
         for (i in 1 until _adapter.itemCount) {
-            var cell = _marketView.findViewHolderForLayoutPosition(i)
+            val cell = _marketView.findViewHolderForLayoutPosition(i)
             if (cell != null) {
                 if (cell.itemView.isInTouchMode) {
                     continue
@@ -114,9 +113,9 @@ class MarketFragment : Fragment(), UserListener {
         if (p1 == 0 || _parts.isEmpty()) return
 
         //var moneyIcon = p0.view.findViewById<ImageView>(R.id.partMoney)
-        var moneyLabel = p0.view.findViewById<TextView>(R.id.partCost)
-        var boatName = p0.view.findViewById<TextView>(R.id.partName)
-        var boatImage = p0.view.findViewById<ImageView>(R.id.partIcon)
+        val moneyLabel = p0.view.findViewById<TextView>(R.id.partCost)
+        val boatName = p0.view.findViewById<TextView>(R.id.partName)
+        val boatImage = p0.view.findViewById<ImageView>(R.id.partIcon)
 
         val boatPart = _parts[p1 - 1]
 
@@ -159,19 +158,24 @@ class MarketFragment : Fragment(), UserListener {
         }
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _marketTimer.cancel()
+    }
+
     private fun updateMarketTimer(millisUntilFinished: Long) {
-        var holder = _marketView.findViewHolderForLayoutPosition(0)
+        val holder = _marketView.findViewHolderForLayoutPosition(0)
         if (holder == null) {
             return
         }
-        var label = holder.itemView.findViewById<TextView>(R.id.jobTimer)
+        val label = holder.itemView.findViewById<TextView>(R.id.jobTimer)
         if (millisUntilFinished > 0) {
             var secs = millisUntilFinished / 1000
             val mins = secs / 60
             secs -= mins * 60
-            label.text = String.format("New stock in %d.%s minutes", mins, secs.toString().padStart(2, '0'))
+            label.text = resources.getString(R.string.newStockTimer, mins, secs.toString().padStart(2, '0'))
         } else {
-            label.text = "New stock available"
+            label.text = resources.getString(R.string.newStock)
         }
     }
 
@@ -214,7 +218,7 @@ class MarketFragment : Fragment(), UserListener {
 
         override fun onBindViewHolder(p0: MarketAdapter.MarketViewHolder, p1: Int) {
             if (p1 == 0) {
-                var headerLabel = p0.view.findViewById<TextView>(R.id.jobLabel)
+                val headerLabel = p0.view.findViewById<TextView>(R.id.jobLabel)
                 headerLabel.text = context!!.resources.getText(R.string.market)
                 updateMarketTimer(getRemainingMarketTime())
             } else {

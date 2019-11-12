@@ -35,10 +35,10 @@ class ShipyardFragment : Fragment() {
         androidx.recyclerview.widget.RecyclerView.Adapter<ShipyardFragment.ShipyardAdapter.ShipyardViewHolder>() {
 
         override fun onBindViewHolder(p0: ShipyardViewHolder, p1: Int) {
-            var syRank = p0.view.findViewById<ImageView>(R.id.syRank)!!
-            var syBoat = p0.view.findViewById<ImageView>(R.id.syBoat)!!
-            var syName = p0.view.findViewById<TextView>(R.id.syName)!!
-            var syTick = p0.view.findViewById<ImageView>(R.id.syTick)!!
+            val syRank = p0.view.findViewById<ImageView>(R.id.syRank)!!
+            val syBoat = p0.view.findViewById<ImageView>(R.id.syBoat)!!
+            val syName = p0.view.findViewById<TextView>(R.id.syName)!!
+            val syTick = p0.view.findViewById<ImageView>(R.id.syTick)!!
 
             val name = BoatModel.boatKeys[p1]
             val data = BoatModel.boatValues[name]!!
@@ -89,7 +89,7 @@ class ShipyardFragment : Fragment() {
             init {
                 view.setOnClickListener(View.OnClickListener {
                     var user = User.instance
-                    var frag = (activity as MapActivity).swapFragment(R.layout.cell_shipyard) as BoatInfoFragment
+                    val frag = (activity as MapActivity).swapFragment(R.layout.cell_shipyard) as BoatInfoFragment
                     frag.boatType = BoatModel.boatKeys[layoutPosition]
                 })
             }

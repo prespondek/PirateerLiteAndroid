@@ -36,15 +36,12 @@ class MenuFragment : Fragment(), UserListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        //postponeEnterTransition()
-
-        // Inflate the layout for this fragment
-        var view = inflater.inflate(R.layout.fragment_menu, container, false)
+        val view = inflater.inflate(R.layout.fragment_menu, container, false)
 
         User.instance.addListerner(this)
-        var arr = arrayOf(R.id.shipyardButton,R.id.marketButton,R.id.statsButton,R.id.bankButton)
+        val arr = arrayOf(R.id.shipyardButton, R.id.marketButton, R.id.statsButton, R.id.bankButton)
         for (idx in arr) {
-            var cell = view.findViewById<MenuCellView>(idx)
+            val cell = view.findViewById<MenuCellView>(idx)
             var click : View.OnClickListener?
             if (idx == R.id.bankButton) {
                 click = View.OnClickListener {
@@ -63,7 +60,7 @@ class MenuFragment : Fragment(), UserListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        var exchangeLabel = view.findViewById<TextView>(R.id.exchangeLabel)
+        val exchangeLabel = view.findViewById<TextView>(R.id.exchangeLabel)
         goldUpdated(0, User.instance.gold)
         silverUpdated(0, User.instance.silver)
         xpUpdated(0, User.instance.xp)
@@ -73,23 +70,24 @@ class MenuFragment : Fragment(), UserListener {
     }
 
     override fun goldUpdated(oldValue: Int, newValue: Int) {
-        var goldLabel = view!!.findViewById<TextView>(R.id.goldLabel)
-        var cell = view!!.findViewById<MenuCellView>(R.id.bankButton).findViewById<androidx.cardview.widget.CardView>(R.id.cv)
+        val goldLabel = view!!.findViewById<TextView>(R.id.goldLabel)
+        val cell =
+            view!!.findViewById<MenuCellView>(R.id.bankButton).findViewById<androidx.cardview.widget.CardView>(R.id.cv)
         goldLabel.text = newValue.toString()
         cell.isClickable = newValue > 0
     }
 
     override fun silverUpdated(oldValue: Int, newValue: Int) {
-        var silverLabel = view!!.findViewById<TextView>(R.id.silverLabel)
+        val silverLabel = view!!.findViewById<TextView>(R.id.silverLabel)
         silverLabel.text = newValue.toString()
     }
 
     override fun xpUpdated(oldValue: Int, newValue: Int) {
         val user = User.instance
-        var nextXPLabel = view!!.findViewById<TextView>(R.id.nextXPLabel)
-        var totalXPLabel = view!!.findViewById<TextView>(R.id.totalXPLabel)
-        var rankLabel = view!!.findViewById<TextView>(R.id.rankLabel)
-        var rankImage = view!!.findViewById<ImageView>(R.id.rankImage)
+        val nextXPLabel = view!!.findViewById<TextView>(R.id.nextXPLabel)
+        val totalXPLabel = view!!.findViewById<TextView>(R.id.totalXPLabel)
+        val rankLabel = view!!.findViewById<TextView>(R.id.rankLabel)
+        val rankImage = view!!.findViewById<ImageView>(R.id.rankImage)
 
         totalXPLabel.text = newValue.toString()
         nextXPLabel.text = (user.xpForLevel(user.level + 1) - user.xp ).toString()

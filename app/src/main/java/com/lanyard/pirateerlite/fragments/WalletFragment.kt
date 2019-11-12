@@ -36,7 +36,7 @@ class WalletFragment : Fragment(), UserListener
     ): View {
         // Inflate the layout for this fragment
 
-        var view = inflater.inflate(R.layout.fragment_wallet, container, false)
+        val view = inflater.inflate(R.layout.fragment_wallet, container, false)
         _goldLabel = view.findViewById<TextView>(R.id.goldText)
         _silverLabel = view.findViewById<TextView>(R.id.silverText)
         _xpLabel = view.findViewById<TextView>(R.id.xpText)
@@ -58,8 +58,8 @@ class WalletFragment : Fragment(), UserListener
 
     override fun xpUpdated(oldValue: Int, newValue: Int) {
         val user = User.instance
-        var levelXp = user.xpForLevel(user.level + 1)
-        var xp = user.xp
+        val levelXp = user.xpForLevel(user.level + 1)
+        val xp = user.xp
         _xpLabel.text = ( levelXp - xp ).toString()
         val level_image = (User.rankValues[User.rankKeys[user.level]]!![0]).toString()
         val id = activity?.resources?.getIdentifier(level_image, "drawable", context?.packageName)

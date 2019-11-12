@@ -136,12 +136,12 @@ class BoatModel {
     private var _cargo: Array<JobModel?>
     private var _town: TownModel?
 
-    val id get() =      _data.id
-    val cargo get() =   _cargo
-    val data get() =    _data
-    val town get() =    _town
-    val name get() =            _data.name
-    val type get() =            _data.type
+    val id get() = _data.id
+    val cargo get() = _cargo
+    val data get() = _data
+    val town get() = _town
+    val name get() = _data.name
+    val type get() = _data.type
     val totalDistance get() = _data.totalDistance
     val totalSilver get() = _data.totalSilver
     val totalVoyages get() = _data.totalVoyages

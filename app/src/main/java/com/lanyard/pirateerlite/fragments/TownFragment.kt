@@ -167,7 +167,6 @@ class TownFragment : Fragment() {
         User.instance.addMoney(0, -getCost())
         townController.model.level += 1
         townController.model.save()
-        //NotificationCenter.default.post(name: NSNotification.Name.townUpgraded, object: self, userInfo: ["town" : self])
         refresh(view!!)
         User.instance.save()
         townController.reset()
