@@ -31,6 +31,20 @@ import com.lanyard.pirateerlite.singletons.User.UserListener
 import java.util.*
 import kotlin.math.max
 
+/**
+ * A randomised list of boats parts the user is allowed to buy at their current level. Items are greyed out if the user
+ * cannot afford them. List updates periodically. UserListener callback updates elements if boat cargo yields enough
+ * gold to purchase part.
+ *
+ * @author Peter Respondek
+ *
+ * @see R.layout.fragment_market
+ * @see R.layout.cell_market
+ * @see R.layout.cell_market_empty
+ * @see RecyclerView
+ * @see UserListener
+ */
+
 class MarketFragment : Fragment(), UserListener {
     private lateinit var _parts: ArrayList<User.BoatPart>
     private lateinit var _marketTimeStamp: Date
@@ -51,11 +65,13 @@ class MarketFragment : Fragment(), UserListener {
             layoutManager = androidx.recyclerview.widget.LinearLayoutManager(activity)
             adapter = _adapter
         }
-        var swipe = view.findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.marketRefresh)
+
+        val swipe = view.findViewById<androidx.swiperefreshlayout.widget.SwipeRefreshLayout>(R.id.marketRefresh)
         swipe.setOnRefreshListener {
             reloadMarket()
             swipe.isRefreshing = false
         }
+
         resetTimer()
         return view
     }

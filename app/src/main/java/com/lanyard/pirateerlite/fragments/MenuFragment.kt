@@ -29,6 +29,15 @@ import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.singletons.User.UserListener
 import com.lanyard.pirateerlite.views.MenuCellView
 
+/**
+ * Menu navigation is comprised of four clickable card views.
+ *
+ * @see R.layout.cell_menu
+ * @see R.layout.fragment_menu
+ *
+ * @author Peter Respondek
+ */
+
 class MenuFragment : Fragment(), UserListener {
 
     override fun onCreateView(

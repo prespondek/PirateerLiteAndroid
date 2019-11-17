@@ -27,6 +27,15 @@ import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.singletons.User
 import com.lanyard.pirateerlite.singletons.User.UserListener
 
+/**
+ * Displays your level, that amount of xp to next level, gold and silver. UserListener callback actively updates
+ * values
+ *
+ * @author Peter Respondek
+ *
+ * @see R.layout.fragment_wallet
+ */
+
 class WalletFragment : Fragment(), UserListener
 {
     override fun onCreateView(

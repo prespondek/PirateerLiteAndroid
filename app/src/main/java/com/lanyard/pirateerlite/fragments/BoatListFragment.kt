@@ -44,12 +44,26 @@ import com.lanyard.pirateerlite.singletons.Game
 import com.lanyard.pirateerlite.singletons.User
 import kotlinx.android.synthetic.main.activity_map.*
 
+/**
+ * Shows a list of boats the user owns. In order to sell a boat the users swipes left and an alertdialog
+ * pops up to confirm.
+ *
+ * @author Peter Respondek
+ *
+ * @see R.layout.fragment_boats
+ * @see ItemTouchHelper
+ * @see ItemTouchHelper.SimpleCallback
+ * @see RecyclerView
+ * @see AlertDialog
+ */
+
 class BoatListFragment : Fragment(), Game.GameListener {
     class BoatSellFragment(): androidx.fragment.app.DialogFragment() {
 
         constructor(position: Int) : this() {
             _position = position
         }
+
         private var _position: Int = 0
 
         override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -171,8 +185,7 @@ class BoatListFragment : Fragment(), Game.GameListener {
             dX: Float,
             dY: Float,
             actionState: Int,
-            isCurrentlyActive: Boolean)
-        {
+            isCurrentlyActive: Boolean) {
             super.onChildDraw(canvas, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             var itemView = viewHolder.itemView
             val backgroundCornerOffset = 20

@@ -35,6 +35,15 @@ import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.singletons.User
 import kotlinx.android.synthetic.main.activity_map.*
 
+/**
+ * Displays information about a town including vital statistics, cost and a description. Also contains a selectable
+ * list of boats that are moored at the town.
+ *
+ * @author Peter Respondek
+ *
+ * @see R.layout.fragment_town
+ */
+
 class TownFragment : Fragment() {
     lateinit var townController: TownController
 

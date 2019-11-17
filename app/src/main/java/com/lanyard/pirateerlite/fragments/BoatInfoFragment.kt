@@ -32,6 +32,13 @@ import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.singletons.User
 
+/**
+ * Displays information about a boat class including vital statistics, cost and a description.
+ *
+ * @author Peter Respondek
+ *
+ * @see R.layout.fragment_boatinfo
+ */
 
 class BoatInfoFragment : Fragment(), User.UserListener {
     var boatType: String? = null

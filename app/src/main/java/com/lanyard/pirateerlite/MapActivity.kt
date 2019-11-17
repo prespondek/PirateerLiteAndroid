@@ -44,7 +44,18 @@ import kotlinx.android.synthetic.main.activity_map.*
 import java.util.*
 
 /**
+ * Main Activity for this app. It has two layouts. For phones portrait is the available layout.
+ * For tablets portrait and a landscape layout are available. In portrait there is only one pane.
+ * In landscape there are two with the map fragment always visible. A large amount of the code here
+ * deals with those two layouts and the backstack. The backstack REALLY wants you to use it in
+ * only one way and for a non conventional layout/flow like this app wranging that backstack was
+ * a lesson in frustration. The landscape layout was straight foward until you start getting backstack
+ * entries that only make sense in portrait and vice versa.
+ *
  * @author Peter Respondek
+ *
+ * @see R.layout.activity_map
+ * @see R.layout.fragment_wallet
  */
 
 class MapActivity : AppCompatActivity(), User.UserListener {

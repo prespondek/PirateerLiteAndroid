@@ -57,6 +57,8 @@ import kotlin.collections.ArrayList
  *
  * @author Peter Respondek
  *
+ * @see R.layout.fragment_jobs
+ * @see R.layout.cell_job_cell
  * @see JobView
  * @see GridLayoutManagerAutofit
  * @see CargoView

@@ -31,12 +31,20 @@ import com.lanyard.pirateerlite.singletons.User.UserListener
 import java.util.*
 import kotlin.math.max
 
+/**
+ * Big list of game statistics. UserListener callback updates view as boats arrive
+ *
+ * @author Peter Respondek
+ *
+ * @see R.layout.fragment_stats
+ */
+
 class StatsFragment : Fragment(), UserListener {
 
     fun update(view: View?) {
         if ( view == null ) { return }
         val levelLabel =            view.findViewById<TextView>(R.id.levelLabel)
-        val levelImage =            view.findViewById<ImageView>(R.id.levelImage)
+        val levelImage = view.findViewById<ImageView>(R.id.levelImage)
         val nextXpLabel =           view.findViewById<TextView>(R.id.nextXpLabel)
         val totalXpLabel =          view.findViewById<TextView>(R.id.totalXpLabel)
         val goldLabel =             view.findViewById<TextView>(R.id.goldLabel)
@@ -45,19 +53,19 @@ class StatsFragment : Fragment(), UserListener {
         val totalSPM =              view.findViewById<TextView>(R.id.totalSPM)
         val netWorth =              view.findViewById<TextView>(R.id.netWorth)
         val totalVoyages =          view.findViewById<TextView>(R.id.totalVoyages)
-        val topEarningImage =       view.findViewById<ImageView>(R.id.topEarningImage)
+        val topEarningImage = view.findViewById<ImageView>(R.id.topEarningImage)
         val topEarningName =        view.findViewById<TextView>(R.id.topEarningName)
         val topEarningValue =       view.findViewById<TextView>(R.id.topEarningValue)
         val spmName =               view.findViewById<TextView>(R.id.spmName)
-        val spmImage =              view.findViewById<ImageView>(R.id.spmImage)
+        val spmImage = view.findViewById<ImageView>(R.id.spmImage)
         val spmValue =              view.findViewById<TextView>(R.id.spmValue)
         val mostVoyagesName =       view.findViewById<TextView>(R.id.mostVoyagesName)
         val distanceSailed =        view.findViewById<TextView>(R.id.distanceSailed)
-        val mostVoyagesImage =      view.findViewById<ImageView>(R.id.mostVoyagesImage)
+        val mostVoyagesImage = view.findViewById<ImageView>(R.id.mostVoyagesImage)
         val mostVoyagesValue =      view.findViewById<TextView>(R.id.mostVoyagesValue)
         val mostMileageName =       view.findViewById<TextView>(R.id.mostMileageName)
         val mostMileageValue =      view.findViewById<TextView>(R.id.mostMileageValue)
-        val mostMileageImage =      view.findViewById<ImageView>(R.id.mostMileageImage)
+        val mostMileageImage = view.findViewById<ImageView>(R.id.mostMileageImage)
         val mostGoodsSoldSilver =   view.findViewById<TextView>(R.id.mostGoodsSoldSilver)
         val mostGoodsSoldLabel =    view.findViewById<TextView>(R.id.mostGoodsSoldLabel)
         val mostFrequentedValue =   view.findViewById<TextView>(R.id.mostFrequentedValue)

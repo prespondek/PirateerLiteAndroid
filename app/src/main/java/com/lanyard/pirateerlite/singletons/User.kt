@@ -155,12 +155,49 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
     }
 
     interface UserListener {
+        /**
+         * Called after gold is update in user class
+         * @param oldValue previous value
+         * @param newValue new value
+         */
         fun goldUpdated     (oldValue: Int, newValue: Int) {}
+
+        /**
+         * Called after silver is update in user class
+         * @param oldValue previous value
+         * @param newValue new value
+         */
         fun silverUpdated   (oldValue: Int, newValue: Int) {}
+
+        /**
+         * Called after xp is update in user class
+         * @param oldValue previous value
+         * @param newValue new value
+         */
         fun xpUpdated       (oldValue: Int, newValue: Int) {}
+
+        /**
+         * Called after level is update in user class
+         * @param oldValue previous value
+         * @param newValue new value
+         */
         fun levelUpdated(oldValue: Int, newValue: Int) {}
+
+        /**
+         * Called after boat is added to user class
+         * @param boat model of boat to remove
+         */
         fun boatAdded       (boat: BoatModel) {}
+
+        /**
+         * Called after boat is removed from user class
+         * @param boat model of boat to remove
+         */
         fun boatRemoved     (boat: BoatModel) {}
+
+        /**
+         * Called after stats are updated in user class
+         */
         fun statsUpdated    () {}
     }
 

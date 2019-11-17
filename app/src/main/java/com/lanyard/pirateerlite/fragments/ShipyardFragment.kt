@@ -34,6 +34,8 @@ import com.lanyard.pirateerlite.singletons.User
  * Contains a standard recycler view with a list of boats you can build.
  *
  * @author Peter Respondek
+ *
+ * @see R.layout.fragment_shipyard
  */
 
 class ShipyardFragment : Fragment() {
