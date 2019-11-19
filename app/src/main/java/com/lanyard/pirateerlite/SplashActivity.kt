@@ -36,7 +36,7 @@ import com.lanyard.pirateerlite.singletons.Audio
 import com.lanyard.pirateerlite.singletons.Game
 import com.lanyard.pirateerlite.singletons.Map
 import com.lanyard.pirateerlite.singletons.User
-import com.lanyard.pirateerlite.viewmodels.SplashViewModel
+import com.lanyard.pirateerlite.viewmodels.SplashActivityViewModel
 
 /**
  * Throws up the splash screen when the app is launched and fetches all the
@@ -47,7 +47,7 @@ import com.lanyard.pirateerlite.viewmodels.SplashViewModel
 
 class SplashActivity : FragmentActivity() {
     var mapConfig : HashMap<String, Any>? = null
-    private lateinit var _viewModel: SplashViewModel
+    private lateinit var _viewModel: SplashActivityViewModel
 
     /**
      * Make initial setup and call to our Room database. Naturally the viewmodel holds persistent Livedata
@@ -65,6 +65,7 @@ class SplashActivity : FragmentActivity() {
         // If the activity is started via a notification the app may already be started.
         if (Map.isInitialized && User.isInitialized) {
             startMapActivity()
+            return
         }
 
         createNotificationChannel()
@@ -87,7 +88,7 @@ class SplashActivity : FragmentActivity() {
             Audio.initialize(applicationContext)
         }
 
-        _viewModel = ViewModelProviders.of(this).get(SplashViewModel::class.java)
+        _viewModel = ViewModelProviders.of(this).get(SplashActivityViewModel::class.java)
 
         _viewModel.dbReady.observe(this, Observer {
             var count = 4

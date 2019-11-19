@@ -29,7 +29,7 @@ import com.lanyard.pirateerlite.singletons.User
  * @author Peter Respondek
  */
 
-class MapViewModel : ViewModel() {
+class MapFragmentViewModel : ViewModel() {
     var position: Point?
     var selectedBoat: BoatModel?
     var buildType: String?

@@ -186,16 +186,16 @@ open class CanvasNode() : CanvasNodeTransform
     open fun draw ( canvas: Canvas, transform: CanvasNodeTransformData, view: Rect, timestamp: Long ) {
         transform.transform(this)
         synchronized(_children) {
-            var itr = _children.iterator()
+            val itr = _children.iterator()
             while (itr.hasNext()) {
-                var node = itr.next()
+                val node = itr.next()
                 if (node.hidden == true) {
                     continue
                 }
                 node.draw(canvas, CanvasNodeTransformData(transform), view, timestamp)
                 if (debugBounds) {
                     val paint = Paint()
-                    var bounds = node.bounds(transform)
+                    val bounds = node.bounds(transform)
                     paint.style = Paint.Style.STROKE
                     paint.strokeWidth = 4.0f
                     paint.color = Color.parseColor("#ffffffff")

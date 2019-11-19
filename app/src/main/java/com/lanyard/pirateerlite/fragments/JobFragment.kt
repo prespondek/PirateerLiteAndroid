@@ -16,7 +16,6 @@
 
 package com.lanyard.pirateerlite.fragments
 
-import android.content.Context
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.DisplayMetrics
@@ -318,18 +317,20 @@ class JobFragment : Fragment(), Game.GameListener {
     }
 
     fun updateJobs() {
-        if (boatController == null) {
+        val boat = boatController
+        val town = townModel
+        if (boat == null && town != null) {
             _cargoPanel.visibility = GONE
-            _jobs = townModel!!.jobs
-            _storage = townModel!!.storage
+            _jobs = town.jobs
+            _storage = town.storage
             _adapter = JobAdapter(ArrayList(_jobs))
-        } else if (boatController!!.isSailing != true) {
-            townModel = boatController!!.model.town!!
+        } else if (boat != null && boat.isSailing != true) {
+            townModel = boat.model.town
             _jobs = townModel!!.jobs
             _storage = townModel!!.storage
             val table_jobs = ArrayList(jobs)
-            for (boat in townModel!!.boats) {
-                for (job in boat.cargo) {
+            for (townBoat in townModel!!.boats) {
+                for (job in townBoat.cargo) {
                     if (job?.source === townModel) {
                         val idx = table_jobs.indexOfFirst { it === job }
                         if (idx >= 0) {
@@ -352,13 +353,15 @@ class JobFragment : Fragment(), Game.GameListener {
                 }
             }
             _cargoPanel.visibility = VISIBLE
-        } else {
+        } else if (boat != null && boat.isSailing == true) {
             townModel = null
             updateJobTimer(0)
             _cargoPanel.visibility = GONE
             _storage = ArrayList()
             _jobs = boatController!!.model.cargo.toList()
             _adapter = JobAdapter(ArrayList(_jobs))
+        } else {
+            _adapter = JobAdapter(ArrayList())
         }
         _jobView.adapter = _adapter
         resetTimer()
@@ -389,8 +392,10 @@ class JobFragment : Fragment(), Game.GameListener {
         }
         Audio.instance.queueSound(R.raw.button_select)
         if (clear == true) {
-            val idx = boatController?.model?.cargo?.indexOfFirst { it === job }
-            boatController?.model?.cargo?.set(idx!!, null)
+            val idn = boatController?.model?.cargo?.indexOfFirst { it === job }
+            if (idn != null && idn > -1) {
+                boatController?.model?.cargo?.set(idn, null)
+            }
         }
         updateCargoValue()
         return clear
@@ -416,11 +421,6 @@ class JobFragment : Fragment(), Game.GameListener {
         } else {
         }
         updateCargoValue()
-    }
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        Game.instance.addGameListener(this)
     }
 
     override fun onDetach() {
@@ -479,6 +479,8 @@ class JobFragment : Fragment(), Game.GameListener {
 
         updateJobs()
         updateCargoValue()
+
+        Game.instance.addGameListener(this)
 
         return view
     }

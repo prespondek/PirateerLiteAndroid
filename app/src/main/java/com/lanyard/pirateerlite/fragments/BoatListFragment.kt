@@ -309,7 +309,15 @@ class BoatListFragment : Fragment(), Game.GameListener {
         Game.instance.addGameListener(this)
         swipeCallback = SwipeToSellCallback()
         ItemTouchHelper(swipeCallback).attachToRecyclerView(_table)
+
+        Game.instance.addGameListener(this)
+
         return view
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        Game.instance.removeGameListener(this)
     }
 
     override fun boatArrived(boat: BoatModel, town: TownModel) {

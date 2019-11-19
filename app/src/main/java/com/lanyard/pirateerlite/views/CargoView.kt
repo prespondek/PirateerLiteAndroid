@@ -225,13 +225,18 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
         }
 
     fun setup(activity: Activity, height: Float, boat: BoatController): Array<JobView> {
-        _detector = GestureDetectorCompat(context, CargoGestureListener())
+        if (this::_detector.isInitialized == false) {
+            _detector = GestureDetectorCompat(context, CargoGestureListener())
+        }
         _boat = boat.model
         val metrics = DisplayMetrics()
         activity.windowManager.defaultDisplay.getMetrics(metrics)
 
-        _views = ArrayList<JobView>()
-
+        for (view in _views) {
+            removeView(view)
+        }
+        _views.clear()
+        _index.clear()
 
         var width = 0
         for (i in 0 until _boat.cargoSize) {

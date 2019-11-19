@@ -28,9 +28,14 @@ import com.lanyard.pirateerlite.singletons.Game
  * @author Peter Respondek
  */
 
-class SplashViewModel : ViewModel(), Game.GameListener {
+class SplashActivityViewModel : ViewModel(), Game.GameListener {
     init {
         Game.instance.addGameListener(this)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Game.instance.removeGameListener(this)
     }
 
     private var _dbReady = MutableLiveData<Boolean>()

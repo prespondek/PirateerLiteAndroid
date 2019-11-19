@@ -35,7 +35,6 @@ import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.ViewModelProviders
 import androidx.transition.ChangeBounds
 import androidx.transition.Transition
@@ -57,7 +56,7 @@ import com.lanyard.pirateerlite.singletons.Audio
 import com.lanyard.pirateerlite.singletons.Game
 import com.lanyard.pirateerlite.singletons.Map
 import com.lanyard.pirateerlite.singletons.User
-import com.lanyard.pirateerlite.viewmodels.MapViewModel
+import com.lanyard.pirateerlite.viewmodels.MapFragmentViewModel
 import com.lanyard.pirateerlite.views.BoatView
 import com.lanyard.pirateerlite.views.MapScrollView
 import com.lanyard.pirateerlite.views.MapView
@@ -118,7 +117,7 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
             _viewModel.selectedBoat = value?.model
         }
 
-    private lateinit var _viewModel: MapViewModel
+    private lateinit var _viewModel: MapFragmentViewModel
     private lateinit var _cargoButton: ImageButton
     private lateinit var _sailButton: ImageButton
     private lateinit var _cancelButton: ImageButton
@@ -129,7 +128,7 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
 
     private val _cargoClickListener = View.OnClickListener {
         if (fragmentManager?.primaryNavigationFragment?.tag != "jobs") {
-            val frag = (activity as MapActivity).swapFragment(R.id.holdButton) as JobFragment
+            val frag = (activity as MapActivity).swapFragment(R.id.holdButton, null, false) as JobFragment
             frag.boatController = _selectedBoat!!
         }
     }
@@ -137,17 +136,6 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
     private var _touchListener = View.OnTouchListener { _, event ->
         stopTracking()
         false
-    }
-
-    /**
-     * Clears the map as you navigate away from it.
-     */
-
-    private val _onBackStackChangedListener = FragmentManager.OnBackStackChangedListener {
-        val frag = fragmentManager?.primaryNavigationFragment
-        if (frag != null && frag.tag != "map" && (mode == Mode.build || mode == Mode.buy)) {
-            reset()
-        }
     }
 
     /**
@@ -233,7 +221,7 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _viewModel = ViewModelProviders.of(this).get(MapViewModel::class.java)
+        _viewModel = ViewModelProviders.of(this).get(MapFragmentViewModel::class.java)
 
         if (savedInstanceState == null) {
             BitmapCache.instance.addBitmap(this.context!!, R.drawable.gold_piece, Bitmap.Config.ARGB_4444)
@@ -242,7 +230,6 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
 
         Game.instance.addGameListener(this)
         User.instance.addListerner(this)
-        fragmentManager?.addOnBackStackChangedListener(_onBackStackChangedListener)
 
         val view = inflater.inflate(R.layout.fragment_map, container, false)
         _scrollView = view.findViewById<MapScrollView>(R.id.vscrollview)
@@ -600,6 +587,7 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         if (town != null) {
             focusTown(town, animate)
             townSelected(townControllerForModel(town))
+            _scene.plotJobMarkers(boat.model)
         } else {
             if (animate == true) {
                 startTracking(this._selectedBoat!!)
@@ -850,10 +838,10 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         val curr_mode = mode
         if (curr_mode == Mode.build || curr_mode == Mode.buy) {
             buildBoat()
-        } else if (curr_mode == Mode.plot || curr_mode == Mode.track || curr_mode == Mode.nontrack) {
+        } else if (selectedBoat != null && (curr_mode == Mode.plot || curr_mode == Mode.track || curr_mode == Mode.nontrack)) {
             val boatCourse = ArrayList(_viewModel.boatCourse)
             reposition = !_viewModel.trackBoat
-            boatSelected(boatControllerForModel(selectedBoat!!), false)
+            boatSelected(boatControllerForModel(selectedBoat), false)
             if (curr_mode == Mode.plot) {
                 if (boatCourse.size > 1) {
                     for (i in 1 until boatCourse.size) {
@@ -885,7 +873,10 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
 
     override fun onStop() {
         super.onStop()
-        _viewModel.position = _scrollView.currentPosition()
+
+        if (view?.isLaidOut == true) {
+            _viewModel.position = _scrollView.currentPosition()
+        }
         _timer.removeCallbacksAndMessages(null)
     }
 

@@ -43,6 +43,7 @@ import com.lanyard.pirateerlite.singletons.User
 class BoatInfoFragment : Fragment(), User.UserListener {
     var boatType: String? = null
     var parts = ArrayList<User.BoatPart>()
+    var build = false
 
     fun boatValue(index: BoatModel.BoatIndex): Any {
         return BoatModel.boatConfig(boatType!!, index)
@@ -76,8 +77,13 @@ class BoatInfoFragment : Fragment(), User.UserListener {
 
         User.instance.addListerner(this)
 
+        val args = arguments
         if (savedInstanceState != null) {
             boatType = savedInstanceState.getString("boatType")
+            build = savedInstanceState.getBoolean("build")
+        } else if (args != null) {
+            boatType = args.getString("boatType")
+            build = args.getBoolean("build")
         }
 
         button.setOnClickListener {
@@ -88,17 +94,22 @@ class BoatInfoFragment : Fragment(), User.UserListener {
                     map = manager.findFragmentByTag("map") as MapFragment
                     map.stopTracking()
                     map.reset()
-                    map.transferBoatBuild(this)
-                    if (resources.getBoolean(R.bool.landscape) != true) {
-                        (activity as MapActivity).swapFragment(R.id.navigation_map) as MapFragment
-                    }
-                    map.buildBoat()
                     button.isEnabled = false
+                    build = true
+                    if (resources.getBoolean(R.bool.landscape) != true) {
+                        (activity as MapActivity).swapFragment(R.id.navigation_map, null, false) as MapFragment
+                    }
+                    map.transferBoatBuild(this)
+                    map.buildBoat()
                 } else {
-                    var dialog = BoatInfoDialogFragment()
+                    val dialog = BoatInfoDialogFragment()
                     dialog.show(manager, "expand")
                 }
             }
+        }
+
+        if (build == true) {
+            button.isEnabled = false
         }
 
         rangeLabel.text = getString(R.string.rangeLabel, boatValue(BoatModel.BoatIndex.distance))
@@ -173,6 +184,7 @@ class BoatInfoFragment : Fragment(), User.UserListener {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString("boatType", boatType)
+        outState.putBoolean("build", build)
     }
 
     override fun boatAdded(boat: BoatModel) {
