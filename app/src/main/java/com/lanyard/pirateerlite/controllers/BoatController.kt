@@ -41,7 +41,7 @@ class BoatController(model: BoatModel, view: BoatView) {
 
     val model: BoatModel
     val view: BoatView
-    private val _handler: Handler
+    private var _handler: Handler
 
     val isSailing: Boolean
         get() {
@@ -65,10 +65,6 @@ class BoatController(model: BoatModel, view: BoatView) {
         }
     }
 
-    fun destroy() {
-        _handler.removeCallbacksAndMessages(null)
-    }
-
     fun sail(): Boolean {
         view.removePaths()
         for (job in model.cargo) {
@@ -80,6 +76,10 @@ class BoatController(model: BoatModel, view: BoatView) {
         model.town?.saveStorage()
         model.town?.saveJobs()
 
+        for (i in 1 until this.model.course.size) {
+            val path = Map.instance.getRoute(this.model.course[i - 1], this.model.course[i])
+            view.addPath(Graph.getRoutePositions(path))
+        }
         scheduleArrivals()
         // if the the boats town is nil that means it has already departed
         if (model.course.size > 0) {
@@ -94,40 +94,46 @@ class BoatController(model: BoatModel, view: BoatView) {
         return false
     }
 
+    /**
+     * schedules our boat arrival callbacks with the handler
+     */
+
     private fun scheduleArrivals() {
         _handler.removeCallbacksAndMessages(null)
-        var plot = false
-        if (view.count() == 0) {
-            plot = true
-        }
+        var time = 0L
         for (i in 1 until this.model.course.size) {
-            val path = Map.instance.getRoute(this.model.course[i - 1], this.model.course[i])
-            if (plot) {
-                view.addPath(Graph.getRoutePositions(path))
-            }
-            var time = this.model.getSailingTime(view.length)
+            time += this.model.getSailingTime(view.lengths[i - 1] * view.length)
             if (model.departureTime != 0L &&
                 model.departureTime + time < Date().time
             ) {
-                arrived(path.last().next.data as TownModel, true)
+                arrived(this.model.course[i], true)
             } else {
+                var arrival_time = time
                 if (model.departureTime != 0L) {
-                    time -= Date().time - model.departureTime
+                    arrival_time -= (Date().time - model.departureTime)
                 }
-                _handler.postDelayed({
-                    arrived(path.last().next.data as TownModel)
-                }, time)
+                val task = Runnable {
+                    println("handler called: " + this.toString())
+                    arrived(this.model.course[i])
+                }
+                _handler.postDelayed(task, arrival_time)
             }
         }
     }
 
-    fun resume() {
+    /**
+     * Handler uses System.uptime so if the device goes into sleep we need to reschedule out arrival callbacks.
+     */
+    fun onStart() {
         if (isSailing) {
             scheduleArrivals()
         }
     }
 
-    fun pause() {
+    /**
+     * clears out arrival callbacks
+     */
+    fun onStop() {
         _handler.removeCallbacksAndMessages(null)
     }
 

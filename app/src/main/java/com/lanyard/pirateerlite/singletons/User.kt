@@ -34,10 +34,10 @@ import java.lang.Math.random
 import java.lang.ref.WeakReference
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.math.log2
 import kotlin.math.max
 import kotlin.math.pow
 import kotlin.math.roundToInt
+import kotlin.math.sqrt
 
 /**
  * Big data singleton for all user data. Stores thing from all the boats the user owns to the last market timer update.
@@ -348,7 +348,7 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
         if (xp == 0) {
             return 0
         }
-        return max(1, log2(xp.toFloat() / 1500).toInt())
+        return max(1, sqrt(xp.toFloat() / 1500).toInt())
     }
 
 

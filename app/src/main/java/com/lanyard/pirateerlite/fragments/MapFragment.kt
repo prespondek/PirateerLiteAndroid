@@ -859,7 +859,7 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         super.onStart()
         postTimers()
         for (boat in _boatControllers) {
-            boat.resume()
+            boat.onStart()
         }
         if (view?.isLaidOut == true) {
             refresh()
@@ -869,7 +869,7 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
     override fun onStop() {
         super.onStop()
         for (boat in _boatControllers) {
-            boat.pause()
+            boat.onStop()
         }
         if (view?.isLaidOut == true) {
             _viewModel.position = _scrollView.currentPosition()

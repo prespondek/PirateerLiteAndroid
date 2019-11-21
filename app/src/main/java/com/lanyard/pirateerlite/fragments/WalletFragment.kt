@@ -68,6 +68,7 @@ class WalletFragment : Fragment(), UserListener
     override fun xpUpdated(oldValue: Int, newValue: Int) {
         val user = User.instance
         val levelXp = user.xpForLevel(user.level + 1)
+        val xpLevel = user.levelForXp(user.xp)
         val xp = user.xp
         _xpLabel.text = ( levelXp - xp ).toString()
         val level_image = (User.rankValues[User.rankKeys[user.level]]!![0]).toString()

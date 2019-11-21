@@ -195,17 +195,15 @@ class BoatModel {
             return boatValues[_data.type]!![BoatModel.BoatIndex.title.index] as String
         }
 
-    fun plotCourse(town: TownModel) {
-        _course.add(town)
-    }
-
     fun plotCourse(towns: List<TownModel>) {
+        if (isMoored == false) throw IllegalStateException("boat must be moored to plot course")
         _course.clear()
         _course.addAll(towns)
     }
 
     fun save() = GlobalScope.launch {
             Game.instance.db.boatDao().update(_data)
+        Game.instance.db.boatJobDao().deleteByBoatId(_data.id)
             Game.instance.db.boatJobDao().insert(_cargo.mapNotNull {
                 if (it != null) {
                     BoatJobData(0, id, it.data)
