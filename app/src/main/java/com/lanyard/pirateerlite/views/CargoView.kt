@@ -91,7 +91,7 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
         params.clear(_views.last().id, ConstraintSet.START)
         params.connect(_views.last().id, ConstraintSet.END, id, ConstraintSet.END, _views.last().width / 6 * _views.size)
         _views.add(0, _views.popLast())
-        _index.add(0, _index.popLast())
+        //_index.add(0, _index.popLast())
         if (_views.size > 1) {
             for (i in 0 until _views.size) {
                 params.setElevation(_views[i].id, 4.0f * (i + 1))
@@ -116,12 +116,17 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
     }
 
     private fun setJob(job: JobModel?, add: Boolean): JobView? {
+        println("JobViews")
+        for (view in _views) {
+            println(view.job.toString())
+        }
         if (job != null && getJobIndex(job) == -1) {
             val idx = getJobIndex(null)
             val jobview = _views[idx]
             jobview.job = job
             if (add == true) {
-                _boat.cargo[_index[idx]] = job
+                val jdx = _boat.cargo.indexOfFirst { it == null }
+                _boat.cargo[jdx] = job
                 if (updateCells()) {
                     Audio.instance.queueSound(R.raw.cargo_bonus)
                 }
@@ -194,7 +199,7 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
     private var _orderDistance: Float = 0.0f
     private var _views = ArrayList<JobView>()
     private var _stage = 0
-    private var _index = ArrayList<Int>()
+    //private var _index = ArrayList<Int>()
     private lateinit var _boat : BoatModel
 
     val views: ArrayList<JobView>
@@ -236,7 +241,7 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
             removeView(view)
         }
         _views.clear()
-        _index.clear()
+        //_index.clear()
 
         var width = 0
         for (i in 0 until _boat.cargoSize) {
@@ -254,7 +259,7 @@ class CargoView : ConstraintLayout, Transition.TransitionListener {
             cell.elevation = i + 1.toFloat() * 4
             params.applyTo(this)
             _views.add(cell)
-            _index.add(i)
+            //_index.add(i)
         }
         layoutParams.width = width * 2 + (boat.model.cargoSize * width / 6)
         _orderDistance = boat.model.cargoSize.toFloat()

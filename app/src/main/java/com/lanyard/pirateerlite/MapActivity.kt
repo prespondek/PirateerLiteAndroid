@@ -35,7 +35,6 @@ import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.lanyard.canvas.BitmapCache
 import com.lanyard.helpers.NotificationReceiver
-import com.lanyard.pirateerlite.controllers.TownController
 import com.lanyard.pirateerlite.fragments.*
 import com.lanyard.pirateerlite.singletons.Audio
 import com.lanyard.pirateerlite.singletons.User
@@ -64,7 +63,7 @@ class MapActivity : AppCompatActivity(), User.UserListener {
 
     private val _navigationListener = object : BottomNavigationView.OnNavigationItemSelectedListener {
         override fun onNavigationItemSelected(val1: MenuItem): Boolean {
-            swapFragment(val1.itemId, null)
+            swapFragment(val1.itemId)
             return true
         }
     }
@@ -104,12 +103,19 @@ class MapActivity : AppCompatActivity(), User.UserListener {
     }
 
     override fun onBackPressed() {
-        var prev = _viewModel.popBackStack()
-        var tag = supportFragmentManager.primaryNavigationFragment?.tag
+        var prev: MapActivityViewModel.BackStackEntry? = null
+        val tag = supportFragmentManager.primaryNavigationFragment?.tag
         // skip over map calls in portrait
-        while (prev != null && ((resources.getBoolean(R.bool.landscape) == true && prev.name == "map") || (tag != null && tag == prev.name))) {
+        do {
             prev = _viewModel.popBackStack()
-        }
+
+            // reassigning maps entries to boat in landscape
+            if (resources.getBoolean(R.bool.landscape) == true && prev?.name == "map") {
+                prev.name = "boats"
+                prev.bundle = null
+            }
+        } while (prev != null && (tag != null && tag == prev.name))
+
         if (prev == null) {
             super.onBackPressed()
         } else {
@@ -119,7 +125,7 @@ class MapActivity : AppCompatActivity(), User.UserListener {
                 "menu" -> navigation.menu.findItem(R.id.navigation_menu).isChecked = true
                 "boats" -> navigation.menu.findItem(R.id.navigation_boats).isChecked = true
             }
-            swapFragment(prev, null, true)
+            swapFragment(prev, true)
         }
     }
 
@@ -202,7 +208,6 @@ class MapActivity : AppCompatActivity(), User.UserListener {
 
     private fun swapFragment(
         entry: MapActivityViewModel.BackStackEntry,
-        tag: Any? = null,
         addToBackStack: Boolean = true
     ): androidx.fragment.app.Fragment {
         val transaction = supportFragmentManager.beginTransaction()
@@ -234,10 +239,6 @@ class MapActivity : AppCompatActivity(), User.UserListener {
         }
         val frag: androidx.fragment.app.Fragment = createFragment(entry.name)
 
-        if (frag is TownFragment) {
-            frag.townController = tag as TownController
-        }
-
         frag.arguments = entry.bundle
         if (entry.name == "map") {
             transaction.show(frag)
@@ -252,39 +253,42 @@ class MapActivity : AppCompatActivity(), User.UserListener {
         return frag
     }
 
-    fun swapFragment(id: Int?, tag: Any? = null, addToBackStack: Boolean = true): androidx.fragment.app.Fragment {
+    fun swapFragment(id: Int?, addToBackStack: Boolean = true): androidx.fragment.app.Fragment {
         var name = ""
-        if (tag is TownController) {
-            name = "town"
-        } else {
-            when (id) {
-                R.id.navigation_map -> {
-                    name = "map"
-                }
-                R.layout.cell_shipyard -> {
-                    name = "boatinfo"
-                }
-                R.id.shipyardButton -> {
-                    name = "shipyard"
-                }
-                R.id.marketButton -> {
-                    name = "market"
-                }
-                R.id.statsButton -> {
-                    name = "stats"
-                }
-                R.id.navigation_menu -> {
-                    name = "menu"
-                }
-                R.id.navigation_boats -> {
-                    name = "boats"
-                }
-                R.id.holdButton -> {
-                    name = "jobs"
-                }
+        when (id) {
+            R.id.navigation_map -> {
+                name = "map"
+            }
+            R.layout.cell_shipyard -> {
+                name = "boatinfo"
+            }
+            R.id.shipyardButton -> {
+                name = "shipyard"
+            }
+            R.id.marketButton -> {
+                name = "market"
+            }
+            R.id.statsButton -> {
+                name = "stats"
+            }
+            R.id.navigation_menu -> {
+                name = "menu"
+            }
+            R.id.navigation_boats -> {
+                name = "boats"
+            }
+            R.id.holdButton -> {
+                name = "jobs"
+            }
+            R.id.townName -> {
+                name = "town"
+            }
+            else -> {
+                name = "map"
             }
         }
-        return swapFragment(MapActivityViewModel.BackStackEntry(name, null), tag, addToBackStack)
+
+        return swapFragment(MapActivityViewModel.BackStackEntry(name, null), addToBackStack)
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
@@ -302,7 +306,7 @@ class MapActivity : AppCompatActivity(), User.UserListener {
             val town = frag as TownFragment
             when (item?.title) {
                 "Jobs" -> {
-                    val jobFrag = swapFragment(R.id.holdButton, null) as JobFragment
+                    val jobFrag = swapFragment(R.id.holdButton, false) as JobFragment
                     jobFrag.townModel = town.townController.model
                 }
             }
@@ -317,7 +321,6 @@ class MapActivity : AppCompatActivity(), User.UserListener {
         if (resources.getBoolean(R.bool.portrait_only)) {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
-
         _viewModel = ViewModelProviders.of(this).get(MapActivityViewModel::class.java)
 
         User.instance.addListerner(this)

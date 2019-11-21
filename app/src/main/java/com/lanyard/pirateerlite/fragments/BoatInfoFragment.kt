@@ -97,7 +97,7 @@ class BoatInfoFragment : Fragment(), User.UserListener {
                     button.isEnabled = false
                     build = true
                     if (resources.getBoolean(R.bool.landscape) != true) {
-                        (activity as MapActivity).swapFragment(R.id.navigation_map, null, false) as MapFragment
+                        (activity as MapActivity).swapFragment(R.id.navigation_map, false) as MapFragment
                     }
                     map.transferBoatBuild(this)
                     map.buildBoat()

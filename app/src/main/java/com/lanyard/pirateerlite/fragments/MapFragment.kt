@@ -128,7 +128,7 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
 
     private val _cargoClickListener = View.OnClickListener {
         if (fragmentManager?.primaryNavigationFragment?.tag != "jobs") {
-            val frag = (activity as MapActivity).swapFragment(R.id.holdButton, null, false) as JobFragment
+            val frag = (activity as MapActivity).swapFragment(R.id.holdButton, false) as JobFragment
             frag.boatController = _selectedBoat!!
         }
     }
@@ -200,16 +200,6 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
             }
         }
 
-    /**
-     * When the context gets trashed clear all the scheduled callbacks
-     */
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        for (boat in _boatControllers) {
-            boat.destroy()
-        }
-    }
 
     /**
      * Heavy lifting for map UI construction. Initialize temporary boat and town controllers which contain
@@ -579,13 +569,15 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
      * @param animate Do short focus animation
      */
 
-    fun boatSelected(boat: BoatController, animate: Boolean = true) {
+    fun boatSelected(boat: BoatController, animate: Boolean = true, focus: Boolean = true) {
         stopTracking()
         reset()
         _selectedBoat = boat
         val town = _selectedBoat!!.model.town
         if (town != null) {
-            focusTown(town, animate)
+            if (focus) {
+                focusTown(town, animate)
+            }
             townSelected(townControllerForModel(town))
             _scene.plotJobMarkers(boat.model)
         } else {
@@ -677,7 +669,8 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
             }
         } else {
             reset()
-            (activity as MapActivity).swapFragment(null, town)
+            val townfrag = (activity as MapActivity).swapFragment(R.id.townName) as TownFragment
+            townfrag.townController = town
         }
     }
 
@@ -705,7 +698,7 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         val town = townControllerForModel(boat.model.town!!)
         town.updateView()
         if (_selectedBoat === boat) {
-            boatSelected(boat, true)
+            boatSelected(boat, true, false)
         }
     }
 
@@ -865,7 +858,9 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
     override fun onStart() {
         super.onStart()
         postTimers()
-
+        for (boat in _boatControllers) {
+            boat.resume()
+        }
         if (view?.isLaidOut == true) {
             refresh()
         }
@@ -873,7 +868,9 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
 
     override fun onStop() {
         super.onStop()
-
+        for (boat in _boatControllers) {
+            boat.pause()
+        }
         if (view?.isLaidOut == true) {
             _viewModel.position = _scrollView.currentPosition()
         }

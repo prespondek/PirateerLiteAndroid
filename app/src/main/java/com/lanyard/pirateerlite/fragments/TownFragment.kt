@@ -94,8 +94,12 @@ class TownFragment : Fragment() {
         val image = view.findViewById<ImageView>(R.id.townPortrait)
         val upgradeButton = view.findViewById<Button>(R.id.upgradeButton)
 
-        if ( savedInstanceState != null ) {
-            val townId = savedInstanceState["townController"] as Long?
+        var bundle: Bundle? = savedInstanceState
+        if (bundle == null) {
+            bundle = arguments
+        }
+        if (bundle != null) {
+            val townId = bundle["townController"] as Long?
             if (townId != null) {
                 val map = fragmentManager!!.findFragmentByTag("map") as MapFragment
                 townController = map.townControllerForId(townId) ?: throw NullPointerException()

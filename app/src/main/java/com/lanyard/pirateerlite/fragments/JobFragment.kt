@@ -353,6 +353,7 @@ class JobFragment : Fragment(), Game.GameListener {
                 }
             }
             _cargoPanel.visibility = VISIBLE
+            updateCargoValue()
         } else if (boat != null && boat.isSailing == true) {
             townModel = null
             updateJobTimer(0)
@@ -407,6 +408,10 @@ class JobFragment : Fragment(), Game.GameListener {
             return
         }
 
+        println("Job Touch")
+        for (cargo in boatController!!.model.cargo) {
+            println(cargo.toString())
+        }
         if (boatController!!.model.cargo.filter { it != null }.size < boatController!!.model.cargoSize) {
             val jobview = _cargoView.addJob(view.job!!)
             loadJobBimp(view.job, jobview)
