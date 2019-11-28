@@ -1,6 +1,6 @@
 # PirateerLiteAndroid
 
-[![CircleCI](https://circleci.com/gh/prespondek/PirateerLiteAndroid.svg?style=shield)](https://circleci.com/gh/prespondek/PirateerLiteAndroid)
+[![TravisCI](https://travis-ci.org/prespondek/PirateerLiteAndroid.svg?branch=master)](https://travis-ci.org/prespondek/PirateerLiteAndroid)
 
 #### https://github.com/prespondek/PirateerLiteAndroid/tree/master/app/src/main/java/com/lanyard
 
