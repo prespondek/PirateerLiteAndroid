@@ -30,6 +30,13 @@ import java.lang.ref.WeakReference
 import java.util.*
 
 
+/**
+ * Interface between boat model and boat view. MapFragment communicates with the controller which then talks
+ * to the model and view.
+ *
+ * @author Peter Respondek
+ */
+
 class BoatController(model: BoatModel, view: BoatView) {
 
     companion object {
@@ -65,22 +72,35 @@ class BoatController(model: BoatModel, view: BoatView) {
         }
     }
 
+    /**
+     * When the boat is ready to sail we need to: Primes the view with data it needs. Save boat data. Remove boat cargo
+     * from town
+     */
     fun sail(): Boolean {
+        // reset view
         view.removePaths()
+
+        // remove jobs put in boat cargo from the town.
         for (job in model.cargo) {
             if (job != null) {
                 model.town?.removeJob(job)
             }
         }
+
+        // save all the boat data.
         model.town?.save()
         model.town?.saveStorage()
         model.town?.saveJobs()
 
+        // prime our view the data from graph.
         for (i in 1 until this.model.course.size) {
             val path = Map.instance.getRoute(this.model.course[i - 1], this.model.course[i])
             view.addPath(Graph.getRoutePositions(path))
         }
+
+        // schedule our arrival callbacks
         scheduleArrivals()
+
         // if the the boats town is nil that means it has already departed
         if (model.course.size > 0) {
             if (this.model.town != null) {
@@ -91,32 +111,32 @@ class BoatController(model: BoatModel, view: BoatView) {
             view.sail(Date(this.model.departureTime), this.model.courseTime)
             return true
         }
+
         return false
     }
 
     /**
-     * schedules our boat arrival callbacks with the handler
+     * Schedules our boat arrival callbacks with the handler
      */
-
     private fun scheduleArrivals() {
         _handler.removeCallbacksAndMessages(null)
         var time = 0L
         for (i in 1 until this.model.course.size) {
             time += this.model.getSailingTime(view.lengths[i - 1] * view.length)
+
+            // if our departure time + sailing time is greater than the current time it means we have already
+            // arrived at the destination.
             if (model.departureTime != 0L &&
-                model.departureTime + time < Date().time
-            ) {
+                model.departureTime + time < Date().time) {
                 arrived(this.model.course[i], true)
             } else {
                 var arrival_time = time
                 if (model.departureTime != 0L) {
                     arrival_time -= (Date().time - model.departureTime)
                 }
-                val task = Runnable {
-                    println("handler called: " + this.toString())
+                _handler.postDelayed({
                     arrived(this.model.course[i])
-                }
-                _handler.postDelayed(task, arrival_time)
+                }, arrival_time)
             }
         }
     }
@@ -136,6 +156,10 @@ class BoatController(model: BoatModel, view: BoatView) {
     fun onStop() {
         _handler.removeCallbacksAndMessages(null)
     }
+
+    /**
+     * Callback once boat has arrived at a town whether is be along it's journey or the final destination.
+     */
 
     private fun arrived(town: TownModel, quiet: Boolean = false) {
         this.model.arrive(town, quiet)

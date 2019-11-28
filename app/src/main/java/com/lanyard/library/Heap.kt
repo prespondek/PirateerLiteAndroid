@@ -2,6 +2,10 @@ package com.lanyard.library
 
 import java.util.*
 
+/**
+ * Heap data structure written in Kotlin
+ */
+
 class PriorityQueue<T> (sort: (T, T) -> Boolean) {
     private var heap: Heap<T>
 

@@ -24,6 +24,12 @@ import kotlinx.coroutines.*
 import java.lang.ref.WeakReference
 import java.util.Collections.synchronizedMap
 
+/**
+ * This singleton wraps the sound pool class. It's stops sounds from stepping on one another and
+ * pauses sounds when the app goes into the background.
+ *
+ * @author Peter Respondek
+ */
 open class Audio private constructor(context: Context) : SoundPool.OnLoadCompleteListener {
 
     override fun onLoadComplete(soundPool: SoundPool?, sampleId: Int, status: Int) {

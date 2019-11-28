@@ -200,15 +200,21 @@ class MarketFragment : Fragment(), UserListener {
             init {
                 view.setOnClickListener {
                     var user = User.instance
-                    selectedPart = User.instance.market[layoutPosition - 1]
-                    _parts.remove(selectedPart!!)
-                    User.instance.parts.add(selectedPart!!)
-                    val boatInfo = BoatModel.boatValues[selectedPart!!.boat]!!
-                    User.instance.addMoney(-(boatInfo[BoatModel.BoatIndex.part_cost.index] as ArrayList<Int>)[selectedPart!!.item.index], 0)
-                    User.instance.save()
-                    _adapter.notifyDataSetChanged()
+                    if(User.instance.market.size > layoutPosition - 1 && layoutPosition > 0) {
+                        selectedPart = User.instance.market[layoutPosition - 1]
+                        _parts.remove(selectedPart!!)
+                        User.instance.parts.add(selectedPart!!)
+                        val boatInfo = BoatModel.boatValues[selectedPart!!.boat]!!
+                        User.instance.addMoney(
+                            -(boatInfo[BoatModel.BoatIndex.part_cost.index] as ArrayList<Int>)[selectedPart!!.item.index],
+                            0
+                        )
+                        User.instance.save()
+                        _adapter.notifyDataSetChanged()
+                    }
                 }
             }
+
         }
 
         override fun getItemCount(): Int {
@@ -217,17 +223,22 @@ class MarketFragment : Fragment(), UserListener {
 
         override fun getItemViewType(position: Int): Int {
             if (position == 0) return 0
-            return 1
+            if (_parts.size == 0) return 1
+            return 2
         }
 
         override fun onCreateViewHolder(p0: ViewGroup, p1: Int): MarketAdapter.MarketViewHolder {
             var view: View? = null
-            if (p1 == 0) {
-                view = LayoutInflater.from(context).inflate(R.layout.cell_job_header, p0, false)
-            } else if (_parts.isEmpty()) {
-                view = LayoutInflater.from(context).inflate(R.layout.cell_market_empty, p0, false)
-            } else {
-                view = LayoutInflater.from(context).inflate(R.layout.cell_market, p0, false)
+            when(p1) {
+                0 -> {
+                    view = LayoutInflater.from(context).inflate(R.layout.cell_job_header, p0, false)
+                }
+                1 -> {
+                    view = LayoutInflater.from(context).inflate(R.layout.cell_market_empty, p0, false)
+                }
+                2 -> {
+                    view = LayoutInflater.from(context).inflate(R.layout.cell_market, p0, false)
+                }
             }
             return MarketViewHolder(view!!)
         }

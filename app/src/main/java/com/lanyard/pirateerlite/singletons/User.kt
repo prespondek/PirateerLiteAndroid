@@ -70,7 +70,6 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
                     gson.fromJson<HashMap<String, Any>>(reader, object : TypeToken<HashMap<String, Any>>() {}.type)
                 _user = User(userData, statData, boatData)
             }
-            //_user?._data = data
         }
 
         val isInitialized: Boolean
@@ -108,6 +107,9 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
             }
     }
 
+    /**
+     * Generic type holding boat statistic data
+     */
     class  BoatStatInfo <out T : Number> {
         val statName : String
         val statData : (BoatModel) -> T
@@ -229,6 +231,10 @@ class User private constructor(userData: UserData, statData: Array<StatsData>, b
 
         override fun describeContents(): Int {
             return 0
+        }
+
+        override fun hashCode(): Int {
+            return super.hashCode()
         }
 
         override fun equals(other: Any?): Boolean {

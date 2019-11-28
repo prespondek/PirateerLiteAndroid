@@ -21,6 +21,12 @@ import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
 import java.util.*
 
+/**
+ * Raw job data with Room database integration
+ *
+ * @author Peter Respondek
+ */
+
 @Dao
 interface StorageJobDao {
     @Query("SELECT * FROM StorageJobData WHERE townid LIKE :townid")

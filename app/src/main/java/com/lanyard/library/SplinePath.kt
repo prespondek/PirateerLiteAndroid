@@ -20,6 +20,13 @@ import android.graphics.Point
 import android.graphics.PointF
 import androidx.core.math.MathUtils.clamp
 
+/**
+ * A list of curves representing a continuous path. Spline can be smoothed or position can be evaluated
+ * across the entire path.
+ *
+ * @author Peter Respondek
+ */
+
 
 open class SplinePath {
     private var path: MutableList<CardinalSpline>

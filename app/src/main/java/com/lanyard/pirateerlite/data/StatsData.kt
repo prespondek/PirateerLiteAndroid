@@ -21,6 +21,12 @@ import androidx.room.*
 import androidx.room.ForeignKey.CASCADE
 import java.util.*
 
+/**
+ * Raw stats data with Room database integration
+ *
+ * @author Peter Respondek
+ */
+
 @Dao
 interface StatsDao {
     @Query("SELECT * FROM StatsData")

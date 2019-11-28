@@ -5,6 +5,10 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModel
 import com.lanyard.helpers.popLast
 
+/**
+ * ViewModel for MapActivity. Contains bare bones replacement for default fragment backstack
+ */
+
 class MapActivityViewModel : ViewModel() {
     data class BackStackEntry(var name: String, var bundle: Bundle?)
 
@@ -30,7 +34,7 @@ class MapActivityViewModel : ViewModel() {
                 backstack.subList(idx, backstack.size).clear()
             }
             backstack.add(BackStackEntry(name, bundle))
-            printBackStack()
+            //printBackStack()
         }
     }
 
@@ -44,7 +48,7 @@ class MapActivityViewModel : ViewModel() {
 
     fun popBackStack(): BackStackEntry? {
         if (backstack.size > 0) {
-            printBackStack()
+            //printBackStack()
             return backstack.popLast()
         }
         return null

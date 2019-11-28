@@ -17,11 +17,14 @@
 package com.lanyard.pirateerlite.models
 
 import com.lanyard.library.Graph
-import com.lanyard.pirateerlite.controllers.JobController
 import com.lanyard.pirateerlite.data.JobData
 import com.lanyard.pirateerlite.singletons.Map
 
 class JobModel {
+    companion object {
+        var jobData = ArrayList<ArrayList<String>>()
+    }
+
     var source: TownModel
 
         get() { return Map.instance.towns[_data.sourceTownId.toInt()] }
@@ -67,7 +70,7 @@ class JobModel {
 
     constructor(source: TownModel, destination: TownModel) {
         _data = JobData(
-            JobController.jobData.random()[0],
+            jobData.random()[0],
             0.0f,
             Math.random() * 10.0 <= 1.0,
             Map.instance.towns.indexOfFirst { it === source }.toLong(),

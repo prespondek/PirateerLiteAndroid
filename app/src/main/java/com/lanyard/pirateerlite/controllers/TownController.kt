@@ -22,14 +22,14 @@ import com.lanyard.pirateerlite.fragments.MapFragment
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.views.TownView
 
+/**
+ * Interface between town model and town view. MapFragment communicates with the controller which then talks
+ * to the model and view.
+ *
+ * @author Peter Respondek
+ */
 
 class TownController (town: TownModel, button: Button, view: TownView )  {
-    companion object {
-        private var _controller : MapFragment? = null
-        fun setController ( controller: MapFragment ) {
-            TownController._controller = controller
-        }
-    }
 
     enum class State {
         selected, unselected, disabled, blocked
@@ -58,9 +58,6 @@ class TownController (town: TownModel, button: Button, view: TownView )  {
         this.model =    town
         this.button =   button
         this.view =   view
-        this.button.setOnClickListener(View.OnClickListener {
-            this.buttonPressed(it)
-        })
         updateView()
     }
 
@@ -71,10 +68,5 @@ class TownController (town: TownModel, button: Button, view: TownView )  {
         if (model.level > 0) {
             state = State.unselected
         }
-    }
-
-    fun buttonPressed(view: View) {
-
-        TownController._controller?.townSelected(this)
     }
 }

@@ -19,6 +19,12 @@ package com.lanyard.pirateerlite.data
 import androidx.room.Database
 import androidx.room.RoomDatabase
 
+/**
+ * Raw game data with Room database integration
+ *
+ * @author Peter Respondek
+ */
+
 @Database(
     entities = arrayOf(
         UserData::class,

@@ -250,7 +250,6 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
 
         Audio.instance.queueSound(R.raw.bg_map, true)
         TownView.setup(this.context!!)
-        TownController.setController(this)
         for (vert in Map.instance.graph.vertices) {
             setupTown(view, vert)
         }
@@ -329,6 +328,9 @@ class MapFragment : Fragment(), Game.GameListener, User.UserListener {
         _scene.addChild(label)
 
         val townCtrl = TownController(town, button, sprite)
+        button.setOnClickListener {
+            townSelected(townCtrl)
+        }
         _townControllers.add(townCtrl)
         townCtrl.state = TownController.State.unselected
     }

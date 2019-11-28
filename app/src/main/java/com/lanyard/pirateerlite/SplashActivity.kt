@@ -134,7 +134,7 @@ class SplashActivity : FragmentActivity() {
     private fun onPrimaryDataFetch() {
         val metrics = DisplayMetrics()
         windowManager.defaultDisplay.getMetrics(metrics)
-        Map.initialize(applicationContext,mapConfig!!,_viewModel.townData?.value!!, metrics.density)
+        Map.initialize(mapConfig!!,_viewModel.townData?.value!!, metrics.density)
         User.initialize(applicationContext,_viewModel.userdata?.value!![0], _viewModel.statdata?.value!!, _viewModel.boatData?.value!!)
         User.instance.addListerner(Game.instance)
 

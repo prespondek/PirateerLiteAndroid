@@ -33,7 +33,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.lanyard.helpers.GridLayoutManagerAutofit
 import com.lanyard.pirateerlite.R
 import com.lanyard.pirateerlite.controllers.BoatController
-import com.lanyard.pirateerlite.controllers.JobController
 import com.lanyard.pirateerlite.models.BoatModel
 import com.lanyard.pirateerlite.models.JobModel
 import com.lanyard.pirateerlite.models.TownModel
@@ -218,7 +217,7 @@ class JobFragment : Fragment(), Game.GameListener {
     fun loadJobBimp(job: JobModel?, jobview: JobView?) {
         val resources = context?.resources
         if (resources != null && job != null && jobview != null) {
-            val element = JobController.jobData.first { it[0] == job.type }[1]
+            val element = JobModel.jobData.first { it[0] == job.type }[1]
             val res = resources.getIdentifier(element, "drawable", context?.packageName)
             jobview.setJobDrawable(resources.getDrawable(res, null), false)
         }

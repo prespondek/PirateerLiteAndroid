@@ -19,6 +19,12 @@ package com.lanyard.library
 import android.graphics.Point
 import com.lanyard.helpers.distance
 
+/**
+ * Your basic two dimensional spacial graph with any number of vertices and edges. Can find the shortest distance
+ * between two points on the graph using Dijkstras algorithm.
+ *
+ * @author Peter Respondek
+ */
 
 class Vertex<T> ( data: T, position: Point) {
     companion object Functor{
@@ -44,6 +50,10 @@ class Vertex<T> ( data: T, position: Point) {
             return position == other.position
         }
         return false
+    }
+
+    override fun hashCode(): Int {
+        return super.hashCode()
     }
 
 
@@ -76,6 +86,10 @@ class Edge<T> (source: Vertex<T>, target: Vertex<T>) {
     init{
         this.next = target
         this.source = source
+    }
+
+    override fun hashCode(): Int {
+        return super.hashCode()
     }
 
     override operator fun equals (other: Any?) : Boolean {
@@ -111,7 +125,7 @@ class Graph<T>
     var vertices : ArrayList<Vertex<T>>
 
     enum class Algorithm {
-        Djikstra
+        Dijkstra
     }
     constructor() {
         this.vertices = ArrayList<Vertex<T>>()
@@ -129,7 +143,7 @@ class Graph<T>
         }
 
         when (algorithm) {
-            Algorithm.Djikstra -> {
+            Algorithm.Dijkstra -> {
                 primeGraphDjikstra(start, end)
                 return getRouteDjikstra(start, end)
             }
@@ -166,12 +180,10 @@ class Graph<T>
             if ( top === end ) { break }
             queue.dequeue()
             if ( top.visited == true ) { continue }
-            //print("Visiting " + String(top.id) + " with score of " + String(Int(top.score)));
             for ( edge in top.outEdges ) {
                 if ( edge.next.visited == false ) {
                     if ( edge.next.score > (top.score + edge.weight )) {
                          edge.next.score = top.score + edge.weight
-                        //print("Point " + String(edge.next.id) + " set score to: " + String(Int(edge.next.score)))
                     }
                     queue.enqueue( edge.next )
                     top.visited = true;

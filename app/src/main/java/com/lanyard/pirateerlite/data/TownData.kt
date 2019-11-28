@@ -22,6 +22,12 @@ import com.lanyard.pirateerlite.models.TownModel
 import java.io.Serializable
 import java.util.*
 
+/**
+ * Raw town data with Room database integration
+ *
+ * @author Peter Respondek
+ */
+
 @Dao
 interface TownDao {
     @Query("SELECT * FROM TownData")

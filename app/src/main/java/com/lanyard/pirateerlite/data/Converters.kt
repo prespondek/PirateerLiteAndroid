@@ -24,6 +24,11 @@ import com.lanyard.pirateerlite.models.JobModel
 import com.lanyard.pirateerlite.models.TownModel
 import com.lanyard.pirateerlite.singletons.User
 
+/**
+ * Type converters for Room.
+ *
+ * @author Peter Respondek
+ */
 
 object DateConverter {
     @TypeConverter

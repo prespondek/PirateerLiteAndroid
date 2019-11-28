@@ -21,6 +21,12 @@ import androidx.room.*
 import com.lanyard.pirateerlite.singletons.User
 import java.util.*
 
+/**
+ * Raw user data with Room database integration
+ *
+ * @author Peter Respondek
+ */
+
 @Dao
 interface UserDao {
     @Query("SELECT * FROM UserData")
