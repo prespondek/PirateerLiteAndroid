@@ -12,6 +12,9 @@ Build with Android Studio
 
 Please note that assets have been stripped so you can compile the project but it will error when debugging.
 
+Full app can be downloaded from google play store here:
+[https://play.google.com/store/apps/details?id=com.lanyard.pirateerlite][50]
+
 ## Screenshots
 
 <img src=https://i.imgur.com/Du6S9CH.png height=300 align=left>
@@ -94,3 +97,4 @@ Unless required by applicable law or agreed to in writing, software distributed 
 [45]: https://developer.android.com/guide/components/activities/tasks-and-back-stack
 [40]: https://developer.android.com/training/gestures/detector
 [41]: https://developer.android.com/reference/android/widget/GridLayout
+[50]: https://play.google.com/store/apps/details?id=com.lanyard.pirateerlite
