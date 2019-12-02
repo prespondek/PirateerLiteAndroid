@@ -10,3 +10,4 @@
 /captures
 .externalNativeBuild
 /app/assets/*
+app/release/app.aab

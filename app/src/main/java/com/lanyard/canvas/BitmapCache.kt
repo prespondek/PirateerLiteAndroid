@@ -71,7 +71,7 @@ class BitmapCache private constructor() {
     }
 
     private fun addBitmap(generator: BitmapStream.BitmapGenerator) : BitmapStream? {
-        var file = BitmapStream(generator)
+        val file = BitmapStream(generator)
         streamCache.put(generator.name, file)
         return file
     }
@@ -82,11 +82,6 @@ class BitmapCache private constructor() {
 
     fun getBitmap(filename: String)  : BitmapStream? {
         return streamCache.get(filename)
-        /*var bimp = streamCache.remove(filename)
-        if (bimp != null) {
-            streamCache.put(filename,bimp)
-        }
-        return bimp*/
     }
 
     fun fetchBitmap(stream: BitmapStream) : Future<*>
